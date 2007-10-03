@@ -1,0 +1,18 @@
+#!/usr/bin/env ruby
+
+require 'rbconfig'
+
+BIN_DIR = ENV['BIN_DIR'] || '/usr/local/bin'
+RUBY_SHARE_DIR = (ENV['RUBY_SHARE_DIR'] || RbConfig::CONFIG['sitelibdir']) + '/raid'
+RUBY_LIB_DIR = (ENV['RUBY_LIB_DIR'] || (RbConfig::CONFIG['vendorarchdir'] ? RbConfig::CONFIG['vendorarchdir'] : RbConfig::CONFIG['archdir'])) + '/raid'
+LIB_DIR = ENV['LIB_DIR'] || '/usr/local/lib'
+EINARC_LIB_DIR = (ENV['EINARC_LIB_DIR'] || LIB_DIR) + '/einarc'
+
+File.open('Makefile.config', 'w') { |f|
+	f.puts "# DO NOT EDIT: THIS IS GENERATED FILE! USE ./configure to REGENERATE!"
+	f.puts
+	f.puts "BIN_DIR=#{BIN_DIR}"
+	f.puts "RUBY_SHARE_DIR=#{RUBY_SHARE_DIR}"
+	f.puts "RUBY_LIB_DIR=#{RUBY_LIB_DIR}"
+	f.puts "EINARC_LIB_DIR=#{EINARC_LIB_DIR}"
+}

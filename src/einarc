@@ -1,0 +1,63 @@
+#!/usr/bin/env ruby
+
+$LOAD_PATH.unshift('.')
+
+require 'getoptlong'
+require 'raid/baseraid'
+
+opts = GetoptLong.new(
+	[ '--help', GetoptLong::NO_ARGUMENT ],
+	[ '--version', '-V', GetoptLong::NO_ARGUMENT ],
+	[ '--human', '-h', GetoptLong::NO_ARGUMENT ],
+	[ '--list', '-l', GetoptLong::NO_ARGUMENT ],
+	[ '--type', '-t', GetoptLong::REQUIRED_ARGUMENT ],
+	[ '--adapter', '-a', GetoptLong::REQUIRED_ARGUMENT ]
+)
+
+adapter_type = adapter_num = nil
+$humanize = false
+need_list = false
+
+opts.each { |opt, arg|
+	case opt
+	when '--help'
+		print <<EOF;
+Usage: einarc [options] <object> <command> [<operands>]
+
+Options:
+  -l, --list               list all adapters found in system and exit
+  -V, --version            print program version and exit
+      --help               show this text and exit
+  -h, --human              output human-readable information
+  -t, --type=TYPE          type (manufacturer) of RAID adapter
+  -a, --adapter=NUM        select the adapter if multiple adapters are present
+EOF
+		exit
+	when '--list'
+		need_list = true
+	when '--version'
+		print <<EOF;
+Universal disc controller command line interface
+Copyright (C) 2006 by Mikhail Yakshin
+EOF
+	when '--adapter'
+		adapter_num = arg.to_i
+	when '--type'
+		adapter_type = arg
+	when '--human'
+		$humanize = true
+    end
+}
+
+begin
+	if need_list
+		RAID::BaseRaid.list_adapters
+		exit
+	end
+	raise RAID::Error.new('Adapter type not specified: use --list to list all adapters and choose one') unless adapter_type
+	a = RAID::RAIDS[adapter_type].new(adapter_num)
+	a.handle_method(ARGV)
+rescue RAID::Error => e
+	puts e.to_s
+	exit 1
+end

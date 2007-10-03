@@ -1,0 +1,57 @@
+#!/usr/bin/env ruby
+require 'raid/baseraid'
+
+RAID::BaseRaid::query_adapters.each { |ad|
+	a = RAID::RAIDS[ad[:driver]].new(ad[:num])
+	a.logical_clear
+	sleep 2
+	pl = a._physical_list
+
+	levels = a.get_adapter_raidlevels(nil)
+
+	while not pl.empty? do
+		g = {}
+		leader_id = pl.keys[0]
+		leader = g[leader_id] = pl[leader_id]
+		pl.delete(leader_id)
+
+		min_size = leader[:size]
+
+		pl.each_pair { |pd_id, pd_value|
+			if pd_value[:model] == leader[:model]
+				g[pd_id] = pd_value
+				min_size = pd_value[:size] if pd_value[:size] < min_size
+				pl.delete(pd_id)
+			end
+		}
+
+		puts "Creating array on group #{g.keys.join(",")} with size #{min_size} MB"
+		case g.size
+		when 1 then a.logical_add('0', g.keys.join(','), min_size)
+		when 2 then a.logical_add('1', g.keys.join(','), min_size)
+		else
+			if levels.grep('5').empty?
+				pd = g.keys
+				while pd.size >= 2
+					d1 = pd.pop
+					d2 = pd.pop
+					puts "Creating RAID 1 on #{d1},#{d2} with size #{min_size - 1024} MB"
+					a.logical_add('1', "#{d1},#{d2}", min_size - 1024)
+				end
+				unless pd.empty?
+					a.logical_add('passthrough', pd.pop, min_size - 1024)
+				end
+			else
+				print "#{ g.keys.join(',')} - #{ min_size }\n"
+				a.logical_add('5', g.keys.join(','), min_size)
+			end
+		end
+		sleep 2
+	end
+
+	puts 'Ensuring that array is ready'
+	a.task_wait { |progress| puts "Waiting for array initialization: #{progress}" }
+	puts 'Restarting adapter'
+	a.adapter_restart
+	a.logical_list
+}

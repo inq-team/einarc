@@ -1,0 +1,13 @@
+#!/usr/bin/env ruby
+$LOAD_PATH.unshift('.')
+require 'raid/baseraid'
+
+RAID::BaseRaid::query_adapters.each { |ad|
+	a = RAID::RAIDS[ad[:driver]].new(ad[:num])
+	a.logical_clear
+	a._physical_list.each_key { |disc|
+		a.logical_add('passthrough', disc, nil)
+	}
+	a.adapter_restart
+	a.logical_list
+}
