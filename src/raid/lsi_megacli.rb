@@ -1,6 +1,6 @@
 module RAID
 	class LSIMegaCli < BaseRaid
-		MEGACLI = "#{$EINARC_LIB}/lsi_megacli/MegaCli";
+		MEGACLI = "#{$EINARC_LIB}/lsi_megacli/cli"
 
 		def initialize(adapter_num = nil)
 			adapter_num = 0 if !adapter_num

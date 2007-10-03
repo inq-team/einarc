@@ -18,8 +18,8 @@ install:
 
 tools: \
 	tools/areca/cli \
-	tools/lsi_megarc/megarc.bin \
-	tools/lsi_megacli/MegaCli
+	tools/lsi_megarc/cli \
+	tools/lsi_megacli/cli
 
 download: \
 	proprietary/V1.72.250_70306.zip \
@@ -40,7 +40,12 @@ veryclean: clean
 tools/areca/cli: proprietary/V1.72.250_70306.zip
 	mkdir -p tools/areca
 	unzip -j proprietary/V1.72.250_70306.zip -d tools/areca
-	chmod a+x tools/areca/*
+	chmod a+rx tools/areca/*
+	if [ "$(TARGET)" == x86_64 ]; then \
+		mv tools/areca/cli64 tools/areca/cli; \
+	else \
+		mv tools/areca/cli32 tools/areca/cli; \
+	fi
 
 proprietary/V1.72.250_70306.zip:
 	mkdir -p proprietary
@@ -50,10 +55,11 @@ proprietary/V1.72.250_70306.zip:
 # Module: lsi_megarc
 #===============================================================================
 
-tools/lsi_megarc/megarc.bin: proprietary/ut_linux_megarc_1.11.zip
+tools/lsi_megarc/cli: proprietary/ut_linux_megarc_1.11.zip
 	mkdir -p tools/lsi_megarc
 	unzip proprietary/ut_linux_megarc_1.11.zip megarc.bin -d tools/lsi_megarc
-	chmod a+x tools/lsi_megarc/megarc.bin
+	chmod a+rx tools/lsi_megarc/megarc.bin
+	mv tools/lsi_megarc/megarc.bin tools/lsi_megarc/cli
 
 proprietary/ut_linux_megarc_1.11.zip:
 	mkdir -p proprietary
@@ -63,13 +69,17 @@ proprietary/ut_linux_megarc_1.11.zip:
 # Module: lsi_megacli
 #===============================================================================
 
-tools/lsi_megacli/MegaCli: proprietary/1.01.27_Linux_MegaCli.zip
+tools/lsi_megacli/cli: proprietary/1.01.27_Linux_MegaCli.zip
 	mkdir -p tools/lsi_megacli
 	cd tools/lsi_megacli
 	unzip -j proprietary/1.01.27_Linux_MegaCli.zip -d tools/lsi_megacli
 	unzip tools/lsi_megacli/MegaCliLin.zip -d tools/lsi_megacli
 	rpm2cpio tools/lsi_megacli/MegaCli-1.01.27-0.i386.rpm | cpio -idv
-	mv opt/MegaRAID/MegaCli/MegaCli opt/MegaRAID/MegaCli/MegaCli64 tools/lsi_megacli/
+	if [ "$(TARGET)" == x86_64 ]; then \
+		mv opt/MegaRAID/MegaCli/MegaCli64 tools/lsi_megacli/cli; \
+	else \
+		mv opt/MegaRAID/MegaCli/MegaCli tools/lsi_megacli/cli; \
+	fi
 	rm -Rf opt tools/lsi_megacli/MegaCli-1.01.27-0.i386.rpm tools/lsi_megacli/MegaCliLin.zip
 
 proprietary/1.01.27_Linux_MegaCli.zip:
