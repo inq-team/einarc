@@ -19,12 +19,14 @@ install:
 tools: \
 	tools/areca/cli \
 	tools/lsi_megarc/cli \
-	tools/lsi_megacli/cli
+	tools/lsi_megacli/cli \
+	tools/adaptec_aaccli/cli
 
 download: \
 	proprietary/V1.72.250_70306.zip \
 	proprietary/ut_linux_megarc_1.11.zip \
-	proprietary/1.01.27_Linux_MegaCli.zip
+	proprietary/1.01.27_Linux_MegaCli.zip \
+	proprietary/5400s_s73_cli_v10.tar.Z
 
 clean:
 	rm -rf tools
