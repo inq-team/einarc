@@ -423,7 +423,10 @@ module RAID
 		def open_cli
 			@cli_r, @cli_w, @cli_pid = PTY.spawn("#{$EINARC_LIB}/areca/cli")
 			@cli_w.sync = true
-			$expect_verbose = true
+
+			# Turn on for debugging
+#			$expect_verbose = true
+
 			raise Error.new('areca: unable to initialize and get CLI prompt') unless @cli_r.expect(/^(CLI> )/)
 			run_cli "set curctrl=#{@adapter_num}" if @adapter_num
 		end
