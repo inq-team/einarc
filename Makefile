@@ -71,7 +71,6 @@ proprietary/ut_linux_megarc_1.11.zip:
 
 tools/lsi_megacli/cli: proprietary/1.01.27_Linux_MegaCli.zip
 	mkdir -p tools/lsi_megacli
-	cd tools/lsi_megacli
 	unzip -j proprietary/1.01.27_Linux_MegaCli.zip -d tools/lsi_megacli
 	unzip tools/lsi_megacli/MegaCliLin.zip -d tools/lsi_megacli
 	rpm2cpio tools/lsi_megacli/MegaCli-1.01.27-0.i386.rpm | cpio -idv
@@ -97,3 +96,20 @@ ext/lsi_mpt.so: ext/lsi_mpt.o
 	$(CC) -shared -rdynamic -Wl,-export-dynamic -o ext/lsi_mpt.so ext/lsi_mpt.o -ldl -lcrypt -lm -lc -lruby
 
 #	sh 'wget -P proprietary http://www.lsi.com/files/support/ssp/fusionmpt/Utilities/mptutil_linux_10200.zip'
+
+#===============================================================================
+# Module: adaptec_aaccli
+#===============================================================================
+
+tools/adaptec_aaccli/cli: proprietary/5400s_s73_cli_v10.tar.Z
+	mkdir -p tools/adaptec_aaccli
+	tar -xvZf proprietary/5400s_s73_cli_v10.tar.Z -C tools/adaptec_aaccli
+	rpm2cpio tools/adaptec_aaccli/aacapps-1.0-0.i386.rpm | cpio -idv
+	rm -rf tools/adaptec_aaccli
+	mkdir -p tools/adaptec_aaccli
+	mv usr/sbin/aaccli tools/adaptec_aaccli
+	rm -rf dev usr
+
+proprietary/5400s_s73_cli_v10.tar.Z:
+	mkdir -p proprietary
+	wget -P proprietary http://download.adaptec.com/raid/ccu/linux/5400s_s73_cli_v10.tar.Z
