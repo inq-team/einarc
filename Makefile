@@ -107,7 +107,7 @@ tools/adaptec_aaccli/cli: proprietary/5400s_s73_cli_v10.tar.Z
 	rpm2cpio tools/adaptec_aaccli/aacapps-1.0-0.i386.rpm | cpio -idv
 	rm -rf tools/adaptec_aaccli
 	mkdir -p tools/adaptec_aaccli
-	mv usr/sbin/aaccli tools/adaptec_aaccli
+	mv usr/sbin/aaccli tools/adaptec_aaccli/cli
 	rm -rf dev usr
 
 proprietary/5400s_s73_cli_v10.tar.Z:

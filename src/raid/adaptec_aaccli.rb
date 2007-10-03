@@ -1,6 +1,6 @@
 module RAID
 	class AdaptecAacCli < BaseRaid
-		AACCLI = "#{$EINARC_LIB}/adaptec_aaccli/aaccli";
+		AACCLI = "#{$EINARC_LIB}/adaptec_aaccli/cli"
 
 		def initialize(adapter_num = nil)
 			if adapter_num
