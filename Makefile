@@ -1,12 +1,14 @@
-include Makefile.config
+-include Makefile.config
 
 all: tools
+	if [ -z "$(EINARC_LIB_DIR)" ]; then echo 'Run ./configure first!'; false; fi
 	echo '$$EINARC_LIB = "$(EINARC_LIB_DIR)"' >src/raid/baseraid.rb
 	cat src/raid/baseraid.rb.in >>src/raid/baseraid.rb
 
 #all: ext/lsi_mpt.so
 
 install:
+	if [ -z "$(EINARC_LIB_DIR)" ]; then echo 'Run ./configure first!'; false; fi
 	mkdir -p $(DESTDIR)$(BIN_DIR) $(DESTDIR)$(RUBY_SHARE_DIR) $(DESTDIR)$(EINARC_LIB_DIR)
 	install -m755 src/einarc src/raid-wizard-passthrough src/raid-wizard-optimal $(DESTDIR)$(BIN_DIR)
 	cp src/raid/*.rb $(DESTDIR)$(RUBY_SHARE_DIR)
@@ -105,7 +107,7 @@ ext/lsi_mpt.so: ext/lsi_mpt.o
 
 tools/adaptec_aaccli/cli: proprietary/5400s_s73_cli_v10.tar.Z
 	mkdir -p tools/adaptec_aaccli
-	tar -xvZf proprietary/5400s_s73_cli_v10.tar.Z -C tools/adaptec_aaccli
+	tar -xvzf proprietary/5400s_s73_cli_v10.tar.Z -C tools/adaptec_aaccli
 	rpm2cpio tools/adaptec_aaccli/aacapps-1.0-0.i386.rpm | cpio -idv
 	rm -rf tools/adaptec_aaccli
 	mkdir -p tools/adaptec_aaccli
