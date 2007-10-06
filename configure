@@ -2,6 +2,8 @@
 
 require 'rbconfig'
 
+RbConfig = Config unless defined?(RbConfig)
+
 BIN_DIR = ENV['BIN_DIR'] || '/usr/local/bin'
 RUBY_SHARE_DIR = (ENV['RUBY_SHARE_DIR'] || RbConfig::CONFIG['sitelibdir']) + '/raid'
 RUBY_LIB_DIR = (ENV['RUBY_LIB_DIR'] || (RbConfig::CONFIG['vendorarchdir'] ? RbConfig::CONFIG['vendorarchdir'] : RbConfig::CONFIG['archdir'])) + '/raid'
