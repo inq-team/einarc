@@ -30,12 +30,19 @@ download: \
 	proprietary/1.01.27_Linux_MegaCli.zip \
 	proprietary/5400s_s73_cli_v10.tar.Z
 
+doc: doc/xhtml
+
+doc/xhtml: doc/manual.txt
+	mkdir -p doc/xhtml
+	a2x -f xhtml -d doc/xhtml doc/manual.txt
+	cp -r doc/images doc/xhtml
+
 clean:
 	rm -rf tools
 	rm -f ext/lsi_mpt.o ext/lsi_mpt.so
 
 veryclean: clean
-	rm -rf proprietary Makefile.config
+	rm -rf proprietary Makefile.config doc/xhtml
 
 #===============================================================================
 # Module: areca
