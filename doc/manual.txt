@@ -142,6 +142,28 @@ TODO
 [[object_interface]]
 == Object interface
 
+Einarc exposes a relatively simple and straight-forward object model for
+an end-user.
+
+.Einarc objects
+image::images/einarc-objects.png[Einarc objects]
+
+Every computer (host) may have one or more adapters (object `adapter`).
+Adapters provide RAID services as logical discs (object `logical`) that
+are usually seen in OS as individual devnodes. Logical discs may include
+one or more physical discs (object `physical`). Physical discs are
+usually hidden from the OS and are accessible only through proprietary
+CLI. Adapters also may keep some history of what events happened in the
+past and what objects were involved (object `log`). Finally, adapters
+being little computers with their own operating system and multi-tasking
+may perform separate background tasks, such as building/rebuilding or
+checking of the array (object `task`).
+
+Each of these objects have a couple of methods described below. Some of
+these objects have named properties that can be read using `get` and
+written using `set`. Some of the properties are read-only (only `get`
+would work), some are write-only (only `set` would work).
+
 === query (special)
 
 A special function that lists available adapters of current
