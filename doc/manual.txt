@@ -103,6 +103,10 @@ just calling "einarc". Consider this session:
  areca   1       ARC-1160        PCI
  $ einarc -h -t areca
  Object not specified; available objects: logical, log, adapter, task, physical
+
+Let's start with showing all logical drives. We don't know what method
+we should choose, but Einarc will give a hint:
+
  $ einarc -h -t areca logical
  Command not specified; available commands: list, add, delete, clear, get, set
  $ einarc -h -t areca logical list
@@ -111,6 +115,12 @@ just calling "einarc". Consider this session:
  2  1+0          0:6,0:7                        190734.86 MB          normal
  3  5            0:9,0:10,0:11,0:12,0:13       1907348.63 MB          normal
  4  1+0          0:15,0:16                      476837.16 MB          normal
+
+More complex example: let's check if a physical drive is hotspare drive
+or not. Such simple boolean flag is available as a property of
+`physical` object, and Einarc will give a hint on how to get it and when
+to add a reference to particular physical disc ID:
+
  $ einarc -h -t areca physical
  Command not specified; available commands: list, get, set
  $ einarc -h -t areca physical get
@@ -119,6 +129,11 @@ just calling "einarc". Consider this session:
  Property not specified; available properties: hotspare
  $ einarc -h -t areca physical get 0:1 hotspare
  0
+
+Getting a property of adapter is in fact even simpler: there shouldn't
+be any IDs. Here we'll get a list of all RAID levels a particular
+adapter supports:
+
  $ einarc -h -t areca adapter
  Command not specified; available commands: info, restart, get, set
  $ einarc -h -t areca adapter get
@@ -268,7 +283,9 @@ Output::
 
 === physical
 
-"physical" is an object to access physical disc drives attached to adapter. It's possible to get list with *info* and read and write it's properties and settings with *get* and *set*.
+"physical" is an object to access physical disc drives attached to
+adapter. It's possible to get list with `list` and read and write it's
+properties and settings with `get` and `set`.
 
 *Physical disc address* is *a*`:`*b*, where *a* is channel number and *b* is a device number on that channel. Usually, it's best to assume that it's a string to pass through.
 
@@ -281,8 +298,10 @@ Properties:
 
 Shows a list of all physical disc drives attached to adapter.
 
-*Input*:: none
-*Output*:: info on one disc drive per line, tab-separated:
+Input::
+  none
+Output::
+  info on one disc drive per line, tab-separated:
 +
 [grid="all"]
 '--------------------.----------------------.--------------------------------------------.---------------.----------.-----------
@@ -295,18 +314,20 @@ Physical disc address Drive vendor and model Drive version, revision, firmware, 
 
 ==== get
 
-*Input*::
+Input::
   * physical disc address
   * name of property
-*Output*:: value of property
+Output::
+  value of property
 
 ==== set
 
-*Input*::
+Input::
   * physical disc address
   * name of property
   * value of property
-*Output*:: none normally, error message if error happened
+Output::
+  none normally, error message if error happened
 
 === logical
 
@@ -323,8 +344,10 @@ Properties:
 
 Displays a list of logical drives.
 
-*Input*:: none
-*Output*:: info on one logical drive per line, tab-separated:
+Input::
+  none
+Output::
+  info on one logical drive per line, tab-separated:
 +
 [grid="all"]
 '---------------.-----------.----------------------------------------.-------------.--------
@@ -345,36 +368,43 @@ Input::
   * *(optional)* Size of logical discs to create, comma-separated, for example `200,3500`. By default, create one logical disc with maximal size. Not applicable while creating passthrough disc.
   * *(optional)* Properties, comma-separated pairs of `name=value`, for example `stripe=64,cache=readahead`.
 Output::
-  none normally, error message if error happened
+  none normally, error message if error happened.
 
 ==== delete
 
 Deletes a logical drive.
 
-*Input*:: logical drive ID.
-*Output*:: none normally, error message if error happened
+Input::
+  logical drive ID.
+Output::
+  none normally, error message if error happened.
 
 ==== clear
 
-Deletes all logical drives. Leaves array of free physical discs, ready for creation of new array.
+Deletes all logical drives. Leaves array of free physical discs, ready
+for creation of new array.
 
-*Input*:: none.
-*Output*:: none normally, error message if error happened
+Input::
+  none.
+Output::
+  none normally, error message if error happened.
 
 ==== get
 
-*Input*::
+Input::
   * logical drive ID
   * name of property
-*Output*:: value of property
+Output::
+  value of property
 
 ==== set
 
-*Input*::
+Input::
   * logical drive ID
   * name of property
   * value of property
-*Output*:: none normally, error message if error happened
+Output::
+  none normally, error message if error happened
 
 === task
 
@@ -385,8 +415,10 @@ such as building or checking the logical disc.
 
 Displays a list of tasks.
 
-*Input*:: none
-*Output*:: info on one task per line, tab-separated:
+Input::
+  none
+Output::
+  info on one task per line, tab-separated:
 +
 [grid="all"]
 '------.-----.--------.--------
@@ -401,8 +433,10 @@ Task ID Where What     Progress
 Pauses further execution until all tasks are finished (it does so by
 waiting while regularly polling the task list for changes).
 
-*Input*:: none
-*Output*:: none
+Input::
+  none
+Output::
+  none
 
 == Planned features
 
