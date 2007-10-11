@@ -21,8 +21,8 @@ install:
 tools: \
 	tools/areca/cli \
 	tools/lsi_megarc/cli \
-	tools/lsi_megacli/cli \
-	tools/adaptec_aaccli/cli
+	tools/lsi_megacli/cli
+#	tools/adaptec_aaccli/cli
 
 download: \
 	proprietary/V1.72.250_70306.zip \
@@ -54,8 +54,10 @@ tools/areca/cli: proprietary/V1.72.250_70306.zip
 	chmod a+rx tools/areca/*
 	if [ "$(TARGET)" == x86_64 ]; then \
 		mv tools/areca/cli64 tools/areca/cli; \
+		rm -f tools/areca/cli32; \
 	else \
 		mv tools/areca/cli32 tools/areca/cli; \
+		rm -f tools/areca/cli64; \
 	fi
 
 proprietary/V1.72.250_70306.zip:
@@ -124,3 +126,11 @@ tools/adaptec_aaccli/cli: proprietary/5400s_s73_cli_v10.tar.Z
 proprietary/5400s_s73_cli_v10.tar.Z:
 	mkdir -p proprietary
 	wget -P proprietary http://download.adaptec.com/raid/ccu/linux/5400s_s73_cli_v10.tar.Z
+
+#===============================================================================
+# Module: adaptec_arcconf
+#===============================================================================
+
+proprietary/asm_linux_v5.01.16862.rpm:
+	mkdir -p proprietary
+	wget -P proprietary http://download.adaptec.com/raid/storage_manager/asm_linux_v5.01.16862.rpm
