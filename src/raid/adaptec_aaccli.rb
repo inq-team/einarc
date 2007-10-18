@@ -111,6 +111,12 @@ module RAID
 # 0    Volume 10.0GB            Valid   1:01:0 64.0KB:10.0GB                               0  062607 13:23:10
 # /dev/sdb                              1:02:0 64.0KB:15.0GB                               1  062607 13:37:59
 #                                       1:03:0 64.0KB:15.0GB                               2  062607 13:37:59
+
+#Num          Total  Oth Stripe          Scsi   Partition                                      Creation
+#Label Type   Size   Ctr Size   Usage   C:ID:L Offset:Size   State   RO Lk Task    Done%  Ent Date   Time
+#----- ------ ------ --- ------ ------- ------ ------------- ------- -- -- ------- ------ --- ------ --------
+# 0    Volume 68.4GB            Valid   0:00:0 64.0KB:68.4GB                               0  101807 13:09:58
+# /dev/sda             1
 				when /^ ? ?(\d+)\s*(.......)(.......)(....)(.......)(........)(.......)(..............)/
 					num = $1.to_i
 					state = $6.strip.downcase
@@ -128,8 +134,8 @@ module RAID
 						end,
 						:state => state,
 					}
-				when /^ ? ?\/dev\/(\S+)\s+(\S+)\s+(.*?)/
-					ld[:dev] = $1
+				when /^ ? ?\/dev\/(.............)...\s+(\S+)\s+(.*?)/
+					ld[:dev] = $1.strip
 					ld[:physical] << cidl2physical($2)
 				when /^ ? ?\/dev\/(\S*)/
 					ld[:dev] = $1
