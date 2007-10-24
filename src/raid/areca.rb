@@ -28,6 +28,19 @@ module RAID
 
 		# ======================================================================
 
+#The System Information
+#===========================================
+#Main Processor     : 500MHz
+#CPU ICache Size    : 32KB
+#CPU DCache Size    : 32KB
+#System Memory      : 256MB/333MHz
+#Firmware Version   : V1.39 2006-2-9
+#BOOT ROM Version   : V1.39 2006-1-4
+#Serial Number      : Yxxxxxxxxxxxxxxx
+#Controller Name    : ARC-1160
+#Current IP Address : 192.168.10.111
+#===========================================
+#GuiErrMsg<0x00>: Success.
 		def _adapter_info
 			res = {}
 			run_cli('sys info').each { |l|
