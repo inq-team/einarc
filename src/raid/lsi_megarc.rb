@@ -43,6 +43,10 @@ module RAID
 			res = {}
 			out.join("\n").split(/\n/).each { |x|
 				key, value = x.split(/\t/)
+				key = case key
+		                when 'Board SN' then 'Serial number'
+		                else key
+		                end
 				res[key] = value
 			}
 			return res

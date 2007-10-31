@@ -47,6 +47,10 @@ module RAID
 				next if l =~ /=======/
 				next if l =~ /^The System Information/
 				key, value = l.split(/\s+:\s+/)
+				key = case key
+		                when 'Serial Number' then 'Serial number'
+		                else key
+		                end
 				res[key] = value
 			}
 			raise Error.new('areca: adapter info failed') if $?.exitstatus != 0
