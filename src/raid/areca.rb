@@ -53,7 +53,6 @@ module RAID
 		                end
 				res[key] = value
 			}
-			raise Error.new('areca: adapter info failed') if $?.exitstatus != 0
 			return res
 		end
 
