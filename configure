@@ -1,22 +1,67 @@
 #!/usr/bin/env ruby
 
 require 'rbconfig'
-
 RbConfig = Config unless defined?(RbConfig)
 
-BIN_DIR = ENV['BIN_DIR'] || '/usr/local/bin'
-RUBY_SHARE_DIR = (ENV['RUBY_SHARE_DIR'] || RbConfig::CONFIG['sitelibdir']) + '/raid'
-RUBY_LIB_DIR = (ENV['RUBY_LIB_DIR'] || (RbConfig::CONFIG['vendorarchdir'] ? RbConfig::CONFIG['vendorarchdir'] : RbConfig::CONFIG['archdir'])) + '/raid'
-LIB_DIR = ENV['LIB_DIR'] || '/usr/local/lib'
-EINARC_LIB_DIR = (ENV['EINARC_LIB_DIR'] || LIB_DIR) + '/einarc'
-TARGET = ENV['TARGET'] || `uname -m`
+require 'optparse'
+
+#===============================================================================
+# Initialize options from environment and with detected defaults
+#===============================================================================
+
+options = {
+	'BIN_DIR' => ENV['BIN_DIR'] || '/usr/local/bin',
+	'RUBY_SHARE_DIR' => (ENV['RUBY_SHARE_DIR'] || RbConfig::CONFIG['sitelibdir']) + '/raid',
+	'RUBY_LIB_DIR' => (ENV['RUBY_LIB_DIR'] || (RbConfig::CONFIG['vendorarchdir'] ? RbConfig::CONFIG['vendorarchdir'] : RbConfig::CONFIG['archdir'])) + '/raid',
+	'LIB_DIR' => ENV['LIB_DIR'] || '/usr/local/lib',
+	'TARGET' => ENV['TARGET'] || `uname -m`.chomp,
+}
+options['EINARC_LIB_DIR'] = (ENV['EINARC_LIB_DIR'] || options['LIB_DIR']) + '/einarc'
+
+#===============================================================================
+# Parse command-line
+#===============================================================================
+
+OptionParser.new { |opts|
+	opts.banner = 'Usage: ./configure [OPTION]...'
+
+	opts.on('--target=TARGET', "target to build for [#{options['TARGET']}]") { |t| options['TARGET'] = t }
+	opts.on('--bindir=DIR', "user executables [#{options['BIN_DIR']}]") { |d| options['BIN_DIR'] = d }
+	opts.on('--rubysharedir=DIR', "ruby share directory [#{options['RUBY_SHARE_DIR']}]") { |d| options['RUBY_SHARE_DIR'] = d }
+	opts.on('--rubylibdir=DIR', "ruby binary extensions directory [#{options['RUBY_LIB_DIR']}]") { |d| options['RUBY_LIB_DIR'] = d }
+	opts.on('--einarclibdir=DIR', "proprietary extensions directory [#{options['EINARC_LIB_DIR']}]") { |d| options['EINARC_LIB_DIR'] = d }
+
+	opts.on_tail('-h', '--help', 'Show this message') { puts opts; exit }
+}.parse!
+
+#===============================================================================
+# Output results
+#===============================================================================
+
+puts <<__EOF__
+Configure succeeded! 
+
+Directories
+-----------
+User executables:       #{options['BIN_DIR']}
+Ruby share:             #{options['RUBY_SHARE_DIR']}
+Ruby libraries:         #{options['RUBY_LIB_DIR']}
+Proprietary extensions: #{options['EINARC_LIB_DIR']}
+
+Modules
+-------
+
+Now run 'make' to build Einarc and 'make install' to install it.
+__EOF__
 
 File.open('Makefile.config', 'w') { |f|
-	f.puts "# DO NOT EDIT: THIS IS GENERATED FILE! USE ./configure to REGENERATE!"
-	f.puts
-	f.puts "BIN_DIR=#{BIN_DIR}"
-	f.puts "RUBY_SHARE_DIR=#{RUBY_SHARE_DIR}"
-	f.puts "RUBY_LIB_DIR=#{RUBY_LIB_DIR}"
-	f.puts "EINARC_LIB_DIR=#{EINARC_LIB_DIR}"
-	f.puts "TARGET=#{TARGET}"
+	f.puts <<__EOF__
+# DO NOT EDIT: IT'S A GENERATED FILE! USE ./configure to REGENERATE!
+
+BIN_DIR=#{options['BIN_DIR']}
+RUBY_SHARE_DIR=#{options['RUBY_SHARE_DIR']}
+RUBY_LIB_DIR=#{options['RUBY_LIB_DIR']}
+EINARC_LIB_DIR=#{options['EINARC_LIB_DIR']}
+TARGET=#{options['TARGET']}
+__EOF__
 }
