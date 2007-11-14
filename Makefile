@@ -18,6 +18,18 @@ install:
 #		cp 'ext/lsi_mpt.so', INSTALL_DIR_PREFIX + LIB_DIR
 #	end
 
+# Special target to get proprietary download confirmation interactively
+proprietary/agreed:
+	@echo 'Unfortunately, Einarc uses some proprietary command-line utilities to'
+	@echo 'control storages. Using it means that you agree with respective licenses'
+	@echo 'and download agreements. For your convenience, they are available in'
+	@echo 'agreements/ directory. Please read them and agree before proceeding.'
+	@echo
+	@echo 'Type "yes" if you have read and agreed to all the respective licenses.'
+	@echo
+	@echo -n 'Do you agree? '
+	@read agree && if [ "$$agree" != yes ]; then echo "Einarc can't continue unless you'll agree"; false; else echo "User $$USER has agreed to all the licenses on `date`" >proprietary/agreed; fi
+
 tools: \
 	tools/areca/cli \
 	tools/lsi_megarc/cli \
@@ -60,7 +72,7 @@ tools/areca/cli: proprietary/V1.72.250_70306.zip
 		rm -f tools/areca/cli64; \
 	fi
 
-proprietary/V1.72.250_70306.zip:
+proprietary/V1.72.250_70306.zip: proprietary/agreed
 	mkdir -p proprietary
 	wget -P proprietary ftp://ftp.areca.com.tw/RaidCards/AP_Drivers/Linux/CLI/V1.72.250_70306.zip
 
@@ -74,7 +86,7 @@ tools/lsi_megarc/cli: proprietary/ut_linux_megarc_1.11.zip
 	chmod a+rx tools/lsi_megarc/megarc.bin
 	mv tools/lsi_megarc/megarc.bin tools/lsi_megarc/cli
 
-proprietary/ut_linux_megarc_1.11.zip:
+proprietary/ut_linux_megarc_1.11.zip: proprietary/agreed
 	mkdir -p proprietary
 	wget -P proprietary http://www.lsi.com/files/support/rsa/utilities/megaconf/ut_linux_megarc_1.11.zip
 
@@ -94,7 +106,7 @@ tools/lsi_megacli/cli: proprietary/1.01.27_Linux_MegaCli.zip
 	fi
 	rm -Rf opt tools/lsi_megacli/MegaCli-1.01.27-0.i386.rpm tools/lsi_megacli/MegaCliLin.zip
 
-proprietary/1.01.27_Linux_MegaCli.zip:
+proprietary/1.01.27_Linux_MegaCli.zip: proprietary/agreed
 	mkdir -p proprietary
 	wget -P proprietary http://www.lsi.com/support/downloads/megaraid/miscellaneous/linux/1.01.27_Linux_MegaCli.zip
 
@@ -123,7 +135,7 @@ tools/adaptec_aaccli/cli: proprietary/5400s_s73_cli_v10.tar.Z
 	mv usr/sbin/aaccli tools/adaptec_aaccli/cli
 	rm -rf dev usr
 
-proprietary/5400s_s73_cli_v10.tar.Z:
+proprietary/5400s_s73_cli_v10.tar.Z: proprietary/agreed
 	mkdir -p proprietary
 	wget -P proprietary http://download.adaptec.com/raid/ccu/linux/5400s_s73_cli_v10.tar.Z
 
@@ -131,6 +143,6 @@ proprietary/5400s_s73_cli_v10.tar.Z:
 # Module: adaptec_arcconf
 #===============================================================================
 
-proprietary/asm_linux_v5.01.16862.rpm:
+proprietary/asm_linux_v5.01.16862.rpm: proprietary/agreed
 	mkdir -p proprietary
 	wget -P proprietary http://download.adaptec.com/raid/storage_manager/asm_linux_v5.01.16862.rpm
