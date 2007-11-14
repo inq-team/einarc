@@ -6,12 +6,17 @@ Requirements
 
 Build requirements:
 	wget
+	gzip / gunzip
+	tar
 	unzip
 	ruby
 	make
 
 Runtime requirements:
 	ruby
+
+Recommended:
+	asciidoc / a2x (to build documentation)
 
 Licensing
 =========
