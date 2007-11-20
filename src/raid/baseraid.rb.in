@@ -195,18 +195,6 @@ module RAID
 			}
 		end
 	end
-
-	# Load all supported drivers
-	RAIDS = {
-		'areca' => 'Areca',
-		'lsi_megarc' => 'LSIMegaRc',
-#		'lsi_mpt' => 'LSIMPT',
-		'lsi_megacli' => 'LSIMegaCli',
-		'adaptec_aaccli' => 'AdaptecAacCli',
-#		'software' => 'Software',
-	}
-	RAIDS.each_pair { |k, v|
-		require "raid/#{k}"
-		RAIDS[k] = RAID::const_get(v)
-	}
 end
+
+require 'raid/config'
