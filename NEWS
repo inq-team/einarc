@@ -1,0 +1,14 @@
+== v1.1
+
+* Added documentation in package
+* Brand-new configure: now everything can be controlled from
+command-line parameters, individual modules can be enabled/disabled at
+compile time.
+* Updated download/build mechanism: it asks for license agreement
+interactively. For non-interactive builds, just touch proprietary/agreed
+file.
+* Bugfixes in lsi_megarc, adaptec_aaccli modules
+* Compatibility with older Ruby (<1.8.6)
+
+== v1.0
+* First public release
