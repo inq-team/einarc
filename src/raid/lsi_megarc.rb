@@ -216,11 +216,13 @@ module RAID
 				when /Adapter \d+, Channel (\d+), Target ID (\d+)/
 					phys = @physical["#{$1}:#{$2}"]
 				when /Type\s*:\s*(.*?)\s+Vendor\s*:\s*(.*?)\s*$/
-					phys[:vendor] = $2
+					phys[:vendor] = $2 if phys
 				when /Product\s*:\s*(.*?)\s+Revision\s*:\s*(.*?)\s*$/
-					phys[:model] = $1
-					phys[:model] = phys[:vendor] + ' ' + phys[:model] if phys[:vendor]
-					phys[:revision] = $2
+					if phys
+						phys[:model] = $1
+						phys[:model] = phys[:vendor] + ' ' + phys[:model] if phys[:vendor]
+						phys[:revision] = $2
+					end
 				end
 			}
 
@@ -229,7 +231,7 @@ module RAID
 				when /Adapter \d+, Channel (\d+), Target ID (\d+)/
 					phys = @physical["#{$1}:#{$2}"]
 				when /PhysDrvSerial#: (.*)/
-					phys[:serial] = $1
+					phys[:serial] = $1 if phys
 				end
 			}
 
