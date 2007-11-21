@@ -1,10 +1,6 @@
 -include Makefile.config
 
-all: tools
-	if [ -z "$(EINARC_LIB_DIR)" ]; then echo 'Run ./configure first!'; false; fi
-	echo '$$EINARC_LIB = "$(EINARC_LIB_DIR)"' >src/raid/baseraid.rb
-	cat src/raid/baseraid.rb.in >>src/raid/baseraid.rb
-
+all: tools src/raid/config.rb
 #all: ext/lsi_mpt.so
 
 install:
@@ -28,13 +24,7 @@ proprietary/agreed:
 	@echo 'Type "yes" if you have read and agreed to all the respective licenses.'
 	@echo
 	@echo -n 'Do you agree? '
-	@read agree && if [ "$$agree" != yes ]; then echo "Einarc can't continue unless you'll agree"; false; else echo "User $$USER has agreed to all the licenses on `date`" >proprietary/agreed; fi
-
-tools: \
-	tools/areca/cli \
-	tools/lsi_megarc/cli \
-	tools/lsi_megacli/cli
-#	tools/adaptec_aaccli/cli
+	@read agree && if [ "$$agree" != yes ]; then echo "Einarc can't continue unless you'll agree"; false; else mkdir -p proprietary && echo "User $$USER has agreed to all the licenses on `date`" >proprietary/agreed; fi
 
 download: \
 	proprietary/V1.72.250_70306.zip \
