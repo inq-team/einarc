@@ -116,18 +116,18 @@ ext/lsi_mpt.so: ext/lsi_mpt.o
 # Module: adaptec_aaccli
 #===============================================================================
 
-tools/adaptec_aaccli/cli: proprietary/5400s_s73_cli_v10.tar.Z
+tools/adaptec_aaccli/cli: proprietary/Adaptec_Storage_Manager-Linux_v2.10.00.tgz
 	mkdir -p tools/adaptec_aaccli
-	tar -xvzf proprietary/5400s_s73_cli_v10.tar.Z -C tools/adaptec_aaccli
-	rpm2cpio tools/adaptec_aaccli/aacapps-1.0-0.i386.rpm | cpio -idv
+	tar -xvzf proprietary/Adaptec_Storage_Manager-Linux_v2.10.00.tgz -C tools/adaptec_aaccli
+	rpm2cpio tools/adaptec_aaccli/aacapps-4.1-0.i386.rpm | cpio -idv
 	rm -rf tools/adaptec_aaccli
 	mkdir -p tools/adaptec_aaccli
 	mv usr/sbin/aaccli tools/adaptec_aaccli/cli
 	rm -rf dev usr
 
-proprietary/5400s_s73_cli_v10.tar.Z: proprietary/agreed
+proprietary/Adaptec_Storage_Manager-Linux_v2.10.00.tgz: proprietary/agreed
 	mkdir -p proprietary
-	wget -P proprietary http://download.adaptec.com/raid/ccu/linux/5400s_s73_cli_v10.tar.Z
+	wget -P proprietary http://download.adaptec.com/raid/aac/sm/Adaptec_Storage_Manager-Linux_v2.10.00.tgz
 
 #===============================================================================
 # Module: adaptec_arcconf
