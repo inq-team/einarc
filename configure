@@ -11,8 +11,8 @@ require 'optparse'
 
 RAIDS = {
 	'areca' => {
+		:desc => 'Areca adapters',
 		:classname => 'Areca',
-		:desc => 'older LSI MegaRAID SCSI/SATA adapters',
 		:proprietary => true,
 	},
 	'lsi_megarc' => {
