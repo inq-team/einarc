@@ -181,11 +181,11 @@ module RAID
 				when /^Coerced Size:\s*(\d+)MB/
 					phys[:size] = $1.to_i
 				when /^Inquiry Data: ATA/
-		                        phys[:model] = l[22..37].strip
-		                        phys[:serial] = l[42..61].strip
-		                when /^Inquiry Data:/
-		                        #phys[:vendor] = l[14..21].strip
-		                        phys[:model] = l[14..21].strip+' '+l[22..37].strip
+					phys[:model] = l[22..37].strip
+					phys[:serial] = l[42..61].strip
+				when /^Inquiry Data:/
+					#phys[:vendor] = l[14..21].strip
+					phys[:model] = l[14..21].strip+' '+l[22..37].strip
 					phys[:revision] = l[38..41].strip
 					phys[:serial] = l[42..61].strip				
 				when /^Firmware state: (.*?)$/
