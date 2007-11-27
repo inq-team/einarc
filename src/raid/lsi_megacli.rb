@@ -167,7 +167,7 @@ module RAID
 
 		def _physical_list
 			@physical = {}
-			enclosure = nil
+			enclosure = 0
 			slot = nil
 			phys = nil
 
