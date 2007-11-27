@@ -180,10 +180,14 @@ module RAID
 					phys = @physical["#{enclosure}:#{slot}"] = {}
 				when /^Coerced Size:\s*(\d+)MB/
 					phys[:size] = $1.to_i
-				when /^Inquiry Data:\s*(.*?)\s+(.*)\s+(\S+?)\s+(\S+?)$/
-					phys[:model] = $2
-					phys[:revision] = $3
-					phys[:serial] = $4
+				when /^Inquiry Data: ATA/
+		                        phys[:model] = l[22..37].strip
+		                        phys[:serial] = l[42..61].strip
+		                when /^Inquiry Data:/
+		                        #phys[:vendor] = l[14..21].strip
+		                        phys[:model] = l[14..21].strip+' '+l[22..37].strip
+					phys[:revision] = l[38..41].strip
+					phys[:serial] = l[42..61].strip				
 				when /^Firmware state: (.*?)$/
 					phys[:state] = $1.downcase
 					phys[:state] = 'free' if phys[:state] == 'unconfigured(good)'
