@@ -173,11 +173,19 @@ module RAID
 
 			run("-pdlist #{@args}").each { |l|
 				case l
-				when /^Enclosure Device ID:\s*(\d+)$/
-					enclosure = $1.to_i
+				when /^Enclosure Device ID:\s*(.+)$/
+					enclosure = $1
 				when /^Slot Number:\s*(\d+)$/
 					slot = $1.to_i
-					phys = @physical["#{enclosure}:#{slot}"] = {}
+					case enclosure
+					when /\d+/
+						pd_name = "#{enclosure}:#{slot}"
+					when 'N/A'
+						pd_name = ":#{slot}"
+					else
+						raise Error.new("Unable to parse enclosure: #{enclosure}")
+					end
+					phys = @physical[pd_name] = {}
 				when /^Coerced Size:\s*(\d+)MB/
 					phys[:size] = $1.to_i
 				when /^Inquiry Data: ATA/
