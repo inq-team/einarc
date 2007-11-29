@@ -177,11 +177,11 @@ module RAID
 					enclosure = $1
 				when /^Slot Number:\s*(\d+)$/
 					slot = $1.to_i
-					case enclosure
+					pd_name = case enclosure
 					when /\d+/
-						pd_name = "#{enclosure}:#{slot}"
+						"#{enclosure}:#{slot}"
 					when 'N/A'
-						pd_name = ":#{slot}"
+						":#{slot}"
 					else
 						raise Error.new("Unable to parse enclosure: #{enclosure}")
 					end
