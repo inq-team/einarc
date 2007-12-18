@@ -84,21 +84,20 @@ proprietary/ut_linux_megarc_1.11.zip: proprietary/agreed
 # Module: lsi_megacli
 #===============================================================================
 
-tools/lsi_megacli/cli: proprietary/1.01.27_Linux_MegaCli.zip
+tools/lsi_megacli/cli: proprietary/1.01.39_Linux_Cli.zip
 	mkdir -p tools/lsi_megacli
-	unzip -j proprietary/1.01.27_Linux_MegaCli.zip -d tools/lsi_megacli
-	unzip tools/lsi_megacli/MegaCliLin.zip -d tools/lsi_megacli
-	rpm2cpio tools/lsi_megacli/MegaCli-1.01.27-0.i386.rpm | cpio -idv
+	unzip -j proprietary/1.01.39_Linux_Cli.zip -d tools/lsi_megacli
+	rpm2cpio tools/lsi_megacli/MegaCli-1.01.39-0.i386.rpm | cpio -idv
 	if [ "$(TARGET)" == x86_64 ]; then \
 		mv opt/MegaRAID/MegaCli/MegaCli64 tools/lsi_megacli/cli; \
 	else \
 		mv opt/MegaRAID/MegaCli/MegaCli tools/lsi_megacli/cli; \
 	fi
-	rm -Rf opt tools/lsi_megacli/MegaCli-1.01.27-0.i386.rpm tools/lsi_megacli/MegaCliLin.zip
+	rm -Rf opt tools/lsi_megacli/MegaCli-1.01.39-0.i386.rpm tools/lsi_megacli/MegaCliLin.zip
 
-proprietary/1.01.27_Linux_MegaCli.zip: proprietary/agreed
+proprietary/1.01.39_Linux_Cli.zip: proprietary/agreed
 	mkdir -p proprietary
-	wget -P proprietary http://www.lsi.com/support/downloads/megaraid/miscellaneous/linux/1.01.27_Linux_MegaCli.zip
+	wget -P proprietary http://www.lsi.com/support/downloads/megaraid/miscellaneous/linux/1.01.39_Linux_Cli.zip
 
 #===============================================================================
 # Module: lsi_mpt
