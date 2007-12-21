@@ -319,7 +319,7 @@ module RAID
 		private
 
 		def megarc(command)
-			out = `#{MEGARC} #{command}`.split("\n")
+			out = `#{MEGARC} #{command} -nolog`.split("\n")
 			out.slice!(0..9)
 			out.collect! { |l| l.strip! }
 			out.delete_if { |l| l =~ /^Finding Devices On / or l =~ /Scanning Ha / or l =~ /^\*\*\*\*\*\*/ or l.nil? }
@@ -328,7 +328,7 @@ module RAID
 		end
 
 		def self.megarc(command)
-			out = `#{MEGARC} #{command}`.split("\n")
+			out = `#{MEGARC} #{command} -nolog`.split("\n")
 			out.slice!(0..10)
 			return out
 		end
