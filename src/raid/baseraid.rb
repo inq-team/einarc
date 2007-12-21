@@ -18,6 +18,7 @@ module RAID
 			'physical' => %w(list get set),
 			'logical' => %w(list add delete clear get set),
 			'task' => %w(list wait),
+			'bbu' => %w(info)
 		}
 
 		def self.query_adapters
@@ -118,6 +119,17 @@ module RAID
 					puts "#{num}\t#{d[:model]}\t#{d[:revision]}\t#{d[:serial]}\t#{d[:size]}\t#{d[:state]}"
 				}
 			end
+		end
+		
+		def bbu_info
+		    info = _bbu_info
+		    if $humanize then
+			puts "Manufacturer   Model    Serial  Capacity"
+			printf("%-15s%-9s%-8s%-15s\n",
+			info[:vendor], info[:device], info[:serial], info[:capacity])
+		    else
+			puts "#{info[:vendor]}\t#{info[:device]}\t#{info[:serial]}\t#{info[:capacity]}"				
+		    end
 		end
 
 		def handle_property(obj_name, command, obj_num, prop_name, value = nil)

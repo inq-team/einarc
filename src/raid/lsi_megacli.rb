@@ -307,6 +307,25 @@ module RAID
 		end
 
 		# ======================================================================
+		
+		def _bbu_info
+			info = {}
+			run("-AdpBbuCmd -GetBbuDesignInfo #{@args}").each do |l|
+			    case l
+			    when /^Manufacture Name:\s*(.+)$/
+				info[:vendor] = $1
+			    when /^Serial Number:\s*(.+)$/
+				info[:serial] = $1
+			    when/^Design Capacity:\s*(.+)$/
+				info[:capacity] = $1
+			    when/^Device Name:\s*(.+)$/
+				info[:device] = $1
+			    end
+			end
+			info		    
+		end
+		
+		# ======================================================================
 
 		private
 
