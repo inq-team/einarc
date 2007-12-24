@@ -44,7 +44,7 @@ clean:
 	rm -f ext/lsi_mpt.o ext/lsi_mpt.so
 
 veryclean: clean
-	rm -rf proprietary Makefile.config doc/xhtml
+	rm -rf proprietary Makefile.config src/raid/config.rb doc/xhtml
 
 #===============================================================================
 # Module: areca
