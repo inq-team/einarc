@@ -74,11 +74,12 @@ begin
 		opts.on('--rubylibdir=DIR', "ruby binary extensions directory [#{options['RUBY_LIB_DIR']}]") { |d| options['RUBY_LIB_DIR'] = d }
 		opts.on('--einarclibdir=DIR', "proprietary extensions directory [#{options['EINARC_LIB_DIR']}]") { |d| options['EINARC_LIB_DIR'] = d }
 		opts.on('--modules=LIST', "a comma-separated list of storage support modules to build [all]:#{module_help}") { |d|
-			options['modules'] = d.split(/,/) unless d == 'all'
+			options['modules'] = d.split(/, */) unless d == 'all'
 			options['modules'].each { |m| raise OptionParser::InvalidArgument unless RAIDS[m] }
 		}
 		opts.on_tail('-h', '--help', 'Show this message') { puts opts; exit }
 	}.parse!
+	raise OptionParser::ParseError.new("Can't parse extra arguments in command line: #{ARGV.join(' ')}") unless ARGV.empty?
 rescue OptionParser::ParseError => e
 	$stderr.puts e.message
 	exit 1

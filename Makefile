@@ -1,5 +1,7 @@
 -include Makefile.config
 
+WGET=wget -N -P proprietary
+
 all: tools src/raid/config.rb
 #all: ext/lsi_mpt.so
 
@@ -64,7 +66,7 @@ tools/areca/cli: proprietary/V1.72.250_70306.zip
 
 proprietary/V1.72.250_70306.zip: proprietary/agreed
 	mkdir -p proprietary
-	wget -P proprietary ftp://ftp.areca.com.tw/RaidCards/AP_Drivers/Linux/CLI/V1.72.250_70306.zip
+	$(WGET) ftp://ftp.areca.com.tw/RaidCards/AP_Drivers/Linux/CLI/V1.72.250_70306.zip
 
 #===============================================================================
 # Module: lsi_megarc
@@ -78,7 +80,7 @@ tools/lsi_megarc/cli: proprietary/ut_linux_megarc_1.11.zip
 
 proprietary/ut_linux_megarc_1.11.zip: proprietary/agreed
 	mkdir -p proprietary
-	wget -P proprietary http://www.lsi.com/files/support/rsa/utilities/megaconf/ut_linux_megarc_1.11.zip
+	$(WGET) http://www.lsi.com/files/support/rsa/utilities/megaconf/ut_linux_megarc_1.11.zip
 
 #===============================================================================
 # Module: lsi_megacli
@@ -97,7 +99,7 @@ tools/lsi_megacli/cli: proprietary/1.01.39_Linux_Cli.zip
 
 proprietary/1.01.39_Linux_Cli.zip: proprietary/agreed
 	mkdir -p proprietary
-	wget -P proprietary http://www.lsi.com/support/downloads/megaraid/miscellaneous/linux/1.01.39_Linux_Cli.zip
+	$(WGET) http://www.lsi.com/support/downloads/megaraid/miscellaneous/linux/1.01.39_Linux_Cli.zip
 
 #===============================================================================
 # Module: lsi_mpt
@@ -109,7 +111,7 @@ ext/lsi_mpt.o: ext/lsi_mpt.c
 ext/lsi_mpt.so: ext/lsi_mpt.o
 	$(CC) -shared -rdynamic -Wl,-export-dynamic -o ext/lsi_mpt.so ext/lsi_mpt.o -ldl -lcrypt -lm -lc -lruby
 
-#	sh 'wget -P proprietary http://www.lsi.com/files/support/ssp/fusionmpt/Utilities/mptutil_linux_10200.zip'
+#	sh '$(WGET) http://www.lsi.com/files/support/ssp/fusionmpt/Utilities/mptutil_linux_10200.zip'
 
 #===============================================================================
 # Module: adaptec_aaccli
@@ -126,7 +128,7 @@ tools/adaptec_aaccli/cli: proprietary/Adaptec_Storage_Manager-Linux_v2.10.00.tgz
 
 proprietary/Adaptec_Storage_Manager-Linux_v2.10.00.tgz: proprietary/agreed
 	mkdir -p proprietary
-	wget -P proprietary http://download.adaptec.com/raid/aac/sm/Adaptec_Storage_Manager-Linux_v2.10.00.tgz
+	$(WGET) http://download.adaptec.com/raid/aac/sm/Adaptec_Storage_Manager-Linux_v2.10.00.tgz
 
 #===============================================================================
 # Module: adaptec_arcconf
@@ -134,4 +136,4 @@ proprietary/Adaptec_Storage_Manager-Linux_v2.10.00.tgz: proprietary/agreed
 
 proprietary/asm_linux_v5.01.16862.rpm: proprietary/agreed
 	mkdir -p proprietary
-	wget -P proprietary http://download.adaptec.com/raid/storage_manager/asm_linux_v5.01.16862.rpm
+	$(WGET) http://download.adaptec.com/raid/storage_manager/asm_linux_v5.01.16862.rpm
