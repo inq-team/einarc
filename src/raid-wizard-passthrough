@@ -2,12 +2,26 @@
 $LOAD_PATH.unshift('.')
 require 'raid/baseraid'
 
+DISK_GROUP_SIZE=ARGV[0].to_i
+GROUP_NUMBER=ARGV[1].to_i
+
+exit 1 if RAID::BaseRaid::query_adapters.length == 0
+
 RAID::BaseRaid::query_adapters.each { |ad|
 	a = RAID::RAIDS[ad[:driver]].new(ad[:num])
 	a.logical_clear
-	a._physical_list.each_key { |disc|
+	pl = a._physical_list.keys.sort
+
+	exit 1 if pl.length < (DISK_GROUP_SIZE * GROUP_NUMBER)
+
+	now_testing = pl[ (DISK_GROUP_SIZE * GROUP_NUMBER) .. (DISK_GROUP_SIZE * (GROUP_NUMBER+1)-1) ]
+	now_testing.compact!
+	puts "Testing #{now_testing.join(',')}"
+
+	a.logical_clear
+	now_testing.each { |disc|
 		a.logical_add('passthrough', disc, nil)
 	}
 	a.adapter_restart
-	a.logical_list
+	#a.logical_list
 }

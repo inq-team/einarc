@@ -1,0 +1,10 @@
+#!/usr/bin/env ruby
+require 'raid/baseraid'
+
+adapters = []
+RAID::BaseRaid::query_adapters.each { |ad|
+	a = RAID::RAIDS[ad[:driver]].new(ad[:num])
+	adapters << a
+	a.logical_clear
+	a.adapter_restart
+}

@@ -8,7 +8,7 @@ all: tools src/raid/config.rb
 install:
 	if [ -z "$(EINARC_LIB_DIR)" ]; then echo 'Run ./configure first!'; false; fi
 	mkdir -p $(DESTDIR)$(BIN_DIR) $(DESTDIR)$(RUBY_SHARE_DIR) $(DESTDIR)$(EINARC_LIB_DIR)
-	install -m755 src/einarc src/raid-wizard-passthrough src/raid-wizard-optimal $(DESTDIR)$(BIN_DIR)
+	install -m755 src/einarc src/raid-wizard-passthrough src/raid-wizard-optimal src/raid-wizard-optimal-clear $(DESTDIR)$(BIN_DIR)
 	cp src/raid/*.rb $(DESTDIR)$(RUBY_SHARE_DIR)
 	cp -ar tools/* $(DESTDIR)$(EINARC_LIB_DIR)
 #	if File.exists?('ext/lsi_mpt.so')
