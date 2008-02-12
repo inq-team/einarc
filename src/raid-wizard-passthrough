@@ -12,9 +12,15 @@ RAID::BaseRaid::query_adapters.each { |ad|
 	a.logical_clear
 	pl = a._physical_list.keys.sort
 
-	exit 1 if pl.length < (DISK_GROUP_SIZE * GROUP_NUMBER)
+	if (DISK_GROUP_SIZE != 0) then
+		exit 1 if pl.length < (DISK_GROUP_SIZE * GROUP_NUMBER)
+	end
 
-	now_testing = pl[ (DISK_GROUP_SIZE * GROUP_NUMBER) .. (DISK_GROUP_SIZE * (GROUP_NUMBER+1)-1) ]
+	if (DISK_GROUP_SIZE != 0) then
+		now_testing = pl[ (DISK_GROUP_SIZE * GROUP_NUMBER) .. (DISK_GROUP_SIZE * (GROUP_NUMBER+1)-1) ]
+	else
+		now_testing = pl
+	end
 	now_testing.compact!
 	puts "Testing #{now_testing.join(',')}"
 
@@ -23,5 +29,5 @@ RAID::BaseRaid::query_adapters.each { |ad|
 		a.logical_add('passthrough', disc, nil)
 	}
 	a.adapter_restart
-	#a.logical_list
+	a.logical_list
 }
