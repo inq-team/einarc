@@ -49,6 +49,7 @@ module RAID
 				key, value = l.split(/\s+:\s+/)
 				key = case key
 		                when 'Serial Number' then 'Serial number'
+		                when 'Firmware Version' then 'Firmware version'
 		                else key
 		                end
 				res[key] = value
