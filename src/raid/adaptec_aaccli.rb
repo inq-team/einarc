@@ -379,6 +379,16 @@ module RAID
 
 		# ======================================================================
 
+		def firmware_read(filename)
+			raise NotImplementedError
+		end
+
+		def firmware_write(filename)
+			raise NotImplementedError
+		end
+
+		# ======================================================================
+
 		private
 
 		def run(command, check = true)

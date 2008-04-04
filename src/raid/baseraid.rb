@@ -18,6 +18,7 @@ module RAID
 			'physical' => %w(list get set),
 			'logical' => %w(list add delete clear get set),
 			'task' => %w(list wait),
+			'firmware' => %w(read write),
 			'bbu' => %w(info)
 		}
 

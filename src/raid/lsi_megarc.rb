@@ -45,6 +45,7 @@ module RAID
 				key, value = x.split(/\t/)
 				key = case key
 		                when 'Board SN' then 'Serial number'
+		                when 'Firmware Version' then 'Firmware version'
 		                else key
 		                end
 				res[key] = value
@@ -312,6 +313,16 @@ module RAID
 
 		def set_logical_io_cache(id)
 			megarc("-cldCfg #{@args} -L#{id} CIO")
+		end
+
+		# ======================================================================
+
+		def firmware_read(filename)
+			raise NotImplementedError
+		end
+
+		def firmware_write(filename)
+			raise NotImplementedError
 		end
 
 		# ======================================================================

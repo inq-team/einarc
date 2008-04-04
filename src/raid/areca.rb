@@ -389,6 +389,18 @@ module RAID
 			return $2.to_i
 		end
 
+		# ======================================================================
+
+		def firmware_read(filename)
+			raise NotImplementedError
+		end
+
+		def firmware_write(filename)
+			raise NotImplementedError
+		end
+
+		# ======================================================================
+
 		# Runs trivial Areca command; raises an exception if it exists improperly
 		def self.run(cmd)
 			msg = `#{CLI} #{cmd}`

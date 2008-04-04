@@ -92,6 +92,16 @@ module RAID
 
 		# ======================================================================
 
+		def firmware_read(filename)
+			raise NotImplementedError
+		end
+
+		def firmware_write(filename)
+			raise NotImplementedError
+		end
+
+		# ======================================================================
+
 		def get_adapter_raidlevels(x = nil)
 			[ '0', '1', '5', '6' ]
 		end

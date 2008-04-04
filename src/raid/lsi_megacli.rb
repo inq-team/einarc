@@ -37,11 +37,17 @@ module RAID
 
 		def _adapter_info
 			res = {}
+			fw = []
 			run("-AdpAllInfo #{@args}").each { |l|
 				if l =~ /^(.*?)\s*:\s*(.*?)$/
 					res[$1] = $2
 				end
 			}
+
+			# Get firmware version
+			self.class.query(fw)
+			fw.each { |a| res['Firmware version'] = a[:version] }
+
 			return res
 		end
 
@@ -304,6 +310,16 @@ module RAID
 
 		def set_logical_io_cache(id)
 			MEGACLI("-cldCfg #{@args} -L#{id} CIO")
+		end
+
+		# ======================================================================
+
+		def firmware_read(filename)
+			raise NotImplementedError
+		end
+
+		def firmware_write(filename)
+			run("-AdpFwFlash -f #{filename} -a0")
 		end
 
 		# ======================================================================
