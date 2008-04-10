@@ -396,8 +396,10 @@ module RAID
 			raise NotImplementedError
 		end
 
-		def firmware_write(filename)
-			raise NotImplementedError
+		def firmware_write(*filename)
+			filename.each { |file|
+				run_cli("sys updatefw path=#{file}")
+			}
 		end
 
 		# ======================================================================
