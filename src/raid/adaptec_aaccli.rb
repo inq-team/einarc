@@ -35,6 +35,9 @@ module RAID
 			run('controller details').each { |l|
 				res[$1] = $2 if l =~ /^(.*?)\s*:\s*(.*?)$/
 			}
+			s = run('diagnostic dump text').grep(/ATUVID/)[0]
+			res['PCI vendor ID'] = s.gsub( /^.*ATUVID\s*([0-9A-F]*)[\s]*ATUDID[\s]*([0-9A-F]*).*$/, '\1')
+			res['PCI product ID'] = s.gsub( /^.*ATUVID\s*([0-9A-F]*)[\s]*ATUDID[\s]*([0-9A-F]*).*$/, '\2')
 			return res
 		end
 
