@@ -114,48 +114,59 @@ module RAID
 			return res
 		end
 
+#Logical device number 0
+#   Logical device name                      : 1
+#   RAID level                               : Simple_volume
+#   Status of logical device                 : Optimal
+#   Size                                     : 69989 MB
+#   Read-cache mode                          : Enabled
+#   Write-cache mode                         : Disabled (write-through)
+#   Write-cache setting                      : Disabled (write-through)
+#   Partitioned                              : No
+#   Protected by Hot-Spare                   : No
+#   Bootable                                 : Yes
+#   Failed stripes                           : No
+#   --------------------------------------------------------
+#   Logical device segment information
+#   --------------------------------------------------------
+#   Segment 0                                : Present (0,2) DAL0P7605RJ5
 		def _logical_list
 			@logical = []
 			ld = nil
-			run('container list /full').each { |l|
+			run("getconfig #{@adapter_num} ld").each { |l|
 				case l
-				when ''
-					ld = nil
-#Label Type   Size   Ctr Size   Usage   C:ID:L Offset:Size   State   RO Lk Task    Done%  Ent Date   Time
-#----- ------ ------ --- ------ ------- ------ ------------- ------- -- -- ------- ------ --- ------ --------
-# 0    Volume 10.0GB            Valid   1:01:0 64.0KB:10.0GB                               0  062607 13:23:10
-# /dev/sdb                              1:02:0 64.0KB:15.0GB                               1  062607 13:37:59
-#                                       1:03:0 64.0KB:15.0GB                               2  062607 13:37:59
-
-#Num          Total  Oth Stripe          Scsi   Partition                                      Creation
-#Label Type   Size   Ctr Size   Usage   C:ID:L Offset:Size   State   RO Lk Task    Done%  Ent Date   Time
-#----- ------ ------ --- ------ ------- ------ ------------- ------- -- -- ------- ------ --- ------ --------
-# 0    Volume 68.4GB            Valid   0:00:0 64.0KB:68.4GB                               0  101807 13:09:58
-# /dev/sda             1
-				when /^ ? ?(\d+)\s*(.......)(.......)(....)(.......)(........)(.......)(..............)/
+				when /Logical device number (\d+)/
 					num = $1.to_i
-					state = $6.strip.downcase
-					state = 'normal' if state == 'valid'
 					ld = @logical[num] = {
 						:num => num,
 						:physical => [],
-						:capacity => textual2mb($3.strip),
-						:physical => [ cidl2physical($7.strip) ],
-						:raid_level => case $2.strip
-						when 'Volume' then 'linear'
-						when 'Stripe' then 0
-						when 'Mirror' then 1
-						when 'RAID-5' then 5
-						end,
-						:state => state,
 					}
-				when /^ ? ?\/dev\/(.............)...\s+(\S+)\s+(.*?)/
-					ld[:dev] = $1.strip
-					ld[:physical] << cidl2physical($2)
-				when /^ ? ?\/dev\/(\S*)/
-					ld[:dev] = $1
-				when /^\s+(\d+:\d+:\d+)/
-					ld[:physical] << cidl2physical($1)
+				when /Size\s*:\s*(\d+) MB/
+					ld[:capacity] = $1.to_i
+#				when /^ ? ?(\d+)\s*(.......)(.......)(....)(.......)(........)(.......)(..............)/
+#					num = $1.to_i
+#					state = $6.strip.downcase
+#					state = 'normal' if state == 'valid'
+#					ld = @logical[num] = {
+#						:num => num,
+#						:physical => [],
+#						:capacity => textual2mb($3.strip),
+#						:physical => [ cidl2physical($7.strip) ],
+#						:raid_level => case $2.strip
+#						when 'Volume' then 'linear'
+#						when 'Stripe' then 0
+#						when 'Mirror' then 1
+#						when 'RAID-5' then 5
+#						end,
+#						:state => state,
+#					}
+#				when /^ ? ?\/dev\/(.............)...\s+(\S+)\s+(.*?)/
+#					ld[:dev] = $1.strip
+#					ld[:physical] << cidl2physical($2)
+#				when /^ ? ?\/dev\/(\S*)/
+#					ld[:dev] = $1
+#				when /^\s+(\d+:\d+:\d+)/
+#					ld[:physical] << cidl2physical($1)
 #				when /^Size\s*:\s*(\d+)MB$/
 #					ld[:capacity] = $1.to_i
 #				when /^State\s*:\s*(.*?)$/
@@ -452,17 +463,6 @@ module RAID
 			es = $?.exitstatus
 			$stderr.puts "Error: #{res[-1]}" if es != 0
 			res
-		end
-
-		def textual2mb(textual)
-			res = textual.to_f
-			case textual
-			when /GB$/ then res *= 1024
-			when /MB$/ then ;
-			when /KB$/ then res /= 1024
-			else raise Error.new("Unparseable size specification: \"#{textual}\"")
-			end
-			return res
 		end
 
 		def cidl2physical(cidl)
