@@ -35,6 +35,11 @@ RAIDS = {
 		:classname => 'AdaptecAacCli',
 		:proprietary => true,
 	},
+	'adaptec_arcconf' => {
+		:desc => 'newer Adaptec adapters that use arcconf',
+		:classname => 'AdaptecArcConf',
+		:proprietary => true,
+	}
 #	'software' => {
 #		:desc => 'Linux software RAID devices',
 #		:classname => 'Software',
