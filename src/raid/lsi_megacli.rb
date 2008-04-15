@@ -40,7 +40,14 @@ module RAID
 			fw = []
 			run("-AdpAllInfo #{@args}").each { |l|
 				if l =~ /^(.*?)\s*:\s*(.*?)$/
-					res[$1] = $2
+					key = $1
+					val = $2
+					key = case key
+					when /Vendor Id/ then 'PCI vendor ID'
+					when /Device Id/ then 'PCI product ID'
+					else key
+					end				
+					res[key] = val
 				end
 			}
 
