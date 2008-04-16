@@ -3,7 +3,18 @@ require 'expect'
 
 module RAID
 	class Areca < BaseRaid
-
+	
+		PCI_PRODUCT_IDS = {
+			'ARC-1110' => '1110',
+			'ARC-1120' => '1120',
+			'ARC-1130' => '1130',
+			'ARC-1160' => '1160',
+			'ARC-1210' => '1210',
+			'ARC-1220' => '1220',
+			'ARC-1230' => '1230',
+			'ARC-1260' => '1260',
+			'ARC-1231' => '1280',
+		}
 		CLI = "#{$EINARC_LIB}/areca/cli"
 		ARECA_PASSWORD = '0000'
 
@@ -48,12 +59,14 @@ module RAID
 				next if l =~ /^The System Information/
 				key, value = l.split(/\s+:\s+/)
 				key = case key
-		                when 'Serial Number' then 'Serial number'
-		                when 'Firmware Version' then 'Firmware version'
-		                else key
-		                end
+				when 'Serial Number' then 'Serial number'
+				when 'Firmware Version' then 'Firmware version'
+				else key
+		    end
 				res[key] = value
 			}
+			res['PCI vendor ID'] = '17d3'
+			res['PCI product ID'] = PCI_PRODUCT_IDS[res['Controller Name']]
 			return res
 		end
 
