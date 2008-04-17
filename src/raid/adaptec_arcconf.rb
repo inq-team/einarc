@@ -56,7 +56,8 @@ module RAID
 		end
 
 		def adapter_restart
-			restart_module('aacraid')
+			run("rescan #{@adapter_num}")
+#			restart_module('aacraid')
 		end
 
 		# ======================================================================
@@ -143,6 +144,14 @@ module RAID
 					}
 				when /Size\s*:\s*(\d+) MB/
 					ld[:capacity] = $1.to_i
+				when /RAID level\s*:\s*(.*)$/
+					ld[:raid_level] = $1.strip
+					ld[:raid_level] = case ld[:raid_level]
+					when 'Simple_volume', 'Spanned_volume' then 'linear'
+					else ld[:raid_level]
+					end
+				when /Segment (\d+)\s*:\s*(.*?) \((\d+),(\d+)\)/
+					ld[:physical] << "#{$3}:#{$4}"
 #				when /^ ? ?(\d+)\s*(.......)(.......)(....)(.......)(........)(.......)(..............)/
 #					num = $1.to_i
 #					state = $6.strip.downcase
@@ -181,7 +190,8 @@ module RAID
 		end
 
 		def logical_add(raid_level, discs = nil, sizes = nil, options = nil)
-			if discs 
+			# Normalize arguments: make "discs" and "sizes" an array, "raid_level" a string
+			if discs
 				discs = discs.split(/,/) if discs.respond_to?(:split)
 				discs = [discs] unless discs.respond_to?(:each)
 			else
@@ -191,7 +201,7 @@ module RAID
 			if sizes
 				sizes = sizes.split(/,/) if sizes.respond_to?(:split)
 				sizes = [sizes] unless sizes.respond_to?(:each)
-				sizes.collect! { |s| s.to_f }
+				sizes.collect! { |s| s.to_i }
 			else
 				sizes = [ nil ]
 			end
@@ -203,7 +213,7 @@ module RAID
 				options.each { |o|
 					if o =~ /^(.*?)=(.*?)$/
 						case $1
-						when 'stripe' then opt_cmd += "/stripe_size=#{$2}K "
+						when 'stripe' then opt_cmd += "Stripesize #{$2} "
 						else raise Error.new("Unknown option \"#{o}\"")
 						end
 					else
@@ -224,60 +234,60 @@ module RAID
 			# Adaptec doesn't support RAID0 on only 1 disc
 			raid_level = 'linear' if raid_level == '0' and discs.size == 1
 
-			discs_ = discs
+			cmd = "create #{@adapter_num} logicaldrive #{opt_cmd}"
 			sizes.each { |s|
-				discs = discs_.dup
-				case raid_level
-				when 'linear'
-					cmd = 'container create volume ' + opt_cmd
-					if s
-						one_size = coerced_size(s / discs.size)
-						cmd += discs.collect { |d| "(#{physical2adaptec(d)},#{one_size}K)" }.join(' ')
-					else
-						cmd += discs.collect { |d| "(#{physical2adaptec(d)})" }.join(' ')
-					end
-				when '0'
-					cmd = 'container create stripe ' + opt_cmd
-					if s
-						one_size = coerced_size(s / (discs.size - 1))
-						cmd += "(#{physical2adaptec(discs.shift)},#{one_size}K) "
-					else
-						cmd += "(#{physical2adaptec(discs.shift)}) "
-					end
-					cmd += discs.collect { |d| physical2adaptec(d) }.join(' ')
-				when '1'
-					one_size = (s ? ",#{s.to_i}M" : '')
-					out = run("container create volume #{opt_cmd} (#{physical2adaptec(discs[0])}#{one_size})")
-					raise Error.new('Unable to find first volume just created') unless out[-1] =~ /Container (\d+) created/
-					cmd = "container create mirror #{$1} #{physical2adaptec(discs[1])}"
-				when '5'
-					cmd = 'container create raid5 ' + opt_cmd
-					if s
-						one_size = coerced_size(s / (discs.size - 1))
-						cmd += "(#{physical2adaptec(discs.shift)},#{one_size}K) "
-					else
-						cmd += "(#{physical2adaptec(discs.shift)}) "
-					end
-					cmd += discs.collect { |d| physical2adaptec(d) }.join(' ')
-				else
-					raise Error.new("Unsupported RAID level: \"#{raid_level}\"")
-				end
-#				p cmd
+				raid_level = 'volume' if raid_level == 'linear'
+				cmd += s ? s.to_s : 'MAX'
+				cmd += " #{raid_level} "
+				cmd += discs.join(' ').gsub(/:/, ',')
+				cmd += ' noprompt'
+
+#				case raid_level
+#				when 'linear'
+#					if s
+#						one_size = coerced_size(s / discs.size)
+#						cmd += discs.collect { |d| "(#{physical2adaptec(d)},#{one_size}K)" }.join(' ')
+#					else
+#						cmd += discs.collect { |d| "(#{physical2adaptec(d)})" }.join(' ')
+#					end
+#				when '0'
+#					cmd = 'container create stripe ' + opt_cmd
+#					if s
+#						one_size = coerced_size(s / (discs.size - 1))
+#						cmd += "(#{physical2adaptec(discs.shift)},#{one_size}K) "
+#					else
+#						cmd += "(#{physical2adaptec(discs.shift)}) "
+#					end
+#					cmd += discs.collect { |d| physical2adaptec(d) }.join(' ')
+#				when '1'
+#					one_size = (s ? ",#{s.to_i}M" : '')
+#					out = run("container create volume #{opt_cmd} (#{physical2adaptec(discs[0])}#{one_size})")
+#					raise Error.new('Unable to find first volume just created') unless out[-1] =~ /Container (\d+) created/
+#					cmd = "container create mirror #{$1} #{physical2adaptec(discs[1])}"
+#				when '5'
+#					cmd = 'container create raid5 ' + opt_cmd
+#					if s
+#						one_size = coerced_size(s / (discs.size - 1))
+#						cmd += "(#{physical2adaptec(discs.shift)},#{one_size}K) "
+#					else
+#						cmd += "(#{physical2adaptec(discs.shift)}) "
+#					end
+#					cmd += discs.collect { |d| physical2adaptec(d) }.join(' ')
+#				else
+#					raise Error.new("Unsupported RAID level: \"#{raid_level}\"")
+#				end
+				p cmd
 				run(cmd)
 			}
 
 		end
 
 		def logical_delete(id)
-			run("container delete /always=true #{id}")
+			run("delete #{@adapter_num} logicaldrive #{id} noprompt")
 		end
 
 		def logical_clear
-			run('task stop /all')
-			_logical_list.each_with_index { |l, i|
-				next unless l
-				logical_delete(i)
-			}
+			run("delete #{@adapter_num} logicaldrive all noprompt", false)
 		end
 
 #Controllers found: 1
@@ -315,8 +325,9 @@ module RAID
 				when /Channel #(\d+):/
 					chn = $1.to_i
 				when /Device #(\d+)/
-					dev = $1.to_i
-					phys = @physical["#{chn}:#{dev}"] = {}
+					phys = {}
+				when /Reported Channel,Device\s*:\s*(\d+),(\d+)/
+					@physical["#{$1}:#{$2}"] = phys
 				when /Vendor\s*:\s*(.*)$/
 					phys[:vendor] = $1
 				when /Model\s*:\s*(.*)$/
@@ -333,15 +344,15 @@ module RAID
 			}
 
 			# Determine related LDs
-#			_logical_list.each_with_index { |l, i|
-#				l[:physical].each { |pd|
-#					if physical[pd][:state].is_a?(Array)
-#						@physical[pd][:state] << i
-#					else
-#						@physical[pd][:state] = [ i ]
-#					end
-#				}
-#			}
+			_logical_list.each_with_index { |l, i|
+				l[:physical].each { |pd|
+					if @physical[pd][:state].is_a?(Array)
+						@physical[pd][:state] << i
+					else
+						@physical[pd][:state] = [ i ]
+					end
+				}
+			}
 
 			return @physical
 		end
@@ -353,6 +364,7 @@ module RAID
 		end
 
 		def get_adapter_alarm(x = nil)
+			raise NotImplemented
 			l = run("-AdpGetProp AlarmDsply #{@args}").join("\n")
 			return (case l
 				when /Alarm status is Enabled/  then 'enable'
@@ -361,10 +373,11 @@ module RAID
 		end
 
 		def get_adapter_rebuildrate(x = nil)
-			MEGACLI("-GetRbldrate #{@args}")
+			raise NotImplemented
 		end
 
 		def get_adapter_coercion(x = nil)
+			raise NotImplemented
 			l = MEGACLI("-CoercionVu #{@args}")[0]
 			return (case l
 				when /^Coercion flag OFF/ then 0
@@ -454,31 +467,15 @@ module RAID
 		def run(command, check = true)
 			out = `#{CLI} #{command}`.split("\n").collect { |l| l.strip }
 			es = $?.exitstatus
-			raise Error.new(out[-1]) if check and es != 0
+			raise Error.new(out.join("\n")) if check and es != 0
 			return out
 		end
 
 		def self.run(command)
 			res = `#{CLI} #{command}`.split("\n").collect { |l| l.strip }
 			es = $?.exitstatus
-			$stderr.puts "Error: #{res[-1]}" if es != 0
+			$stderr.puts "Error: " + res.join("\n") if es != 0
 			res
-		end
-
-		def cidl2physical(cidl)
-			if cidl =~ /^(\d+):(\d+):(\d+)$/
-				"#{$1.to_i}:#{$2.to_i}"
-			else
-				raise Error.new("Unparseable SCSI specification: \"#{cidl}\"")
-			end
-		end
-
-		def physical2adaptec(phys)
-			if phys =~ /^(\d+):(\d+)$/
-				"(#{$1.to_i},#{$2.to_i})"
-			else
-				raise Error.new("Unparseable physical disc specification: \"#{phys}\"")
-			end			
 		end
 
 		# Calculates coerced size: kB measurement, 64kB alignment
