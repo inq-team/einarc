@@ -62,17 +62,30 @@ module RAID
 
 		# ======================================================================
 
+#Controllers found: 1
+#Logical device Task:
+#   Logical device                 : 0
+#   Task ID                        : 101
+#   Current operation              : Build/Verify
+#   Status                         : In Progress
+#   Priority                       : High
+#   Percentage complete            : 0
 		def _task_list
-			raise NotImplemented
 			res = []
-			run('getstatus').each { |t|
-				if t =~ /^\s*(\d+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)/
-					res << {
-						:id => $1.to_i,
-						:where => $4,
-						:what => $2,
-						:progress => $3,
-					}
+			task = {}
+			run("getstatus #{@adapter_num}").each { |t|
+				case t
+				when /Logical device Task:/
+					task = {}
+					res << task
+				when /Task ID\s*:\s(\d+)$/
+					task[:id] = $1.to_i
+				when /Logical device\s*:\s*(\d+)/
+					task[:where] = $1
+				when /Current operation\s*:\s*(.*)$/
+					task[:what] = $1
+				when /Percentage complete\s*:\s*(\d+)/
+					task[:progress] = $1.to_i
 				end
 			}
 			return res
