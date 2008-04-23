@@ -2,6 +2,10 @@ module RAID
 	class AdaptecArcConf < BaseRaid
 		CLI = "#{$EINARC_LIB}/adaptec_arcconf/cli"
 
+		PCI_PRODUCT_IDS = {
+			'Adaptec 3805' => '0285',
+		}
+
 		def initialize(adapter_num = nil)
 			if adapter_num
 				@adapter_num = adapter_num
@@ -52,6 +56,8 @@ module RAID
 					res[key] = value
 				end
 			}
+			res['PCI vendor ID'] = '9005'
+			res['PCI product ID'] = PCI_PRODUCT_IDS[res['Controller Model']]
 			return res
 		end
 
