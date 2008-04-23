@@ -3,7 +3,7 @@ module RAID
 		CLI = "#{$EINARC_LIB}/adaptec_arcconf/cli"
 
 		PCI_PRODUCT_IDS = {
-			'Adaptec 3805' => '0285',
+			'Adaptec 3805' => ['0285', '02bc'],
 		}
 
 		def initialize(adapter_num = nil)
@@ -57,7 +57,9 @@ module RAID
 				end
 			}
 			res['PCI vendor ID'] = '9005'
-			res['PCI product ID'] = PCI_PRODUCT_IDS[res['Controller Model']]
+			res['PCI subvendor ID'] = '9005'
+			res['PCI product ID'] = PCI_PRODUCT_IDS[res['Controller Model']][0]
+			res['PCI subproduct ID'] = PCI_PRODUCT_IDS[res['Controller Model']][1]
 			return res
 		end
 
