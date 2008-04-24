@@ -488,7 +488,9 @@ module RAID
 		def run(command, check = true)
 			out = `#{CLI} #{command}`.split("\n").collect { |l| l.strip }
 			es = $?.exitstatus
-			raise Error.new(out.join("\n")) if check and es != 0
+			error_msg = out.join("\n")
+			error_msg = 'Unknown error' if error_msg.empty?
+			raise Error.new(error_msg) if check and es != 0
 			return out
 		end
 
