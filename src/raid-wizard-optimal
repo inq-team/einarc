@@ -27,8 +27,8 @@ RAID::BaseRaid::query_adapters.each { |ad|
 
 		puts "Creating array on group #{g.keys.join(",")} with size #{min_size} MB"
 		case g.size
-		when 1 then a.logical_add('0', g.keys.join(','), min_size)
-		when 2 then a.logical_add('1', g.keys.join(','), min_size)
+		when 1 then a.logical_add('0', g.keys.join(','), min_size - 1024)
+		when 2 then a.logical_add('1', g.keys.join(','), min_size - 1024)
 		else
 			if levels.grep('5').empty?
 				pd = g.keys
