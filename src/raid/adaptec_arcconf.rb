@@ -338,17 +338,18 @@ module RAID
 #      No physical drives attached
 		def _physical_list
 			@physical = {}
-			chn = nil
 			dev = nil
 			phys = nil
+			hdd = nil
 			run("getconfig #{@adapter_num} pd").each { |l|
 				case l
-				when /Channel #(\d+):/
-					chn = $1.to_i
 				when /Device #(\d+)/
 					phys = {}
+					hdd = false
+				when /Device is a Hard drive/
+					hdd = true
 				when /Reported Channel,Device\s*:\s*(\d+),(\d+)/
-					@physical["#{$1}:#{$2}"] = phys
+					@physical["#{$1}:#{$2}"] = phys if hdd
 				when /Vendor\s*:\s*(.*)$/
 					phys[:vendor] = $1
 				when /Model\s*:\s*(.*)$/
