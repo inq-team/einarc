@@ -4,6 +4,7 @@ module RAID
 
 		PCI_PRODUCT_IDS = {
 			'Adaptec 3805' => ['0285', '02bc'],
+			'Adaptec 5805' => ['0285', '02b6'],
 		}
 
 		def initialize(adapter_num = nil)

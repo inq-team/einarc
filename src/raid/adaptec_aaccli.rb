@@ -22,7 +22,7 @@ module RAID
 						:num => num,
 						:model => model,
 						:version => '',
-					} unless (model =~ /3405/ or model =~ /3805/) # not supported by aaccli
+					} unless (model =~ /3405/ or model =~ /3805/ or model =~ /5805/) # not supported by aaccli
 				end
 			}
 			return res
