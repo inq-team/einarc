@@ -45,6 +45,8 @@ module RAID
 					key = case key
 					when /Vendor Id/ then 'PCI vendor ID'
 					when /Device Id/ then 'PCI product ID'
+					when /SubVendorId/ then 'PCI subvendor ID'
+					when /SubDeviceId/ then 'PCI subproduct ID'
 					else key
 					end				
 					res[key] = val
