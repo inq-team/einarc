@@ -328,6 +328,7 @@ module RAID
 		end
 
 		def firmware_write(filename)
+			raise Error.new("There is no firmware file: \"#{filename}\".") unless File.exist?(filename)
 			run("-AdpFwFlash -f #{filename} -a0")
 		end
 

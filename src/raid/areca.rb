@@ -411,6 +411,7 @@ module RAID
 
 		def firmware_write(*filename)
 			filename.each { |file|
+				raise Error.new("There is no firmware file: \"#{file}\".") unless File.exist?(file)
 				run_cli("sys updatefw path=#{file}")
 			}
 		end
