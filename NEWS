@@ -1,3 +1,20 @@
+== v1.2
+
+* Support for new RAID devices: newer Adaptec adapters using arcconf.
+* New objects "bbu" and "firmware" are introduced: now it's possible to
+get information about BBU and read/write firmware to supported adapters.
+* More strict "adapter info" report: it outputs serial number and tries
+to pinpoint a particular adapter using PCI IDs, if possible.
+* Updates for existing devices:
+** aaccli: now it downloads and uses later, more acceptable version, not
+linked against arts library. Note, however, that
+Adaptec_Storage_Manager-Linux_v2.10.00 is a huge ~36M download.
+** megacli: updated version to 1.01.27.
+* Multiple stability, metadata and rare occurance fixes for all modules.
+* Improved build system.
+* "raid-wizard-passthrough" can be used to handle smaller groups of HDDs
+(not all available devices).
+
 == v1.1
 
 * Added documentation in package
@@ -11,4 +28,5 @@ file.
 * Compatibility with older Ruby (<1.8.6)
 
 == v1.0
+
 * First public release
