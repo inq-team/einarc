@@ -79,17 +79,18 @@ can be invoked using:
 `einarc [options] <object> <method> <parameters>`
 
 Options:
--l, --list::
+
+`-l`, `--list`::
   list all adapters found in system and exit
--V, --version
+`-V`, `--version`::
   print program version and exit
---help
+`--help`::
   show short help text and exit
--h, --human
+`-h`, `--human`::
   output human-readable information
--t, --type=TYPE
+`-t`, `--type=TYPE`::
   type (manufacturer) of RAID adapter
--a, --adapter=NUM::
+`-a`, `--adapter=NUM`::
   select the adapter if multiple adapters are present
 
 Refer to <<object_interface,object interface description>> for particular object.
