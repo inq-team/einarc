@@ -1,6 +1,6 @@
 = Einarc: Reference manual
 
-:Revision: 1.1
+:Revision: 1.2
 
 == Concept
 
@@ -64,6 +64,7 @@ implement a couple of methods that would translate requests.
 Currently, there are following modules available:
 
 * *adaptec_aaccli*
+* *adaptec_arcconf*
 * *areca*
 * *lsi_megacli*
 * *lsi_megarc*
@@ -152,7 +153,77 @@ adapter supports:
 Einarc's libraries can be called directly with almost the same object
 terms as from the command-line interface.
 
-TODO
+Einarc is written in Ruby and thus can be used easily from this script
+language. Using Einarc API in your program takes a few simple steps:
+
+=== Add libraries
+
+Einarc modules should be loaded before use. Adding the following require
+statement would automatically load all available RAID support modules:
+
+ require 'raid/baseraid'
+
+=== Listing available adapters
+
+To find out which adapters are available, use:
+
+ RAID::BaseRaid.query_adapters
+
+This would return you an array of hashes, one element of array for each
+adapter found, for example:
+
+ [{:driver=>"areca", :version=>"PCI", :num=>1, :model=>"ARC-1160"}]
+
+=== Create adapter objects
+
+Instantiate a particular adapter object, for example:
+
+ a = RAID::Areca.new
+
+=== Use adapter object methods
+
+After adapter object *a* is created, one can use all the methods described
+in object interface using a simple convention.
+
+* If method *does not return* anything, it's just
+
+ a.object_method(all, other, arguments, ...)
+
+for example:
+
+ a.logical_clear
+
+* If method should *return its data as Ruby objects* (a hash, an array, an
+array of hashes, etc), then it should be called as
+
+ a._object_method(all, other, arguments, ...)
+
+Note the beginning underscore. An example:
+
+ a._adapter_info
+ => {"PCI product ID"=>"1160", "System Memory"=>"256MB/333MHz",
+     "Current IP Address"=>"192.168.0.1", "Controller Name"=>"ARC-1160",
+     "BOOT ROM Version"=>"V1.39 2006-1-4  ", "CPU DCache Size"=>"32KB",
+     "Main Processor"=>"500MHz", "Firmware version"=>"V1.39 2006-2-9  ",
+     "PCI vendor ID"=>"17d3", "CPU ICache Size"=>"32KB",
+     "Serial number"=>"XXXXXXXXXXXXXXXX"}
+
+* If method should *print whatever strings Einarc CLI displays*, it
+should be called as:
+
+ a.object_method(all, other, arguments, ...)
+
+For example:
+ a.adapter_info
+ PCI product ID          1160
+ System Memory           56MB/333MHz
+ Current IP Address      192.168.10.111
+ ...
+
+=== Error handling
+
+All RAID-related activities raise an exception of class RAID::Error on
+error.
 
 [[object_interface]]
 == Object interface
