@@ -188,7 +188,7 @@ in object interface using a simple convention.
 * If method *does not return* anything, it's just
 
  a.object_method(all, other, arguments, ...)
-
++
 for example:
 
  a.logical_clear
@@ -197,7 +197,7 @@ for example:
 array of hashes, etc), then it should be called as
 
  a._object_method(all, other, arguments, ...)
-
++
 Note the beginning underscore. An example:
 
  a._adapter_info
@@ -212,7 +212,7 @@ Note the beginning underscore. An example:
 should be called as:
 
  a.object_method(all, other, arguments, ...)
-
++
 For example:
  a.adapter_info
  PCI product ID          1160
@@ -280,7 +280,17 @@ Properties:
 
 ==== info
 
-Gets general information about adapter
+Gets general information about adapter. Information is returned as
+key-value pairs. Some keys are fixed and are consistent across all adapters:
+
+* `Serial number`
+* `Firmware version`
+* `PCI vendor ID`
+* `PCI product ID`
+* `PCI subvendor ID`
+* `PCI subproduct ID`
+
+Other keys are adapter- and implementation-specific and thus vary.
 
 Input::
   none
@@ -475,7 +485,7 @@ Input::
   * name of property
   * value of property
 Output::
-  none normally, error message if error happened
+  none normally, error message if error happened.
 
 === task
 
@@ -487,7 +497,7 @@ such as building or checking the logical disc.
 Displays a list of tasks.
 
 Input::
-  none
+  none.
 Output::
   info on one task per line, tab-separated:
 +
@@ -509,6 +519,29 @@ Input::
 Output::
   none
 
+=== firmware
+
+A special object that deals with adapter-related firmware
+reading/writing operations.
+
+==== read
+
+Extracts a firmware from the adapter into a file.
+
+Input::
+  filename (would be overwritten)
+Output::
+  none normally, error message if error happened.
+
+==== write
+
+Flashes a firmware from a file into the adapter.
+
+Input::
+  filename
+Output::
+  none normally, error message if error happened.
+
 == Planned features
 
 === More devices
@@ -518,7 +551,7 @@ Einarc:
 
 * FreeBSD's GEOM software RAID
 * 3ware tw_cli / tw_sched
-* Adaptec raidutils / ucli / arcconf
+* Adaptec raidutils
 * Chelsio TOE
 * Emulex dfc / lputil
 * ICP Vortex RAID Storage Console - icpcon
@@ -527,15 +560,6 @@ Einarc:
 * LSI (former IBM, former Mylex) DAC960/DAC1100
 * Promise CLI
 * QLogic SANsurferCLI / qlremote
-
-=== Extending object interface
-
-Current object interface is not comprehensive and lacks several popular
-functions, usually available in CLIs:
-
-* Firmware updating
-* More formal parsing of `adapter_info`, i.e. having fixed names for
-various fields.
 
 === General features
 
