@@ -38,7 +38,7 @@ doc: doc/xhtml
 
 doc/xhtml: doc/manual.txt
 	mkdir -p doc/xhtml
-	a2x -f xhtml -d doc/xhtml doc/manual.txt
+	a2x -f xhtml -D doc/xhtml doc/manual.txt
 	cp -r doc/images doc/xhtml
 
 clean:
