@@ -63,13 +63,45 @@ implement a couple of methods that would translate requests.
 
 Currently, there are following modules available:
 
-* *adaptec_aaccli*
-* *adaptec_arcconf*
-* *areca*
-* *lsi_megacli*
-* *lsi_megarc*
-* *lsi_mpt*
-* *software*
+* *adaptec_aaccli* - supports older Adaptec SCSI RAID controllers, such
+as Adaptec SCSI RAID 2230SLP, Adaptec SCSI RAID 2130SLP, Adaptec SCSI
+RAID 2120S, Adaptec SCSI RAID 2020ZCR, Adaptec SCSI RAID 2025ZCR.
+* *adaptec_arcconf* - supports newer Adaptec SAS/SATA RAID controllers,
+such as Adaptec RAID 5405, Adaptec RAID 5445, Adaptec RAID 5805, Adaptec
+RAID 5085, Adaptec RAID 51245, Adaptec RAID 51645, Adaptec RAID 52445,
+Adaptec RAID 3405, Adaptec RAID 3085, Adaptec RAID 3805, Adaptec RAID
+31205, Adaptec RAID 31605, Adaptec RAID 2405, Adaptec RAID 2045, Adaptec
+RAID 4000, Adaptec RAID 4800SAS, Adaptec RAID 4805SAS.
+* *areca* - supports all Areca SATA RAID controllers, such as ARC-1110,
+ARC-1120, ARC-1130, ARC-1160, ARC-1130ML, ARC-1160ML, ARC-1170,
+ARC-1200, ARC-1210, ARC-1220, ARC-1230, ARC-1260, ARC-1231ML,
+ARC-1261ML, ARC-1280ML, ARC-1280.
+* *lsi_megacli* - supports newer LSI MegaRAID SAS/SATA RAID controllers, such
+as LSI MegaRAID SAS 8208ELP, LSI MegaRAID SAS 8208XLP, LSI MegaRAID SAS
+8204ELP, LSI MegaRAID SAS 8204XLP, LSI MegaRAID SAS 84016E, LSI MegaRAID
+SAS 8704ELP, LSI MegaRAID SAS 8708ELP, LSI MegaRAID SAS 8300XLP, LSI
+MegaRAID SAS 8708EM2, LSI MegaRAID SAS 8888ELP, LSI MegaRAID SAS
+8880EM2, as well as rebranded copies of these controllers from Dell, HP
+and Intel, as well as all on-board or daughterboard products based on
+LSI SAS 1078 chipset.
+* *lsi_megarc* - support older LSI MegaRAID SCSI/SATA RAID controllers,
+such as  LSI MegaRAID SATA 150-4 (523), LSI MegaRAID SATA 150-6 (523),
+LSI MegaRAID SATA 300-8X, LSI MegaRAID SATA 300-8XLP, LSI MegaRAID SATA
+300-4XLP, LSI MegaRAID SCSI 320-0 (520-0 CH), LSI MegaRAID SCSI 320-0X
+(530), LSI MegaRAID SCSI 320-1 (520-1CH), LSI MegaRAID SCSI 320-1LP
+(520-1 CH LP), LSI MegaRAID SCSI 320-2 (518), LSI MegaRAID SCSI 320-2E,
+LSI MegaRAID SCSI 320-2X (532), as well as rebranded copies of these
+controllers from Dell, HP and Intel, as well as all on-board or
+daughterboard products based on LSI MegaRAID 160/320 or 150/300 chipset.
+* *lsi_mpt* - Fusion/MPT, now branded as LSI MPT design of HBAs,
+available in such adapters as LSI20160, LSIU320, LSI20320-R, LSI20320IE,
+LSI21320-R, LSI22320-R, LSI22320SE.
+* *software* - Linux software RAID device (md), for a sake of
+completeness.
+
+This is not a complete list. To check if your adapter is supported, just
+run `./configure` without options to select all available modules.
+There's a good chance that your adapter would be supported too.
 
 == Command-line interface (CLI)
 
