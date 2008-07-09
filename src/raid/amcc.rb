@@ -14,12 +14,10 @@ module RAID
 		def self.query(res)
 			run(" info").each { |l|
 				if l =~ /^c[0-9]+/ then
-					x=l.split(/ +/)
-					version=""
-					run("/#{x[0]} show firmware").each{ |f|
-						if f =~ /Firmware Version/ then
-							version=f.split(/ +/)[-1]
-						end
+					x = l.split(/ +/)
+					version = ''
+					run("/#{x[0]} show firmware").each { |f|
+						version = f.split(/ +/)[-1] if f =~ /Firmware Version/
 					}
 					res << {
 						:driver => 'amcc',
@@ -37,17 +35,17 @@ module RAID
 
 		def _adapter_info
 			res = {}
-			run(" show all").each {|l|
-			if l =~ /^\/c[0-9]+/ then
-				key, value = l.split(/ = /)
-				key.slice!(/^\/c[0-9]+ /)
-				key=case key
-					when 'Serial Number' then 'Serial number'
-					when 'Firmware Version' then 'Firmware version'
-					else key
+			run(" show all").each { |l|
+				if l =~ /^\/c[0-9]+/ then
+					key, value = l.split(/ = /)
+					key.slice!(/^\/c[0-9]+ /)
+					key = case key
+						when 'Serial Number' then 'Serial number'
+						when 'Firmware Version' then 'Firmware version'
+						else key
+						end
+					res[key] = value
 				end
-				res[key]=value
-			end
 			}
 			# as per http://www.3ware.com/KB/article.aspx?id=15127
 			# and http://pci-ids.ucw.cz/iii/?i=13c1
@@ -58,7 +56,7 @@ module RAID
 				when /^9550/ then '1003'
 				when /^9/ then '1002'
 				when /^[78]/ then '1001'
-			end
+				end
 			return res
 		end
 
@@ -69,17 +67,17 @@ module RAID
 		# ======================================================================
 
 		def _task_list
-			res = []
-			return res
+			raise NotImplementedError
 		end
 
 		# ======================================================================
 
 		def log_clear
+			raise NotImplementedError
 		end
 
 		def _log_list
-			[]
+			raise NotImplementedError
 		end
 
 		# ======================================================================
@@ -87,9 +85,9 @@ module RAID
 		def _logical_list
 			# FIXME: spares?
 			@logical = []
-			mapping={} # between units and ports
+			mapping = {} # between units and ports
 
-			run(" show").each { |l|
+			run(' show').each { |l|
 				case l
 	# Unit  UnitType  Status         %RCmpl  %V/I/M  Stripe  Size(GB)  Cache  AVrfy
 	# ------------------------------------------------------------------------------
@@ -97,31 +95,26 @@ module RAID
 	# u1    RAID-5    OK             -       -       64K     931.303   ON     OFF    
 	# u2    RAID-5    OK             -       -       64K     931.303   ON     OFF    
 				when /^u([0-9]+) +(\S+) +(\S+) +(\S+) +(\S+) +(\S+) +([0-9\.]+) +(\S)/
+					m = Regexp.last_match
 					logical << {
-						:num => $1,
+						:num => m[1],
 # FIXME provide Linux device (from sysfs? smartctl?)
 #						:dev => nil,
 						:physical => [],
-						:state => case $3
-							when "OK" then "normal"
-							when /REBUILD/ then "rebuilding"
-							when /INITIALIZING/ then "initializing"
-							else $3
+						:state => case m[3]
+							when 'OK' then 'normal'
+							when /REBUILD/ then 'rebuilding'
+							when /INITIALIZING/ then 'initializing'
+							else m[3]
 							end,
-						:raid_level => $2,
+						:raid_level => m[2],
 						# remove trailing 'K'
-						:stripe => case $6 
-							when "-" then nil
-							else $6[1..-1]
-							end,
+						:stripe => (m[6] == '-') ? nil : m[6][1..-1],
 						# 3ware reports in GiB, einarc in MiB
-						:capacity => 1024*($7.to_f),
-						:cache => case $8
-							when "ON" then "writeback"
-							else "writethrough"
-							end,
+						:capacity => 1024 * (m[7].to_f),
+						:cache => (m[8] == 'ON') ? 'writeback' : 'writethrough',
 					}
-					mapping[$1]=[]
+					mapping[m[1]] = []
 					# ports come later in the output, that's why
 					# we have some 'mapping' magic here
 					# also, unit numbers are NOT contiguous
@@ -132,14 +125,14 @@ module RAID
 	# p2     OK               u1     465.76 GB   976773168     WD-WCASU1168002     
 	# p3     OK               u1     465.76 GB   976773168     WD-WCASU1168560     
 				when /^p([0-9]+)\s+(\S+)\s+u([0-9]+)/
-					unitno=$3
-					portno=$1
+					unitno = $3
+					portno = $1
 					mapping[unitno] << portno
 				end
 			}
 			# put the physical mapping into the logical-disk structure
-			logical.each_index{ |i|
-				logical[i][:physical]=mapping[logical[i][:num]]
+			logical.each_index { |i|
+				logical[i][:physical] = mapping[logical[i][:num]]
 			}
 			return @logical
 		end
@@ -159,32 +152,30 @@ module RAID
 		end
 
 		def _physical_list
-			res={} # overall mapping
-			run(" show").each { |l|
+			res = {} # overall mapping
+			run(' show').each { |l|
 				# don't query ports with no disks on them
 				# that causes tw_cli to throw up :-P
-				case l
-				when /NOT-PRESENT/
-					{} #skip this
-				when /^p([0-9]+) /
-					p=$1
-					res["#{p}"]={}
+				next if l =~ /NOT-PRESENT/
+				if l =~ /^p([0-9]+) /
+					p = $1
+					pd = res[p] = {}
 					# query the details.
-					run("/p#{p} show all").each{ |l|
-					case l
+					run("/p#{p} show all").each { |l|
+						case l
 						when /p#{p} Status = (\S+)/
-							res["#{p}"][:state]=$1.downcase
+							r[:state] = $1.downcase
 						when /Model = (.*)$/
-							res["#{p}"][:model]=$1.strip
+							r[:model] = $1.strip
 						when /Firmware Version = (.*)$/
-							res["#{p}"][:revision]=$1.strip
+							r[:revision] = $1.strip
 						when /Capacity = ([0-9\.]+)/
-							res["#{p}"][:size]=1024*($1.to_f)
+							r[:size] = 1024 * ($1.to_f)
 						when /Serial = (.*)/
-							res["#{p}"][:serial]=$1.strip
-					end # case per_port
+							r[:serial] = $1.strip
+						end # case per_port
 					}
-				end # case this_is_a_valid_port
+				end # if this_is_a_valid_port
 			}
 			return res
 		end
