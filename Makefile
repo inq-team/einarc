@@ -32,7 +32,9 @@ download: \
 	proprietary/V1.72.250_70306.zip \
 	proprietary/ut_linux_megarc_1.11.zip \
 	proprietary/1.01.27_Linux_MegaCli.zip \
-	proprietary/5400s_s73_cli_v10.tar.Z
+	proprietary/5400s_s73_cli_v10.tar.Z \
+	proprietary/tw_cli-linux-x86-9.5.0.1.tgz \
+	proprietary/tw_cli-linux-x86_64-9.5.0.1.tgz
 
 doc: doc/xhtml
 
@@ -100,6 +102,34 @@ tools/lsi_megacli/cli: proprietary/1.01.39_Linux_Cli.zip
 proprietary/1.01.39_Linux_Cli.zip: proprietary/agreed
 	mkdir -p proprietary
 	$(WGET) http://www.lsi.com/support/downloads/megaraid/miscellaneous/linux/1.01.39_Linux_Cli.zip
+
+#===============================================================================
+# Module: amcc
+#===============================================================================
+
+proprietary/tw_cli-linux-x86_64-9.5.0.1.tgz: proprietary/agreed
+	mkdir -p proprietary
+	$(WGET) http://3ware.com/download/Escalade9690SA-Series/9.5.0.1/tw_cli-linux-x86_64-9.5.0.1.tgz 
+
+proprietary/tw_cli-linux-x86-9.5.0.1.tgz: proprietary/agreed
+	mkdir -p proprietary
+	$(WGET) http://3ware.com/download/Escalade9690SA-Series/9.5.0.1/tw_cli-linux-x86-9.5.0.1.tgz 
+
+ifeq ($(TARGET), x86_64)
+tools/amcc/cli: proprietary/tw_cli-linux-x86_64-9.5.0.1.tgz
+		mkdir -p tools/amcc
+		tar xzf  proprietary/tw_cli-linux-x86_64-9.5.0.1.tgz -C tools/amcc --exclude 'tw_cli.8*'
+		mv tools/amcc/tw_cli tools/amcc/cli
+		# prevent repeated download/extraction
+		touch tools/amcc/cli proprietary/tw_cli-linux-x86_64-9.5.0.1.tgz
+else
+tools/amcc/cli: proprietary/tw_cli-linux-x86-9.5.0.1.tgz
+		mkdir -p tools/amcc
+		tar xzf  proprietary/tw_cli-linux-x86-9.5.0.1.tgz -C tools/amcc --exclude 'tw_cli.8*'
+		mv tools/amcc/tw_cli tools/amcc/cli
+		# prevent repeated download/extraction
+		touch tools/amcc/cli proprietary/tw_cli-linux-x86_64-9.5.0.1.tgz
+endif
 
 #===============================================================================
 # Module: lsi_mpt

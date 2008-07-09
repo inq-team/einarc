@@ -39,6 +39,11 @@ RAIDS = {
 		:desc => 'newer Adaptec adapters that use arcconf',
 		:classname => 'AdaptecArcConf',
 		:proprietary => true,
+	},
+	'amcc' => {
+		:desc => '3Ware/AMCC RAID 7/8/9xxx/95xxx series controllers that use tw_cli',
+		:classname => 'Amcc',
+		:proprietary => true,
 	}
 #	'software' => {
 #		:desc => 'Linux software RAID devices',
