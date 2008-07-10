@@ -193,7 +193,7 @@ module RAID
 
 		private
 		def restart_module(mod)
-			msg = `rmmod #{mod}`
+			msg = `rmmod -f #{mod}`
 			raise Error.new(msg) if $?.exitstatus != 0
 			empty = File.open('/proc/partitions').readlines
 
