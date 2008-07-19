@@ -1,9 +1,10 @@
-#
 # vim: ai noexpandtab
 
 module RAID
 	class Amcc < BaseRaid
 		TWCLI = "#{$EINARC_LIB}/amcc/cli"
+		# FIXME get this from configure?
+		SMARTCTL = "/usr/sbin/smartctl"
 
 		def initialize(adapter_num = nil)
 			@adapter_num = adapter_num
@@ -81,6 +82,38 @@ module RAID
 		end
 
 		# ======================================================================
+		
+		# use SMART to get the serial number from each disk
+		# returns a hash with {serialnumber,diskname} where diskname is like 'sda' 
+		private
+		def __get_disk_serials
+			diskserials={}
+			return diskserials if !File.executable?(SMARTCTL)
+			__list_disks.each { |d|
+				devfile=File.join("/dev",d)
+				serial=""
+				`#{SMARTCTL} -i #{devfile}`.each{ |l|
+					serial = l.split(" ")[-1] if l =~ /Serial number/
+				}
+				diskserials[serial]=d
+			}
+			return diskserials
+		end
+
+		# list all disks in the system (e.g. ['sda','sdb','sdc'])
+		private
+		def __list_disks
+			disks=[]
+			Dir.glob('/sys/block/*').each() { |x|
+				# not a ramdisk or loop or somesuch
+				if File.exists?(File.join(x,"device")) then
+					# not removable either
+					a=File.new(File.join(x,"removable"))
+					disks << File.basename(x) if a.readline=="0\n"
+				end
+			}
+			return disks
+		end
 
 		def _logical_list
 			# FIXME: spares?
@@ -98,8 +131,7 @@ module RAID
 					m = Regexp.last_match
 					logical << {
 						:num => m[1],
-# FIXME provide Linux device (from sysfs? smartctl?)
-#						:dev => nil,
+						:dev => nil,
 						:physical => [],
 						:state => case m[3]
 							when 'OK' then 'normal'
@@ -130,9 +162,17 @@ module RAID
 					mapping[unitno] << portno
 				end
 			}
+			# get serial numbers for all disks
+			ds=__get_disk_serials
 			# put the physical mapping into the logical-disk structure
+			# as well as the disk names
 			logical.each_index { |i|
 				logical[i][:physical] = mapping[logical[i][:num]]
+				ser=''
+				run("/u#{logical[i][:num]} show serial").each{ |l|
+					ser=l.split(" = ")[-1] if l =~ /serial number/
+				}
+				logical[i][:dev] = ds[ser]
 			}
 			return @logical
 		end
