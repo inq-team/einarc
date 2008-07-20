@@ -78,7 +78,27 @@ module RAID
 		end
 
 		def _log_list
-			raise NotImplementedError
+			res=[]
+			n=0
+#Ctl  Date                        Severity  Alarm Message
+#------------------------------------------------------------------------------
+#c0   [Tue Jul  8 14:52:10 2008]  INFO      Battery charging completed
+#c0   [Tue Jul  8 18:20:05 2008]  INFO      Verify started: unit=0
+# 1         2   3 4  5  6  7                7
+#c0   [Tue Jul  8 18:20:05 2008]  INFO      Verify started: unit=1
+			run(' show alarms').each { |l|
+				#           1              2      3      4     5     6      7            8
+				if l =~ /^c(\d+) +\[\w+ +(\w+) +(\d+) +(\d+):(\d+):(\d+) +(\d+)\] +\w+ +(.*)/ then
+					res << {
+						:id => n,
+						:time => Time.local($7,$2,$3,$4,$5,$6),
+						:where => $1,
+						:what => $8,
+					}
+					n += 1
+				end
+			}
+			return res
 		end
 
 		# ======================================================================
@@ -260,7 +280,7 @@ module RAID
 		# run one command, instance method
 		private
 		def run(command)
-			#puts("DEBUG: #{TWCLI} /c#{@adapter_num}#{command}")
+#			puts("DEBUG: #{TWCLI} /c#{@adapter_num}#{command}")
 			out = `#{TWCLI} /c#{@adapter_num}#{command}`.split("\n").collect { |l| l.strip }
 			raise Error.new(out.join("\n")) if $?.exitstatus != 0
 			return out
