@@ -1,6 +1,6 @@
 -include Makefile.config
 
-WGET=wget -N -P proprietary
+WGET=wget -q -N -P proprietary
 
 all: tools src/raid/config.rb
 #all: ext/lsi_mpt.so
@@ -65,6 +65,7 @@ tools/areca/cli: proprietary/V1.80A_71012.zip
 		mv tools/areca/cli32 tools/areca/cli; \
 		rm -f tools/areca/cli64; \
 	fi
+	touch tools/areca/cli proprietary/V1.80A_71012.zip
 
 proprietary/V1.80A_71012.zip: proprietary/agreed
 	mkdir -p proprietary
@@ -79,6 +80,7 @@ tools/lsi_megarc/cli: proprietary/ut_linux_megarc_1.11.zip
 	unzip proprietary/ut_linux_megarc_1.11.zip megarc.bin -d tools/lsi_megarc
 	chmod a+rx tools/lsi_megarc/megarc.bin
 	mv tools/lsi_megarc/megarc.bin tools/lsi_megarc/cli
+	touch tools/lsi_megarc/cli proprietary/ut_linux_megarc_1.11.zip
 
 proprietary/ut_linux_megarc_1.11.zip: proprietary/agreed
 	mkdir -p proprietary
@@ -98,6 +100,7 @@ tools/lsi_megacli/cli: proprietary/1.01.39_Linux_Cli.zip
 		mv opt/MegaRAID/MegaCli/MegaCli tools/lsi_megacli/cli; \
 	fi
 	rm -Rf opt tools/lsi_megacli/MegaCli-1.01.39-0.i386.rpm tools/lsi_megacli/MegaCliLin.zip
+	touch tools/lsi_megacli/cli proprietary/1.01.39_Linux_Cli.zip
 
 proprietary/1.01.39_Linux_Cli.zip: proprietary/agreed
 	mkdir -p proprietary

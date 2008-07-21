@@ -4,7 +4,7 @@ module RAID
 	class Amcc < BaseRaid
 		TWCLI = "#{$EINARC_LIB}/amcc/cli"
 		# FIXME get this from configure?
-		SMARTCTL = "/usr/sbin/smartctl"
+		SG3INQ = "/usr/bin/sg_inq"
 
 		def initialize(adapter_num = nil)
 			@adapter_num = adapter_num
@@ -103,17 +103,17 @@ module RAID
 
 		# ======================================================================
 		
-		# use SMART to get the serial number from each disk
+		# use SCSI INQUIRY to get the serial number from each disk
 		# returns a hash with {serialnumber,diskname} where diskname is like 'sda' 
 		private
 		def __get_disk_serials
 			diskserials={}
-			return diskserials if !File.executable?(SMARTCTL)
+			return diskserials if !File.executable?(SG3INQ)
 			__list_disks.each { |d|
 				devfile=File.join("/dev",d)
 				serial=""
-				`#{SMARTCTL} -i #{devfile}`.each{ |l|
-					serial = l.split(" ")[-1] if l =~ /Serial number/
+				`#{SG3INQ} #{devfile}`.each{ |l|
+					serial = l.split(" ")[-1] if l =~ /Unit serial number/
 				}
 				diskserials[serial]=d
 			}
