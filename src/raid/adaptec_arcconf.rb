@@ -6,6 +6,7 @@ module RAID
 			'Adaptec 3805' => ['0285', '02bc'],
 			'Adaptec 5805' => ['0285', '02b6'],
 			'Adaptec 2230S' => ['0286', '028c'],
+			'Adaptec 5405' => ['0285', '02d1'],
 		}
 
 		def initialize(adapter_num = nil)
