@@ -133,29 +133,33 @@ module RAID
 
 		def _physical_list
 			res = {}
-			run_cli('disk info').each { |l|
-				if l =~ /^\s*(\d+)\s+(.................)(.................)(...........)(...........)(.*)$/
-					target = "0:#{$1.strip}"
+			run_cli('disk info').each do |l|
+				if l =~ /^ +\d+ +(\d+) +(\w+ +\w+) +(\S+) +(.+)$/
+					num = $1.strip
+					target = "0:#{num}"
 					d = {
 						:model => $2.strip,
-						:serial => $3.strip,
-						:revision => $4.strip,
-						:size => $5.strip,
-						:state => $6.strip.downcase,
+						:size => $3.strip,
+						:state => $4.strip.downcase,
 					}
-
-					d[:size] = areca2mb(d[:size].gsub(/GB$/, '').to_i)
-					if d[:state] =~ /raidset member\((\d+)\)/
-						rsnum = $1.to_i
-						d[:state] = []
-						volumesets.each { |vs|
-							next unless vs
-							d[:state] << vs[:num] if vs[:raidset] == rsnum
-						}
+					next if d[:state] == 'n.a.'
+					d[:size] = areca2mb(d[:size].strip.gsub(/GB$/, '').to_i)
+#					if d[:state] =~ /raid set # (\d+)/
+#						rsnum = $1.to_i
+#						d[:state] = []
+#						volumesets.each do |vs|
+#							next unless vs
+#							d[:state] << vs[:num] if vs[:raidset] == rsnum
+#						end
+#					end
+					run_cli("disk info drv=#{num}").each do |dl|
+						d[:serial] = $1 if dl =~ /^Serial Number .+: (\S+) +$/
+						d[:state] = $1.downcase if dl =~ /^Device State .+: (\S+) *$/
+						d[:revision] = $1 if dl =~ /^Firmware Rev\. .+: (\S+) +$/
 					end
 					res[target] = d
 				end
-			}
+			end
 			return res
 		end
 
@@ -347,7 +351,7 @@ module RAID
 		def list_volumesets
 			@volumesets = []
 			run_cli('vsf info').each { |l|
-				next unless m = /^\s*(\d+)\s+(.................)\s*(\d+)\s+(.*?)\s+(.*?)\s+(.*?)\s+(.*?)$/.match(l)
+				next unless m = /^\s+(\d+)\s+(\S+)\s+Raid Set #\s+(\d+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+).*$/.match(l)
 				num = m[1].to_i
 				vs = @volumesets[num] = {
 					:num => num,
