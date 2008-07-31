@@ -179,7 +179,7 @@ module RAID
 				{
 					:num => vs[:num],
 					:raid_level => raid_level,
-					:physical => raidsets[vs[:raidset]][:channels].collect { |c| "0:#{c}" },
+					:physical => raidsets[vs[:raidset] + 1][:channels].collect { |c| "0:#{c}" },
 					:capacity => areca2mb(vs[:capacity]),
 					:state => vs[:state],
 					:dev => @dev ? @dev[vs[:num] - 1] : nil,
@@ -320,9 +320,9 @@ module RAID
 			run_cli("set password=#{ARECA_PASSWORD}", 'Adapter refused our password')
 		end
 
-		#Num Name             Disks TotalCap  FreeCap DiskChannels       State
+		# #  Name             Disks TotalCap  FreeCap DiskChannels       State
 		#===============================================================================
-		# 1  Raid Set # 00        1   80.0GB   80.0GB 1                  Normal
+		# 1  Raid Set # 00        1  250.0GB  239.5GB 3                  Normal
 
 		def list_raidsets
 			@raidsets = []
@@ -344,9 +344,9 @@ module RAID
 			return @raidsets;
 		end
 
-		# # Name             Raid# Level   Capacity Ch/Id/Lun  State
+		# # Name             Raid Name       Level   Capacity Ch/Id/Lun  State
 		#===============================================================================
-		# 1 ARC-1120-VOL#00    1   Raid0     80.0GB 00/00/00   Normal
+		# 1 ARC-1210-VOL#00  Raid Set # 00   Raid0     10.5GB 00/00/00   Normal
 
 		def list_volumesets
 			@volumesets = []
