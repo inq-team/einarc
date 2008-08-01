@@ -189,7 +189,7 @@ module RAID
 
 		def logical_add(raid_level, discs, sizes = nil, options = nil)
 			# Parse physical discs
-			discs = discs.split(/,/) unless discs.is_a?(Array)
+			discs = discs.split(/,/) if discs.respond_to(:split)
 			discs.collect! { |d| physical2cli(d) }
 			discs.sort! { |a, b| a <=> b }
 
@@ -230,7 +230,8 @@ module RAID
 			sizes = [sizes] unless sizes.respond_to?(:each)
 			sizes.each { |s|
 				enter_password
-				run_cli("vsf create raid=#{raidset} capacity=#{mb2areca(s.to_f)} level=#{raid_level}", 'while creating volumeset')
+				s ? (size = s) : (size = raidsets[raidset][:freecap])
+				run_cli("vsf create raid=#{raidset} capacity=#{size} level=#{raid_level}", 'while creating volumeset')
 			}
 			@volumesets = @raidsets = nil
 		end
