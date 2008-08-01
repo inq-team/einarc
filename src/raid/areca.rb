@@ -170,8 +170,8 @@ module RAID
 				next unless vs
 				raid_level = vs[:raid_level]
 				if raid_level == '0+1' then
-					raid_level = if raidsets[vs[:raidset]][:channels].size % 2 == 0
-						(raidsets[vs[:raidset]][:channels].size == 2) ? '1' : '10'
+					raid_level = if raidsets[vs[:raidset] + 1][:channels].size % 2 == 0
+						(raidsets[vs[:raidset] + 1][:channels].size == 2) ? '1' : '10'
 					else
 						'1E'
 					end
@@ -189,14 +189,14 @@ module RAID
 
 		def logical_add(raid_level, discs, sizes = nil, options = nil)
 			# Parse physical discs
-			discs = discs.split(/,/) if discs.respond_to(:split)
+			discs = discs.split(/,/) if discs.respond_to?(:split)
 			discs.collect! { |d| physical2cli(d) }
 			discs.sort! { |a, b| a <=> b }
-
 			case raid_level.downcase
 			when 'passthrough'
 				# Creating passthrough disc
 				raise Error.new('Passthrough requires exactly 1 physical disc') unless discs.size == 1
+				raise Error.new('Disc sizes not required for passthrougth') if sizes
 				enter_password
 				run_cli("disk create drv=#{discs}", 'while creating passthrough disc')
 				@volumesets = @raidsets = nil
@@ -228,9 +228,11 @@ module RAID
 			# Step 2: create volumesets in designated raidset
 			sizes = sizes.split(/,/) if sizes.respond_to?(:split)
 			sizes = [sizes] unless sizes.respond_to?(:each)
+			puts "Sizes: #{sizes.inspect}"
 			sizes.each { |s|
 				enter_password
 				s ? (size = s) : (size = raidsets[raidset][:freecap])
+				puts "Size: #{size}"
 				run_cli("vsf create raid=#{raidset} capacity=#{size} level=#{raid_level}", 'while creating volumeset')
 			}
 			@volumesets = @raidsets = nil
@@ -257,7 +259,7 @@ module RAID
 				enter_password
 				run_cli(
 					if vs[:raid_level] == 'passthrough'
-						"disk delete drv=#{raidsets[vs[:raidset]][:channels][0]}"
+						"disk delete drv=#{raidsets[vs[:raidset] + 1][:channels][0]}"
 					else
 						"vsf delete vol=1"
 					end,
@@ -466,6 +468,8 @@ module RAID
 				if e.text =~ /Invaild Data Returned/
 					tries -= 1
 					retry if tries >= 0
+				else
+					raise Error.new(e.text)
 				end
 			end
 
