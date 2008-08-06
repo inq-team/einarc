@@ -228,11 +228,9 @@ module RAID
 			# Step 2: create volumesets in designated raidset
 			sizes = sizes.split(/,/) if sizes.respond_to?(:split)
 			sizes = [sizes] unless sizes.respond_to?(:each)
-			puts "Sizes: #{sizes.inspect}"
 			sizes.each { |s|
 				enter_password
 				s ? (size = s) : (size = raidsets[raidset][:freecap])
-				puts "Size: #{size}"
 				run_cli("vsf create raid=#{raidset} capacity=#{size} level=#{raid_level}", 'while creating volumeset')
 			}
 			@volumesets = @raidsets = nil
