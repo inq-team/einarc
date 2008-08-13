@@ -48,7 +48,6 @@ module RAID
 			File.open('/proc/mdstat', 'r') { |f|
 				f.each_line { |l|
 					l.chop!
-#					p l
 					case l
 					when /^md(\d+)\s*:\s*(\S+)\s*(\S+)\s*(.*)$/
 						num = $1.to_i
@@ -85,8 +84,6 @@ module RAID
 			# Replace SCSI enumerations by devices
 			discs.map!{|d| scsi_to_device(d) }
 			
-#			puts "DEBUG: #{discs.inspect}"
-			
 			# Checking disk for free
 			for d in discs
 				raise Error.new("Device #{d} is allready in RAID") if raid_member?(d)
@@ -99,10 +96,7 @@ module RAID
 				discs = devices.select{|d| not raid_member?(d) }
 				rise Error.new('No free disks') if discs.empty?
 			end
-#			puts "DEBUG: #{discs.inspect}"
-
 #linear, raid0, 0, stripe, raid1, 1, mirror, raid4, 4, raid5,  5,  raid6, 6,  raid10,  10, multipath, mp, faulty
-
 			case raid_level.downcase
 			when 'passthrough'
 				# Creating passthrough disc
@@ -117,7 +111,6 @@ module RAID
 			
 			# Run mdadm command to create RAID
 			out = `yes | mdadm --create --verbose #{next_raid_device_name} --auto=yes #{discs.size == 1 ? '--force' : ''} --level=#{raid_level} --raid-devices=#{discs.size} #{discs.join(' ')}`
-#			puts "DEBUG: yes | mdadm --create --verbose #{next_raid_device_name} --auto=yes #{discs.size == 1 ? '--force' : ''} --level=#{raid_level} --raid-devices=#{discs.size} #{discs.join(' ')}"
 			raise Error.new(out) unless $?.success?
 			
 			# Save configuration
@@ -128,20 +121,37 @@ module RAID
 		end
 
 		def logical_delete(id)
+				# Find udi ofdeleting RAID
 				udi = `hal-find-by-property --key block.device --string /dev/md#{id}`.chomp
-				`hal-device -r #{udi}`
+				
+				# HACK: delete udi from hal
+				`hal-device -r #{udi}` unless udi.empty?
+				
+				# Stop RAID
 				`mdadm --stop /dev/md#{id}`
+				
+				# Save config
 				`mdadm --detail --scan > /etc/mdadm.conf`
+				
+				# Refresh lists
 				@raids = @devices = nil
 		end
 
 		def logical_clear
 			for r in raids
+				# Find udi of deletin RAID
 				udi = `hal-find-by-property --key block.device --string #{r}`.chomp
+				
+				# HACK: delete udi from hal
 				`hal-device -r #{udi}` unless udi.empty?
+				
+				# Stop RAID
 				`mdadm --stop #{r}`
 			end
+			# Save config
 			`cat /dev/null >/etc/mdadm.conf`
+			
+			# Refresh lists
 			@raids = @devices = nil
 		end
 
@@ -219,7 +229,6 @@ module RAID
 		def parse_physical_string(str)
 			res = []
 			str.split(/ /).each { |ph|
-#				p ph
 				res[$2.to_i] = phys_to_scsi($1) if ph =~ /^(.+)\[(\d+)\]$/
 			}
 			return res
@@ -238,7 +247,6 @@ module RAID
 			end
 			
 			udis.map{|udi| `hal-get-property --udi #{udi} --key block.device`.chomp }
-			#['dev/sdb', '/dev/sdc']
 		end
 		
 		def devices
@@ -246,22 +254,27 @@ module RAID
 		end
 		
 		def raid_member?(device)
+			# Delete '/dev/' before device name
 			name = device.gsub(/^\/dev\//, '')
+			
+			# Check name in mdstat file
 			not File.read('/proc/mdstat').grep(Regexp.new(name)).empty?
 		end
 		
 		def list_raids
 			res = []
 			for l in File.readlines('/proc/mdstat')
+				# md0 : active raid0 sdb[1] sdc[0]
 				res[$1.to_i] = "/dev/md#{$1}" if l =~ /^md(\d+)\s*:\s*\S+\s*\S+\s*.*$/
 			end
-			res
+			res.compact
 		end
 		
 		def raids
 			@raids ||= list_raids
 		end
 		
+		# Return next free name for md device
 		def next_raid_device_name
 			last_id = raids.map{|dev| dev.gsub(/\/dev\/md/, '').to_i }.sort[-1]
 			last_id.nil? ? "/dev/md0" : "/dev/md#{last_id + 1}"
