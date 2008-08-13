@@ -30,6 +30,16 @@ module RAID
 
 		def _task_list
 			res = []
+			lines = File.readlines('/proc/mdstat')
+			lines.each_with_index do |l, i|
+				if l =~ /^\s+\[.*\]\s+(\S+) = (\S+)%.*/
+					res << {
+						:what => $1,
+						:progress => $2,
+						:where => lines[i - 2].gsub(/ : .+/, '').chomp,
+					}
+				end
+			end
 			return res
 		end
 
@@ -49,13 +59,16 @@ module RAID
 				f.each_line { |l|
 					l.chop!
 					case l
-					when /^md(\d+)\s*:\s*(\S+)\s*(\S+)\s*(.*)$/
+					when /^md(\d+) : (active \S+|inactive) (.+)$/
 						num = $1.to_i
-						state = $2
-						raid_level = $3
-						phys = parse_physical_string($4)
-
-						state = 'normal' if state == 'active'
+						if $2 == 'inactive'
+							state = 'inactive'
+							raid_level = ''
+						elsif $2.split(' ')[0] == 'active'
+							state = 'normal'
+							raid_level = $2.split(' ')[1]
+						end
+						phys = parse_physical_string($3)
 						raid_level = $1.to_i if raid_level =~ /raid(\d+)/
 						
 						ld = @logical[num] = {
@@ -235,9 +248,9 @@ module RAID
 		def parse_physical_string(str)
 			res = []
 			str.split(/ /).each { |ph|
-				res[$2.to_i] = phys_to_scsi($1) if ph =~ /^(.+)\[(\d+)\]$/
+				res[$2.to_i] = phys_to_scsi($1) if ph =~ /^(.+)\[(\d+)\].*$/
 			}
-			return res
+			return res.compact
 		end
 		
 		def list_devices
