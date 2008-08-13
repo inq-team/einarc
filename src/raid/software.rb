@@ -38,7 +38,7 @@ module RAID
 			res = []
 			lines = File.readlines('/proc/mdstat')
 			lines.each_with_index do |l, i|
-				if l =~ /^\s+\[.*\]\s+(\S+) = (\S+)%.*/
+				if l =~ /^\s+\[.*\]\s+(\S+)\s+=\s+(\S+)%.*/
 					res << {
 						:id => res.size,
 						:what => $1,
