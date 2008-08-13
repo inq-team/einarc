@@ -121,6 +121,9 @@ module RAID
 		end
 
 		def logical_delete(id)
+				# Unmount
+				`umount /dev/md#{id} 2>/dev/null`
+				
 				# Find udi ofdeleting RAID
 				udi = `hal-find-by-property --key block.device --string /dev/md#{id}`.chomp
 				
@@ -139,6 +142,9 @@ module RAID
 
 		def logical_clear
 			for r in raids
+				# Unmount
+				`umount #{r} 2>/dev/null`
+			
 				# Find udi of deletin RAID
 				udi = `hal-find-by-property --key block.device --string #{r}`.chomp
 				
