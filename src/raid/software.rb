@@ -93,7 +93,7 @@ module RAID
 		end
 
 		def logical_add(raid_level, discs = nil, sizes = nil)
-			# Normalize arguments: make "discs" and "sizes" an array, "raid_level" a string
+			# Normalize arguments: "discs" and "sizes" are an array, "raid_level" is a string
 			if discs
 				discs = discs.split(/,/) if discs.respond_to?(:split)
 				discs = [discs] unless discs.respond_to?(:each)
@@ -101,34 +101,34 @@ module RAID
 			raid_level = raid_level.to_s
 			
 			# Replace SCSI enumerations by devices
-			discs.map!{|d| scsi_to_device(d) }
+			discs.map!{ |d| scsi_to_device(d) }
 			
-			# Checking disk for free
+			# Check if discs are already RAID members
 			for d in discs
-				raise Error.new("Device #{d} is allready in RAID") if raid_member?(d)
+				raise Error.new("Device #{d} is already in RAID") if raid_member?(d)
 			end
 			
-			raise Error.new('Software RAID does not support setting of the sizes') if sizes
+			raise Error.new('Software RAID does not support size setting') if sizes
 			
 			# If no discs use all free devices
 			if discs.empty?
-				discs = devices.select{|d| not raid_member?(d) }
-				rise Error.new('No free disks') if discs.empty?
+				discs = devices.select{ |d| not raid_member?(d) }
+				rise Error.new('No free discs') if discs.empty?
 			end
-#linear, raid0, 0, stripe, raid1, 1, mirror, raid4, 4, raid5,  5,  raid6, 6,  raid10,  10, multipath, mp, faulty
+
+			#linear, raid0, 0, stripe, raid1, 1, mirror, raid4, 4, raid5, 5, raid6, 6, raid10, 10, multipath, mp, faulty
 			case raid_level.downcase
 			when 'passthrough'
-				# Creating passthrough disc
 				raise Error.new('Passthrough requires exactly 1 physical disc') unless discs.size == 1
 				raid_level = 'linear'
 			when '5'
-				raise Error.new('RAID 5 requires more than 3 discs') unless discs.size > 2
+				raise Error.new('RAID 5 requires 3 or more discs') unless discs.size > 2
 			end
 			
 			# Unmount all devices
-			discs.each{|d| `umount "#{d}" 2>/dev/null` }
+			discs.each{ |d| `umount "#{d}" 2>/dev/null` }
 			
-			# Run mdadm command to create RAID
+			# Creat RAID using mdadm
 			out = `yes | mdadm --create --verbose #{next_raid_device_name} --auto=yes #{discs.size == 1 ? '--force' : ''} --level=#{raid_level} --raid-devices=#{discs.size} #{discs.join(' ')}`
 			raise Error.new(out) unless $?.success?
 			
@@ -140,19 +140,19 @@ module RAID
 		end
 
 		def logical_delete(id)
-				# Unmount
+				# Unmount it first
 				`umount /dev/md#{id} 2>/dev/null`
 				
-				# Find udi ofdeleting RAID
+				# HAL's UDI of array we want to delete
 				udi = `hal-find-by-property --key block.device --string /dev/md#{id}`.chomp
 				
-				# HACK: delete udi from hal
+				# Delete UDI from HAL
 				`hal-device -r #{udi}` unless udi.empty?
 				
 				# Stop RAID
 				`mdadm --stop /dev/md#{id}`
 				
-				# Save config
+				# Save configuration
 				`mdadm --detail --scan > /etc/mdadm.conf`
 				
 				# Refresh lists
@@ -161,19 +161,19 @@ module RAID
 
 		def logical_clear
 			for r in raids
-				# Unmount
+				# Unmount it first
 				`umount #{r} 2>/dev/null`
 			
-				# Find udi of deletin RAID
+				# HAL's UDI of array we want to delete
 				udi = `hal-find-by-property --key block.device --string #{r}`.chomp
 				
-				# HACK: delete udi from hal
+				# Delete UDI from HAL
 				`hal-device -r #{udi}` unless udi.empty?
 				
 				# Stop RAID
 				`mdadm --stop #{r}`
 			end
-			# Save config
+			# Save configuration
 			`cat /dev/null >/etc/mdadm.conf`
 			
 			# Refresh lists
@@ -181,13 +181,13 @@ module RAID
 		end
 
 		def _physical_list
-			# Find all storage udis by hal
+			# Find all storage hardware from HAL
 			udis = `hal-find-by-property  --key storage.drive_type --string disk`.split("\n")
 			
-			# Find all raid udis
+			# Find all RAIDs
 			excluded_udis = `hal-find-by-capability --capability storage.linux_raid`.split("\n")
 
-			# Delete all raid udis from udi list
+			# Remove RAID devices from found hardware list
 			for udi in excluded_udis
 				udis.delete(udi)
 			end
@@ -195,7 +195,7 @@ module RAID
 			# Resulting hash
 			res = {}
 			
-			# Extracting data from hal
+			# Extracting data from HAL
 			for udi in udis
 				d = {}
 				d[:model] = `hal-get-property --udi #{udi} --key storage.model`.chomp
@@ -232,8 +232,8 @@ module RAID
 		end
 
 		def get_adapter_rebuildrate(x = nil)
+			# Should work tweaking /proc/sys/dev/raid/speed_limit_min
 			raise NotImplementedError
-			# should work tweaking /proc/sys/dev/raid/speed_limit_min
 		end
 
 		def set_physical_hotspare_0(drv)
@@ -260,18 +260,18 @@ module RAID
 		end
 		
 		def list_devices
-			# Find all storage udis by hal
+			# Find all storage hardware from HAL
 			udis = `hal-find-by-property  --key storage.drive_type --string disk`.split("\n")
 			
-			# Find all raid udis
+			# Find all RAIDs
 			excluded_udis = `hal-find-by-capability --capability storage.linux_raid`.split("\n")
 
-			# Delete all raid udis from udi list
+			# Remove RAID devices from found hardware list
 			for udi in excluded_udis
 				udis.delete(udi)
 			end
 			
-			return dis.map{|udi| `hal-get-property --udi #{udi} --key block.device`.chomp }
+			return dis.map{ |udi| `hal-get-property --udi #{udi} --key block.device`.chomp }
 		end
 		
 		def devices
@@ -282,7 +282,7 @@ module RAID
 			# Delete '/dev/' before device name
 			name = device.gsub(/^\/dev\//, '')
 			
-			# Check name in mdstat file
+			# Check name existence in mdstat file
 			return (not File.read('/proc/mdstat').grep(Regexp.new(name)).empty?)
 		end
 		
@@ -299,9 +299,9 @@ module RAID
 			@raids ||= list_raids
 		end
 		
-		# Return next free name for md device
+		# Returns next free name for md device
 		def next_raid_device_name
-			last_id = raids.map{|dev| dev.gsub(/\/dev\/md/, '').to_i }.sort[-1]
+			last_id = raids.map{ |dev| dev.gsub(/\/dev\/md/, '').to_i }.sort[-1]
 			return last_id.nil? ? "/dev/md0" : "/dev/md#{last_id + 1}"
 		end
 
