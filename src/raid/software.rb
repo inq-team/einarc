@@ -19,7 +19,12 @@ module RAID
 		# ======================================================================
 
 		def _adapter_info
-			{}
+			res = {}
+			res['Controller Name'] = 'Linux software RAID'
+			res['RAID Level Supported'] = 'linear, 0, 1, 4, 5, 6, 10, mp, faulty'
+			res['Version'] = `uname -r`
+			res['Current Time'] = `date`
+			return res
 		end
 
 		def adapter_restart
