@@ -1,7 +1,7 @@
 module RAID
 	class Software < BaseRaid
 		def initialize(adapter_num = nil)
-			@dev = []
+			`mdadm -As 2>/dev/null`
 		end
 
 		# ======================================================================
@@ -85,7 +85,7 @@ module RAID
 			# Replace SCSI enumerations by devices
 			discs.map!{|d| scsi_to_device(d) }
 			
-			puts "DEBUG: #{discs.inspect}"
+#			puts "DEBUG: #{discs.inspect}"
 			
 			# Checking disk for free
 			for d in discs
@@ -95,10 +95,11 @@ module RAID
 			raise Error.new('Software RAID does not support setting of the sizes') if sizes
 			
 			# If no discs use all free devices
-			if discs.nil?
+			if discs.empty?
 				discs = devices.select{|d| not raid_member?(d) }
 				rise Error.new('No free disks') if discs.empty?
 			end
+#			puts "DEBUG: #{discs.inspect}"
 
 #linear, raid0, 0, stripe, raid1, 1, mirror, raid4, 4, raid5,  5,  raid6, 6,  raid10,  10, multipath, mp, faulty
 
@@ -115,21 +116,33 @@ module RAID
 			discs.each{|d| `umount "#{d}" 2>/dev/null` }
 			
 			# Run mdadm command to create RAID
-			`mdadm --create --verbose #{next_raid_device_name} --auto=yes #{devices.size == 1 ? '--force' : ''} --level=#{raid_level} --raid-devices=#{devices.size} #{devices.join(' ')}`
+			out = `yes | mdadm --create --verbose #{next_raid_device_name} --auto=yes #{discs.size == 1 ? '--force' : ''} --level=#{raid_level} --raid-devices=#{discs.size} #{discs.join(' ')}`
+#			puts "DEBUG: yes | mdadm --create --verbose #{next_raid_device_name} --auto=yes #{discs.size == 1 ? '--force' : ''} --level=#{raid_level} --raid-devices=#{discs.size} #{discs.join(' ')}"
+			raise Error.new(out) unless $?.success?
 			
 			# Save configuration
-			# TODO:
+			`mdadm --detail --scan > /etc/mdadm.conf`
 			
 			# Refresh lists
 			@raids = @devices = nil
 		end
 
 		def logical_delete(id)
-			raise NotImplementedError
+				udi = `hal-find-by-property --key block.device --string /dev/md#{id}`.chomp
+				`hal-device -r #{udi}`
+				`mdadm --stop /dev/md#{id}`
+				`mdadm --detail --scan > /etc/mdadm.conf`
+				@raids = @devices = nil
 		end
 
 		def logical_clear
-			raise NotImplementedError
+			for r in raids
+				udi = `hal-find-by-property --key block.device --string #{r}`.chomp
+				`hal-device -r #{udi}` unless udi.empty?
+				`mdadm --stop #{r}`
+			end
+			`cat /dev/null >/etc/mdadm.conf`
+			@raids = @devices = nil
 		end
 
 		def _physical_list
@@ -151,7 +164,7 @@ module RAID
 			for udi in udis
 				d = {}
 				d[:model] = `hal-get-property --udi #{udi} --key storage.model`.chomp
-				d[:size] = `hal-get-property --udi #{udi} --key storage.size`.to_i / 1000000000.0
+				d[:size] = `hal-get-property --udi #{udi} --key storage.size`.to_i / 1073741824.0
 				d[:serial] = `hal-get-property --udi #{udi} --key storage.serial`.chomp
 				d[:revision] = `hal-get-property --udi #{udi} --key storage.firmware_version`.chomp
 				device = `hal-get-property --udi #{udi} --key block.device`.chomp
@@ -233,18 +246,16 @@ module RAID
 		end
 		
 		def raid_member?(device)
-			raid_udis = `hal-find-by-capability --capability storage.linux_raid`.split("\n")
-			busied_udis = []
-			for udi in raid_udis
-				busied_udis += `hal-get-property --udi #{udi} --key storage.linux_raid.components`.split(' ')
-			end
-			busied_devices = busied_udis.map{|udi| `hal-get-property --udi #{udi} --key block.device`.chomp }
-			busied_devices.include?(device)
+			name = device.gsub(/^\/dev\//, '')
+			not File.read('/proc/mdstat').grep(Regexp.new(name)).empty?
 		end
 		
 		def list_raids
-			raid_udis = `hal-find-by-capability --capability storage.linux_raid`.split("\n")
-			raid_udis.map{|udi| `hal-get-property --udi #{udi} --key block.device`.chomp }
+			res = []
+			for l in File.readlines('/proc/mdstat')
+				res[$1.to_i] = "/dev/md#{$1}" if l =~ /^md(\d+)\s*:\s*\S+\s*\S+\s*.*$/
+			end
+			res
 		end
 		
 		def raids
