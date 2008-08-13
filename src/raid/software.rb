@@ -20,15 +20,16 @@ module RAID
 
 		def _adapter_info
 			res = {}
-			res['Controller Name'] = 'Linux software RAID'
+			res['Controller Name'] = 'Linux software RAID (md)'
 			res['RAID Level Supported'] = 'linear, 0, 1, 4, 5, 6, 10, mp, faulty'
-			res['Version'] = `uname -r`
+			res['Kernel Version'] = `uname -r`
 			res['Current Time'] = `date`
+			res['mdadm Version'] = `mdadm -V 2>&1`
 			return res
 		end
 
 		def adapter_restart
-#			restart_module('megaraid_sas')
+			raise NotImplementedError
 		end
 
 		# ======================================================================
@@ -52,11 +53,14 @@ module RAID
 		# ======================================================================
 
 		def log_clear
+			raise NotImplementedError
 		end
 
 		def _log_list
-			[]
+			raise NotImplementedError
 		end
+
+		# ======================================================================
 
 		def _logical_list
 			@logical = []
@@ -92,6 +96,8 @@ module RAID
 			return @logical
 		end
 
+		# ======================================================================
+
 		def logical_add(raid_level, discs = nil, sizes = nil)
 			# Normalize arguments: "discs" and "sizes" are an array, "raid_level" is a string
 			if discs
@@ -126,10 +132,10 @@ module RAID
 			end
 			
 			# Unmount all devices
-			discs.each{ |d| `umount "#{d}" 2>/dev/null` }
+			discs.each{ |d| `umount -f "#{d}" 2>/dev/null` }
 			
 			# Creat RAID using mdadm
-			out = `yes | mdadm --create --verbose #{next_raid_device_name} --auto=yes #{discs.size == 1 ? '--force' : ''} --level=#{raid_level} --raid-devices=#{discs.size} #{discs.join(' ')}`
+			out = `yes | mdadm --create --verbose #{next_raid_device_name} --auto=yes --force --level=#{raid_level} --raid-devices=#{discs.size} #{discs.join(' ')}`
 			raise Error.new(out) unless $?.success?
 			
 			# Save configuration
@@ -139,9 +145,11 @@ module RAID
 			@raids = @devices = nil
 		end
 
+		# ======================================================================
+
 		def logical_delete(id)
 				# Unmount it first
-				`umount /dev/md#{id} 2>/dev/null`
+				`umount -f /dev/md#{id} 2>/dev/null`
 				
 				# HAL's UDI of array we want to delete
 				udi = `hal-find-by-property --key block.device --string /dev/md#{id}`.chomp
@@ -159,26 +167,20 @@ module RAID
 				@raids = @devices = nil
 		end
 
+		# ======================================================================
+
 		def logical_clear
-			for r in raids
-				# Unmount it first
-				`umount #{r} 2>/dev/null`
+			# Consistently delete all devices
+			raids.each{|r| logical_delete(r.gsub(/\/dev\/md/, '')) }
 			
-				# HAL's UDI of array we want to delete
-				udi = `hal-find-by-property --key block.device --string #{r}`.chomp
-				
-				# Delete UDI from HAL
-				`hal-device -r #{udi}` unless udi.empty?
-				
-				# Stop RAID
-				`mdadm --stop #{r}`
-			end
 			# Save configuration
 			`cat /dev/null >/etc/mdadm.conf`
 			
 			# Refresh lists
 			@raids = @devices = nil
 		end
+
+		# ======================================================================
 
 		def _physical_list
 			# Find all storage hardware from HAL
@@ -231,10 +233,14 @@ module RAID
 			[ '0', '1', '5', '6' ]
 		end
 
+		# ======================================================================
+
 		def get_adapter_rebuildrate(x = nil)
 			# Should work tweaking /proc/sys/dev/raid/speed_limit_min
 			raise NotImplementedError
 		end
+
+		# ======================================================================
 
 		def set_physical_hotspare_0(drv)
 			run("-PDHSP -Rmv -PhysDrv [#{drv}] #{@args}")
@@ -243,12 +249,16 @@ module RAID
 		def set_physical_hotspare_1(drv)
 			run("-PDHSP -Set -PhysDrv [#{drv}] #{@args}")
 		end
-		
+
+		# ======================================================================
+
 		def get_logical_stripe(num)
 			ld = _logical_list[num.to_i]
 			raise Error.new("Unknown logical disc \"#{num}\"") unless ld
 			return ld[:stripe]
 		end
+
+		# ======================================================================
 
 		private
 		def parse_physical_string(str)
