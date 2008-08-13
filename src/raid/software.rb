@@ -34,6 +34,7 @@ module RAID
 			lines.each_with_index do |l, i|
 				if l =~ /^\s+\[.*\]\s+(\S+) = (\S+)%.*/
 					res << {
+						:id => res.size,
 						:what => $1,
 						:progress => $2,
 						:where => lines[i - 2].gsub(/ : .+/, '').chomp,
@@ -206,7 +207,7 @@ module RAID
 				res[target] = d
 			end
 			
-			res
+			return res
 		end
 
 		# ======================================================================
@@ -265,7 +266,7 @@ module RAID
 				udis.delete(udi)
 			end
 			
-			udis.map{|udi| `hal-get-property --udi #{udi} --key block.device`.chomp }
+			return dis.map{|udi| `hal-get-property --udi #{udi} --key block.device`.chomp }
 		end
 		
 		def devices
@@ -277,7 +278,7 @@ module RAID
 			name = device.gsub(/^\/dev\//, '')
 			
 			# Check name in mdstat file
-			not File.read('/proc/mdstat').grep(Regexp.new(name)).empty?
+			return (not File.read('/proc/mdstat').grep(Regexp.new(name)).empty?)
 		end
 		
 		def list_raids
@@ -286,7 +287,7 @@ module RAID
 				# md0 : active raid0 sdb[1] sdc[0]
 				res[$1.to_i] = "/dev/md#{$1}" if l =~ /^md(\d+)\s*:\s*\S+\s*\S+\s*.*$/
 			end
-			res.compact
+			return res.compact
 		end
 		
 		def raids
@@ -296,7 +297,7 @@ module RAID
 		# Return next free name for md device
 		def next_raid_device_name
 			last_id = raids.map{|dev| dev.gsub(/\/dev\/md/, '').to_i }.sort[-1]
-			last_id.nil? ? "/dev/md0" : "/dev/md#{last_id + 1}"
+			return last_id.nil? ? "/dev/md0" : "/dev/md#{last_id + 1}"
 		end
 
 		# Converts physical name (sda) to SCSI enumeration (1:0)
@@ -321,7 +322,7 @@ module RAID
 			res = "/dev/sd" if parts[0] == '0'
 			res += ('a'[0] + parts[1].to_i).chr
 			res += parts[2].to_s if parts.size == 3
-			res
+			return res
 		end
 	end
 end
