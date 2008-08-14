@@ -251,6 +251,7 @@ module RAID
 		end
 
 		def set_physical_hotspare_1(drv)
+			raise Error.new("Device #{drv} is already in RAID") if raid_member?(scsi_to_device(drv))
 			raids.each { |r| `mdadm #{r} -a #{scsi_to_device(drv)}` }
 		end
 
