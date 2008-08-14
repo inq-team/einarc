@@ -139,7 +139,7 @@ module RAID
 			raise Error.new(out) unless $?.success?
 			
 			# Save configuration
-			`mdadm --detail --scan > /etc/mdadm.conf`
+			`mdadm --detail --scan >/etc/mdadm.conf`
 			
 			# Refresh lists
 			@raids = @devices = nil
@@ -161,7 +161,7 @@ module RAID
 				`mdadm --stop /dev/md#{id}`
 				
 				# Save configuration
-				`mdadm --detail --scan > /etc/mdadm.conf`
+				`mdadm --detail --scan >/etc/mdadm.conf`
 				
 				# Refresh lists
 				@raids = @devices = nil
@@ -206,7 +206,11 @@ module RAID
 				d[:revision] = `hal-get-property --udi #{udi} --key storage.firmware_version`.chomp
 				device = `hal-get-property --udi #{udi} --key block.device`.chomp
 				if raid_member?(device)
-					d[:state] = 'RAID Member'
+					if spare?(device)
+						d[:state] = 'Spare'
+					else
+						d[:state] = 'RAID Member'
+					end
 				else
 					d[:state] = 'Free'
 				end
@@ -243,11 +247,11 @@ module RAID
 		# ======================================================================
 
 		def set_physical_hotspare_0(drv)
-			run("-PDHSP -Rmv -PhysDrv [#{drv}] #{@args}")
+			raids.each { |r| `mdadm #{r} -r #{scsi_to_device(drv)}` }
 		end
 
 		def set_physical_hotspare_1(drv)
-			run("-PDHSP -Set -PhysDrv [#{drv}] #{@args}")
+			raids.each { |r| `mdadm #{r} -a #{scsi_to_device(drv)}` }
 		end
 
 		# ======================================================================
@@ -295,6 +299,17 @@ module RAID
 			# Check name existence in mdstat file
 			return (not File.read('/proc/mdstat').grep(Regexp.new(name)).empty?)
 		end
+
+		def spare?(device)
+			# Delete '/dev/' before device name
+			name = device.gsub(/^\/dev\//, '')
+			
+			# Ex. /dev/sda[0](S)
+			spare_pattern = Regexp.new("#{name}\\[.*\\]\\(S\\)")
+
+			# Check spare existence in mdstat file
+			return (not File.read('/proc/mdstat').grep(spare_pattern).empty?)
+		end		
 		
 		def list_raids
 			res = []
