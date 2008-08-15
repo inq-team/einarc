@@ -1,7 +1,14 @@
 module RAID
 	class Software < BaseRaid
 		def initialize(adapter_num = nil)
-			`mdadm -As 2>/dev/null`
+			for l in `mdadm --examine --scan`.grep /^ARRAY.+$/
+				vars = l.split(' ')
+				name = vars[1]
+				uuid = vars[4].gsub(/UUID=/, '')
+				unless active?(name)
+					`mdadm -A -u #{uuid} #{name}`
+				end
+			end
 		end
 
 		# ======================================================================
@@ -138,9 +145,6 @@ module RAID
 			out = `yes | mdadm --create --verbose #{next_raid_device_name} --auto=yes --force --level=#{raid_level} --raid-devices=#{discs.size} #{discs.join(' ')}`
 			raise Error.new(out) unless $?.success?
 			
-			# Save configuration
-			`mdadm --detail --scan >/etc/mdadm.conf`
-			
 			# Refresh lists
 			@raids = @devices = nil
 		end
@@ -151,17 +155,24 @@ module RAID
 				# Unmount it first
 				`umount -f /dev/md#{id} 2>/dev/null`
 				
+				# Find all RAIDs
+				raid_udis = `hal-find-by-capability --capability storage.linux_raid`.split("\n")
+				
 				# HAL's UDI of array we want to delete
-				udi = `hal-find-by-property --key block.device --string /dev/md#{id}`.chomp
+				udi_to_delete = raid_udis.select{|udi| 
+					`hal-get-property --udi #{udi} --key block.device`.chomp ==  "/dev/md#{id}" }[0]
+	
+				# HACK: Delete UDI from HAL
+				`hal-device -r #{udi_to_delete}` unless udi_to_delete.nil?
 				
-				# Delete UDI from HAL
-				`hal-device -r #{udi}` unless udi.empty?
-				
+				# Get list of disks
+				disks = devices_of("/dev/md#{id}")
+
 				# Stop RAID
-				`mdadm --stop /dev/md#{id}`
+				`mdadm -S /dev/md#{id}`
 				
-				# Save configuration
-				`mdadm --detail --scan >/etc/mdadm.conf`
+				# Delete superblocks
+				disks.each{|d| `mdadm --zero-superblock #{d}` }
 				
 				# Refresh lists
 				@raids = @devices = nil
@@ -172,9 +183,6 @@ module RAID
 		def logical_clear
 			# Consistently delete all devices
 			raids.each{|r| logical_delete(r.gsub(/\/dev\/md/, '')) }
-			
-			# Save configuration
-			`cat /dev/null >/etc/mdadm.conf`
 			
 			# Refresh lists
 			@raids = @devices = nil
@@ -234,19 +242,19 @@ module RAID
 		# ======================================================================
 
 		def get_adapter_raidlevels(x = nil)
-			[ '0', '1', '5', '6' ]
+			return %w{linear, 0, 1, 4, 5, 6, 10, mp, faulty}
 		end
 
 		# ======================================================================
 
 		def get_adapter_rebuildrate(x = nil)
-			# Should work tweaking /proc/sys/dev/raid/speed_limit_min
-			raise NotImplementedError
+			return File.read('/proc/sys/dev/raid/speed_limit_min').chomp
 		end
 
 		# ======================================================================
 
 		def set_physical_hotspare_0(drv)
+			raise Error.new("Device #{drv} is not hotspare") unless spare?(scsi_to_device(drv))
 			raids.each { |r| `mdadm #{r} -r #{scsi_to_device(drv)}` }
 		end
 
@@ -310,7 +318,15 @@ module RAID
 
 			# Check spare existence in mdstat file
 			return (not File.read('/proc/mdstat').grep(spare_pattern).empty?)
-		end		
+		end
+		
+		def active?(device)
+			# Delete '/dev/' before device name
+			name = device.gsub(/^\/dev\//, '')
+			
+			# Check RAID existence in mdstat file
+			return (not File.read('/proc/mdstat').grep(Regexp.new(name)).empty?)
+		end
 		
 		def list_raids
 			res = []
@@ -323,6 +339,15 @@ module RAID
 		
 		def raids
 			@raids ||= list_raids
+		end
+		
+		def devices_of(device)
+			#md0 : active linear sdc[0]
+			md_pattern = Regexp.new("^#{device.gsub(/\/dev\//, '')} : (active \\S+|inactive) (.+)$")
+			
+			File.read('/proc/mdstat').grep(md_pattern) do
+				return $2.split(/\[\d+\](\(S\))? ?/).map{|d| "/dev/#{d}" }
+			end
 		end
 		
 		# Returns next free name for md device
