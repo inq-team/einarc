@@ -84,7 +84,7 @@ module RAID
 #------------------------------------------------------------------------------
 #c0   [Tue Jul  8 14:52:10 2008]  INFO      Battery charging completed
 #c0   [Tue Jul  8 18:20:05 2008]  INFO      Verify started: unit=0
-# 1         2   3 4  5  6  7                7
+# 1         2   3 4  5  6  7                8
 #c0   [Tue Jul  8 18:20:05 2008]  INFO      Verify started: unit=1
 			run(' show alarms').each { |l|
 				#           1              2      3      4     5     6      7            8
@@ -136,7 +136,7 @@ module RAID
 		end
 
 		def _logical_list
-			# FIXME: spares?
+			# FIXME: show spares?
 			@logical = []
 			mapping = {} # between units and ports
 
@@ -200,15 +200,69 @@ module RAID
 		# ======================================================================
 
 		def logical_add(raid_level, discs = nil, sizes = nil, options = nil)
-			raise NotImplementedError
+			case raid_level
+				when "passthrough" then raid_level="single" 
+				when "spare" then raid_level="spare" 
+				when /^[0-9]+$/ then raid_level="raid#{raid_level}"
+				when /^RAID-([0-9])+$/ then raid_level="raid#{$1}"
+				when /^raid-([0-9])+$/ then raid_level="raid#{$1}"
+				when /^raid([0-9])+$/ then raid_level="raid#{$1}"
+				when /^RAID([0-9])+$/ then raid_level="raid#{$1}"
+				else raise Error.new("Unknown RAID level \"#{raid_level}\"")
+			end
+			# no disks specified -> all disks
+			# FIXME this doesn't seem to work
+			#discs = _physical_list.keys unless discs
+			
+			discs=discs.gsub(",",":")
+
+			# "sizes" is not supported, 3ware creates units on whole disks
+
+			# sensible defaults
+			# note that the current 9650SE has a problem with SMART enabled
+			# and qpolicy=on at the same time, under heavy load (2008-08-19)
+			storsave="balance"
+			qpolicy="on"
+			cache="on"
+			autoverify="off"
+			stripe="64k"
+			name=""
+
+			if options
+				options = options.split(/,/)
+				options.each { |o|
+					if o =~ /^(.*?)=(.*?)$/
+						case $1
+							when 'stripe' then stripe="#{$2}k"
+							when 'qpolicy' then qpolicy="#{$2}"
+							when 'storsave' then storsave="#{$2}"
+							when 'name' then name="#{$2}"
+							when 'cache' then cache="#{$2}"
+							when 'nocache' then cache="off"
+							else raise Error.new("Unknown option \"#{o}\"")
+						end
+					else
+						raise Error.new("Unable to parse option \"#{o}\"")
+					end
+				}
+			end
+
+			cmd=" add type=#{raid_level} disk=#{discs} stripe=#{stripe} storsave=#{storsave}"
+			cmd += " nocache" if cache!="on"
+			cmd += " noqpolicy" if qpolicy!="on"
+			cmd += " name=#{name}" if name!=""
+
+			run(cmd)
 		end
 
 		def logical_delete(id)
-			raise NotImplementedError
+			run("/u#{id} del quiet")
 		end
 
 		def logical_clear
-			raise NotImplementedError
+			_logical_list.each{ |l|
+				logical_delete(l[:num])
+			}
 		end
 
 		def _physical_list
@@ -224,15 +278,15 @@ module RAID
 					run("/p#{p} show all").each { |l|
 						case l
 						when /p#{p} Status = (\S+)/
-							r[:state] = $1.downcase
+							pd[:state] = $1.downcase
 						when /Model = (.*)$/
-							r[:model] = $1.strip
+							pd[:model] = $1.strip
 						when /Firmware Version = (.*)$/
-							r[:revision] = $1.strip
+							pd[:revision] = $1.strip
 						when /Capacity = ([0-9\.]+)/
-							r[:size] = 1024 * ($1.to_f)
+							pd[:size] = 1024 * ($1.to_f)
 						when /Serial = (.*)/
-							r[:serial] = $1.strip
+							pd[:serial] = $1.strip
 						end # case per_port
 					}
 				end # if this_is_a_valid_port
@@ -265,7 +319,7 @@ module RAID
 		end
 
 		def set_physical_hotspare_1(drv)
-			raise NotImplementedError
+			logical_add("spare",drv,"","")
 		end
 		
 		def get_logical_stripe(num)
@@ -280,7 +334,7 @@ module RAID
 		# run one command, instance method
 		private
 		def run(command)
-#			puts("DEBUG: #{TWCLI} /c#{@adapter_num}#{command}")
+			puts("DEBUG: #{TWCLI} /c#{@adapter_num}#{command}")
 			out = `#{TWCLI} /c#{@adapter_num}#{command}`.split("\n").collect { |l| l.strip }
 			raise Error.new(out.join("\n")) if $?.exitstatus != 0
 			return out
