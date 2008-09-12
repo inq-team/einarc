@@ -425,6 +425,12 @@ module RAID
 
 		# ======================================================================
 
+		def _bbu_info
+			raise NotImplementedError
+		end
+		
+		# ======================================================================
+
 		# Runs trivial Areca command; raises an exception if it exists improperly
 		def self.run(cmd)
 			msg = `#{CLI} #{cmd}`

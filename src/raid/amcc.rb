@@ -306,6 +306,12 @@ module RAID
 
 		# ======================================================================
 
+		def _bbu_info
+			raise NotImplementedError
+		end
+		
+		# ======================================================================
+
 		def get_adapter_raidlevels(x = nil)
 			raise NotImplementedError
 		end

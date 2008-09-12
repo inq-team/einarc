@@ -487,6 +487,21 @@ module RAID
 
 		# ======================================================================
 
+		def _bbu_info
+			for line in run("getconfig #{@adapter_num} ad")
+				if line =~ /^Status\s*:\s*(.*?)$/
+					status = $1
+					break
+				end
+			end
+			info = {}
+			if status =~ /Not Installed/				
+				info[:vendor] = info[:serial] = info[:capacity] = info[:device] = 'n/a'
+			end
+			info
+		end
+		
+		# ======================================================================
 		private
 
 		def run(command, check = true)

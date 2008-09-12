@@ -392,6 +392,12 @@ module RAID
 
 		# ======================================================================
 
+		def _bbu_info
+			raise NotImplementedError
+		end
+		
+		# ======================================================================
+
 		private
 
 		def run(command, check = true)
