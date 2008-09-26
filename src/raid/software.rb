@@ -171,6 +171,9 @@ module RAID
 				# Stop RAID
 				`mdadm -S /dev/md#{id}`
 				
+				# Remove disks from RAID
+				disks.each{|d| `mdadm /dev/md#{id} --remove #{d}` }
+				
 				# Delete superblocks
 				disks.each{|d| `mdadm --zero-superblock #{d}` }
 				
@@ -208,11 +211,11 @@ module RAID
 			# Extracting data from HAL
 			for udi in udis
 				d = {}
-				d[:model] = `hal-get-property --udi #{udi} --key storage.model`.chomp
-				d[:size] = `hal-get-property --udi #{udi} --key storage.size`.to_i / 1073741824.0
-				d[:serial] = `hal-get-property --udi #{udi} --key storage.serial`.chomp
-				d[:revision] = `hal-get-property --udi #{udi} --key storage.firmware_version`.chomp
-				device = `hal-get-property --udi #{udi} --key block.device`.chomp
+				d[:model] = `hal-get-property --udi #{udi} --key storage.model 2>/dev/null`.chomp
+				d[:size] = `hal-get-property --udi #{udi} --key storage.sizel 2>/dev/null`.to_i / 1073741824.0
+				d[:serial] = `hal-get-property --udi #{udi} --key storage.seriall 2>/dev/null`.chomp
+				d[:revision] = `hal-get-property --udi #{udi} --key storage.firmware_versionl 2>/dev/null`.chomp
+				device = `hal-get-property --udi #{udi} --key block.devicel 2>/dev/null`.chomp
 				if raid_member?(device)
 					if spare?(device)
 						d[:state] = 'Spare'
