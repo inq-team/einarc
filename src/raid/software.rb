@@ -317,10 +317,7 @@ module RAID
 			name = device.gsub(/^\/dev\//, '')
 			
 			# Ex. /dev/sda[0](S)
-			spare_pattern = Regexp.new("#{name}\\[.*\\]\\(S\\)")
-
-			# Check spare existence in mdstat file
-			return (not File.read('/proc/mdstat').grep(spare_pattern).empty?)
+			return (not File.read('/proc/mdstat').grep(/#{name}\[[^\[]*\]\(S\)/).empty?)
 		end
 		
 		def active?(device)
@@ -349,7 +346,7 @@ module RAID
 			md_pattern = Regexp.new("^#{device.gsub(/\/dev\//, '')} : (active \\S+|inactive) (.+)$")
 			
 			File.read('/proc/mdstat').grep(md_pattern) do
-				return $2.split(/\[\d+\](\(S\))? ?/).map{|d| "/dev/#{d}" }
+				return $2.split(/\[\d+\](\(S\))? ?/).map{|d| d.gsub('(S)','') }.map{|d| "/dev/#{d}" }
 			end
 		end
 		
