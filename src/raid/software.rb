@@ -263,7 +263,7 @@ module RAID
 
 		def set_physical_hotspare_1(drv)
 			raise Error.new("Device #{drv} is already in RAID") if raid_member?(scsi_to_device(drv))
-			raids.each { |r| `mdadm #{r} -a #{scsi_to_device(drv)}` }
+			raids.each { |r| `mdadm #{r} -a #{scsi_to_device(drv)}` unless level_of(r) == '0' }
 		end
 
 		# ======================================================================
@@ -348,6 +348,12 @@ module RAID
 			File.read('/proc/mdstat').grep(md_pattern) do
 				return $2.split(/\[\d+\](\(S\))? ?/).map{|d| d.gsub('(S)','') }.map{|d| "/dev/#{d}" }
 			end
+		end
+		
+		def level_of(device)
+			File.read('/proc/mdstat').grep(/#{device.gsub(/\/dev\//, '')} : (active|inactive)\s+(\S+)\s/) do
+				return $2.map{|l| l.gsub('raid','') }[0]
+			end			
 		end
 		
 		# Returns next free name for md device
