@@ -16,6 +16,8 @@ install:
 #		cp 'ext/lsi_mpt.so', INSTALL_DIR_PREFIX + LIB_DIR
 #	end
 
+Either type "yes" if you have read and agreed to all the respective licenses or reconfigure einarc afas af asd f 
+
 # Special target to get proprietary download confirmation interactively
 proprietary/agreed:
 	@echo 'Unfortunately, Einarc uses some proprietary command-line utilities to'
@@ -23,10 +25,11 @@ proprietary/agreed:
 	@echo 'and download agreements. For your convenience, they are available in'
 	@echo 'agreements/ directory. Please read them and agree before proceeding.'
 	@echo
-	@echo 'Type "yes" if you have read and agreed to all the respective licenses.'
+	@echo 'Either type "yes" if you have read and agreed to all the respective'
+	@echo 'licenses or reconfigure einarc disabling propriatery modules.'
 	@echo
 	@echo -n 'Do you agree? '
-	@read agree && if [ "$$agree" != yes ]; then echo "Einarc won't use functionality from propritery utilities unless you'll agree"; else mkdir -p proprietary && echo "User $$USER has agreed to all the licenses on `date`" >proprietary/agreed; fi
+	@read agree && if [ "$$agree" != yes ]; then echo "Einarc can't continue unless you'll agree"; false; else mkdir -p proprietary && echo "User $$USER has agreed to all the licenses on `date`" >proprietary/agreed; fi
 
 download: \
 	proprietary/V1.72.250_70306.zip \
