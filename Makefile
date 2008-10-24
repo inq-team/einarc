@@ -54,9 +54,9 @@ veryclean: clean
 # Module: areca
 #===============================================================================
 
-tools/areca/cli: proprietary/V1.80A_71012.zip
+tools/areca/cli: proprietary/V1.81_80320.zip
 	mkdir -p tools/areca
-	unzip -j proprietary/V1.80A_71012.zip -d tools/areca
+	unzip -j proprietary/V1.81_80320.zip -d tools/areca
 	chmod a+rx tools/areca/*
 	if [ "$(TARGET)" == x86_64 ]; then \
 		mv tools/areca/cli64 tools/areca/cli; \
@@ -65,11 +65,11 @@ tools/areca/cli: proprietary/V1.80A_71012.zip
 		mv tools/areca/cli32 tools/areca/cli; \
 		rm -f tools/areca/cli64; \
 	fi
-	touch tools/areca/cli proprietary/V1.80A_71012.zip
+	touch tools/areca/cli proprietary/V1.81_80320.zip
 
-proprietary/V1.80A_71012.zip: proprietary/agreed
+proprietary/V1.81_80320.zip: proprietary/agreed
 	mkdir -p proprietary
-	$(WGET) ftp://ftp.areca.com.tw/RaidCards/AP_Drivers/Linux/CLI/V1.80A_71012.zip
+	$(WGET) ftp://ftp.areca.com.tw/RaidCards/AP_Drivers/Linux/CLI/V1.81_80320.zip
 
 #===============================================================================
 # Module: lsi_megarc
