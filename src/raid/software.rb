@@ -215,7 +215,7 @@ module RAID
 				d[:size] = `hal-get-property --udi #{udi} --key storage.sizel 2>/dev/null`.to_i / 1073741824.0
 				d[:serial] = `hal-get-property --udi #{udi} --key storage.seriall 2>/dev/null`.chomp
 				d[:revision] = `hal-get-property --udi #{udi} --key storage.firmware_versionl 2>/dev/null`.chomp
-				device = `hal-get-property --udi #{udi} --key block.devicel 2>/dev/null`.chomp
+				device = `hal-get-property --udi #{udi} --key block.device 2>/dev/null`.chomp
 				if raid_member?(device)
 					if spare?(device)
 						d[:state] = 'Spare'
