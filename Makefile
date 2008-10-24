@@ -84,7 +84,7 @@ tools/lsi_megarc/cli: proprietary/ut_linux_megarc_1.11.zip
 
 proprietary/ut_linux_megarc_1.11.zip: proprietary/agreed
 	mkdir -p proprietary
-	$(WGET) http://www.lsi.com/files/support/rsa/utilities/megaconf/ut_linux_megarc_1.11.zip
+	$(WGET) http://www.lsi.com/DistributionSystem/AssetDocument/files/support/rsa/utilities/megaconf/ut_linux_megarc_1.11.zip
 
 #===============================================================================
 # Module: lsi_megacli
