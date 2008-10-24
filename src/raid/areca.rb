@@ -134,19 +134,20 @@ module RAID
 		def _physical_list
 			res = {}
 			run_cli('disk info').each do |l|
-				if l =~ /^\s+\d+\s+(\d+)\s+(\S+)\s+(\S+)\s+(.+)/
+				if l =~ /^\s+\d+\s+(\d+)\s+(\S+)\s+(\S+)\s+(.+)$/
 					num = $1.strip
 					target = "0:#{num}"
 					d = {
 						:model => $2,
 						:size => $3,
-						:state => case $4
+						:state => case $4.strip
 						when /HotSpare/ then  'Spare'
 						when /Raid Set/ then 'RAID Member'
+						when /N.A./ then 'n.a.'
 						else 'Free'
 						end						
 					}
-					next if d[:size].downcase == 'n.a.'
+					next if d[:state] == 'n.a.'
 					d[:size] = areca2mb(d[:size].strip.gsub(/GB$/, '').to_i)
 #					if d[:state] =~ /raid set # (\d+)/
 #						rsnum = $1.to_i
