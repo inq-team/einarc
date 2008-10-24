@@ -104,7 +104,7 @@ tools/lsi_megacli/cli: proprietary/1.01.39_Linux_Cli.zip
 
 proprietary/1.01.39_Linux_Cli.zip: proprietary/agreed
 	mkdir -p proprietary
-	$(WGET) http://www.lsi.com/support/downloads/megaraid/miscellaneous/linux/1.01.39_Linux_Cli.zip
+	$(WGET) http://www.lsi.com/DistributionSystem/AssetDocument/support/downloads/megaraid/miscellaneous/linux/1.01.39_Linux_Cli.zip
 
 #===============================================================================
 # Module: amcc
