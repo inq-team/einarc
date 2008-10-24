@@ -26,7 +26,7 @@ proprietary/agreed:
 	@echo 'Type "yes" if you have read and agreed to all the respective licenses.'
 	@echo
 	@echo -n 'Do you agree? '
-	@read agree && if [ "$$agree" != yes ]; then echo "Einarc can't continue unless you'll agree"; false; else mkdir -p proprietary && echo "User $$USER has agreed to all the licenses on `date`" >proprietary/agreed; fi
+	@read agree && if [ "$$agree" != yes ]; then echo "Einarc won't use functionality from propritery utilities unless you'll agree"; else mkdir -p proprietary && echo "User $$USER has agreed to all the licenses on `date`" >proprietary/agreed; fi
 
 download: \
 	proprietary/V1.72.250_70306.zip \
