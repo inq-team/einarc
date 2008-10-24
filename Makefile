@@ -16,8 +16,6 @@ install:
 #		cp 'ext/lsi_mpt.so', INSTALL_DIR_PREFIX + LIB_DIR
 #	end
 
-Either type "yes" if you have read and agreed to all the respective licenses or reconfigure einarc afas af asd f 
-
 # Special target to get proprietary download confirmation interactively
 proprietary/agreed:
 	@echo 'Unfortunately, Einarc uses some proprietary command-line utilities to'
