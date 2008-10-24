@@ -10,7 +10,7 @@ install:
 	mkdir -p $(DESTDIR)$(BIN_DIR) $(DESTDIR)$(RUBY_SHARE_DIR) $(DESTDIR)$(EINARC_LIB_DIR)
 	install -m755 src/einarc src/raid-wizard-passthrough src/raid-wizard-optimal src/raid-wizard-clear $(DESTDIR)$(BIN_DIR)
 	cp src/raid/*.rb $(DESTDIR)$(RUBY_SHARE_DIR)
-	cp -ar tools/* $(DESTDIR)$(EINARC_LIB_DIR)
+	if test -d tools; then cp -r tools/* $(DESTDIR)$(EINARC_LIB_DIR); fi
 #	if File.exists?('ext/lsi_mpt.so')
 #		mkdir_p INSTALL_DIR_PREFIX + LIB_DIR
 #		cp 'ext/lsi_mpt.so', INSTALL_DIR_PREFIX + LIB_DIR
