@@ -362,7 +362,12 @@ module RAID
 				when /Firmware\s*:\s*(.*)$/
 					phys[:revision] = $1
 				when /State\s*:\s*(.*)$/
-					phys[:state] = $1.downcase
+					phys[:state] = case $1
+					when 'Ready'
+						'Free'
+					when 'Online'
+						'RAID Member'
+					end
 				when /Serial number\s*:\s*(.*)$/
 					phys[:serial] = $1
 				end
