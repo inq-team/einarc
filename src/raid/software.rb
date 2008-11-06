@@ -90,7 +90,7 @@ module RAID
 						
 						ld = @logical[num] = {
 							:num => num,
-							:dev => "md#{num}",
+							:dev => "/dev/md#{num}",
 							:physical => [ phys ],
 							:state => state,
 							:raid_level => raid_level,
