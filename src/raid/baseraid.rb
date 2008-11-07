@@ -207,6 +207,17 @@ module RAID
 				@dev << name unless name =~ /\d$/
 			}
 		end
+
+
+		def find_dev_by_name(name)
+			for dir in Dir["/sys/block/*/device/"]
+				dev = dir.gsub(/^\/sys\/block/, '/dev').gsub(/\/device\/$/, '')
+				mpath = dir + 'model'
+				next unless File.readable?(mpath)
+				return dev if File.read(mpath).chomp.strip == name
+			end
+			return nil
+		end
 	end
 end
 

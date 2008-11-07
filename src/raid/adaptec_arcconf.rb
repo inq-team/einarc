@@ -208,6 +208,12 @@ module RAID
 #					ld[:state] = state
 #				when /^Stripe Size: (\d+)kB$/
 #					ld[:stripe] = $1.to_i
+
+#Status of logical device                 : Degraded
+				when /Status of logical device\s+:\s(.+)$/
+					ld[:state] = $1.strip
+				when /^Logical device name +: (.+)$/
+					ld[:dev] = find_dev_by_name($1.strip)
 				end
 			}
 			return @logical
@@ -373,16 +379,17 @@ module RAID
 				end
 			}
 
+
 			# Determine related LDs
-			_logical_list.each_with_index { |l, i|
-				l[:physical].each { |pd|
-					if @physical[pd][:state].is_a?(Array)
-						@physical[pd][:state] << i
-					else
-						@physical[pd][:state] = [ i ]
-					end
-				}
-			}
+			#_logical_list.each_with_index { |l, i|
+			#	l[:physical].each { |pd|
+					#if @physical[pd][:state].is_a?(Array)
+						#@physical[pd][:state] << i
+					#else
+						#@physical[pd][:state] = [ i ]
+					#end
+				#}
+			#}
 
 			return @physical
 		end
