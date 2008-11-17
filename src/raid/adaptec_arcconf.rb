@@ -68,7 +68,7 @@ module RAID
 
 		def adapter_restart
 			run("rescan #{@adapter_num}")
-#			restart_module('aacraid')
+			restart_module('aacraid')
 		end
 
 		# ======================================================================
