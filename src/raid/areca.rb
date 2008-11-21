@@ -147,7 +147,7 @@ module RAID
 						else 'Free'
 						end						
 					}
-					next if d[:state] == 'n.a.'
+					next if d[:size] == 'N.A.' || d[:size] == '0.0GB'
 					d[:size] = areca2mb(d[:size].strip.gsub(/GB$/, '').to_i)
 #					if d[:state] =~ /raid set # (\d+)/
 #						rsnum = $1.to_i
