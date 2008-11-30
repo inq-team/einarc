@@ -1,3 +1,16 @@
+== v1.3
+
+* Support for 3ware / AMCC controllers by Andras Horvath
+* Full read/write support of Linux software RAIDs
+* Updated all proprietary utilities URLs, pumped up version numbers,
+fixed wrapper regular expressions to support new versions of CLIs.
+* Added new calculated fields in adapter_info: PCI product/subproduct
+and vendor/subvendor IDs. These allow precise identification of PCI
+devices related to adapters shown by Einarc.
+* Fuller BBU support for Adaptec adapters.
+* Multiple stability and build fixes (Makefile now supports parallel
+execution with "make -j").
+
 == v1.2
 
 * Support for new RAID devices: newer Adaptec adapters using arcconf.
