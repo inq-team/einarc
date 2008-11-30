@@ -1,6 +1,6 @@
 = Einarc: Reference manual
 
-:Revision: 1.2
+:Revision: 1.3
 
 == Concept
 
@@ -72,6 +72,9 @@ RAID 5085, Adaptec RAID 51245, Adaptec RAID 51645, Adaptec RAID 52445,
 Adaptec RAID 3405, Adaptec RAID 3085, Adaptec RAID 3805, Adaptec RAID
 31205, Adaptec RAID 31605, Adaptec RAID 2405, Adaptec RAID 2045, Adaptec
 RAID 4000, Adaptec RAID 4800SAS, Adaptec RAID 4805SAS.
+* *amcc* - supports all AMCC/3ware controllers, such as 3ware 7000
+series, 3ware 8000 series, 3ware 9690SA, 3ware 9650SE, 3ware 9550SX,
+3ware 9500S, 3ware 8506.
 * *areca* - supports all Areca SATA RAID controllers, such as ARC-1110,
 ARC-1120, ARC-1130, ARC-1160, ARC-1130ML, ARC-1160ML, ARC-1170,
 ARC-1200, ARC-1210, ARC-1220, ARC-1230, ARC-1260, ARC-1231ML,
@@ -102,6 +105,50 @@ completeness.
 This is not a complete list. To check if your adapter is supported, just
 run `./configure` without options to select all available modules.
 There's a good chance that your adapter would be supported too.
+
+== Installation
+
+Currently, Einarc is a sub-project of
+http://www.inquisitor.ru/[Inquisitor hardware testing framework] and can
+be downloaded either bundled with Inquisitor itself or
+http://www.inquisitor.ru/doc/einarc/[from its own mini-homepage].
+
+After downloading, extract the contents of tarball (this would yield a
+directory with sources), then run `./configure`. You can use the
+following options:
+
+`--target=TARGET`::
+  target to build for; default is selected by looking up architecture of current host
+`--bindir=DIR`::
+  where to place user executables
+`--rubysharedir=DIR`::
+  ruby share directory
+`--rubylibdir=DIR`::
+  ruby binary extensions directory
+`--einarclibdir=DIR`::
+  proprietary extensions directory
+`--modules=LIST`::
+  a comma-separated list of storage support modules to build:
+* all - SPECIAL: build all available modules, default
+* lsi_megarc - older LSI MegaRAID SCSI/SATA adapters
+* adaptec_arcconf - newer Adaptec adapters that use arcconf
+* amcc - 3Ware/AMCC RAID 7/8/9xxx/95xxx series controllers that use tw_cli
+* lsi_megacli - newest LSI MegaRAID SAS adapters
+* adaptec_aaccli - older Adaptec SCSI adapters that use aaccli
+* areca - Areca adapters
+`-h`, `--help`::
+  show help
+
+After running `./configure` with options, file `Makefile.config` would
+be created. You can check it out and edit by hand if necessary. Then run
+`make` to start a build process. In fact, Einarc is written in a script
+language and does not need build, but we use the build stage to download
+all the proprietary CLIs that would be required to support requested
+controllers.
+
+After downloading, unpacking and preparing all required tools, you can
+run `make install` (usually requires root privileges) to install Einarc
+in your system.
 
 == Command-line interface (CLI)
 
@@ -255,7 +302,7 @@ For example:
 
 === Error handling
 
-All RAID-related activities raise an exception of class RAID::Error on
+All RAID-related activities raise an exception of class `RAID::Error` on
 error.
 
 [[object_interface]]
@@ -583,7 +630,6 @@ It's possible to implement support for the following storage devices in
 Einarc:
 
 * FreeBSD's GEOM software RAID
-* 3ware tw_cli / tw_sched
 * Adaptec raidutils
 * Chelsio TOE
 * Emulex dfc / lputil
