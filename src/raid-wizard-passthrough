@@ -11,7 +11,7 @@ RAID::BaseRaid::query_adapters.each { |ad|
 	pl = a._physical_list.keys.sort
 
 	if (DISK_GROUP_SIZE != 0) then
-		exit 1 if pl.length < (DISK_GROUP_SIZE * GROUP_NUMBER)
+		exit 1 if pl.length <= (DISK_GROUP_SIZE * GROUP_NUMBER)
 	end
 
 	if (DISK_GROUP_SIZE != 0) then
