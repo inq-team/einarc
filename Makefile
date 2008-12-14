@@ -30,7 +30,7 @@ proprietary/agreed:
 	@read agree && if [ "$$agree" != yes ]; then echo "Einarc can't continue unless you'll agree"; false; else mkdir -p proprietary && echo "User $$USER has agreed to all the licenses on `date`" >proprietary/agreed; fi
 
 download: \
-	proprietary/V1.72.250_70306.zip \
+	proprietary/v1.82_81103.zip \
 	proprietary/ut_linux_megarc_1.11.zip \
 	proprietary/1.01.27_Linux_MegaCli.zip \
 	proprietary/5400s_s73_cli_v10.tar.Z \
@@ -55,9 +55,9 @@ veryclean: clean
 # Module: areca
 #===============================================================================
 
-tools/areca/cli: proprietary/V1.81_80320.zip
+tools/areca/cli: proprietary/v1.82_81103.zip
 	mkdir -p tools/areca
-	unzip -j proprietary/V1.81_80320.zip -d tools/areca
+	unzip -j proprietary/v1.82_81103.zip -d tools/areca
 	chmod a+rx tools/areca/*
 	if [ "$(TARGET)" == x86_64 ]; then \
 		mv tools/areca/cli64 tools/areca/cli; \
@@ -66,11 +66,11 @@ tools/areca/cli: proprietary/V1.81_80320.zip
 		mv tools/areca/cli32 tools/areca/cli; \
 		rm -f tools/areca/cli64; \
 	fi
-	touch tools/areca/cli proprietary/V1.81_80320.zip
+	touch tools/areca/cli proprietary/v1.82_81103.zip
 
-proprietary/V1.81_80320.zip: proprietary/agreed
+proprietary/v1.82_81103.zip: proprietary/agreed
 	mkdir -p proprietary
-	$(WGET) ftp://ftp.areca.com.tw/RaidCards/AP_Drivers/Linux/CLI/V1.81_80320.zip
+	$(WGET) ftp://ftp.areca.com.tw/RaidCards/AP_Drivers/Linux/CLI/v1.82_81103.zip
 
 #===============================================================================
 # Module: lsi_megarc
