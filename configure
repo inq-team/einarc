@@ -4,67 +4,23 @@ require 'rbconfig'
 RbConfig = Config unless defined?(RbConfig)
 
 require 'optparse'
-
-#===============================================================================
-# A detailed list of modules that are supported in this version of Einarc
-#===============================================================================
-
-RAIDS = {
-	'areca' => {
-		:desc => 'Areca adapters',
-		:classname => 'Areca',
-		:proprietary => true,
-	},
-	'lsi_megarc' => {
-		:desc => 'older LSI MegaRAID SCSI/SATA adapters',
-		:classname => 'LSIMegaRc',
-		:proprietary => true,
-	},
-#	'lsi_mpt' => {
-#		:desc => 'LSI MPT HBA adapters',
-#		:classname => 'LSIMPT',
-#		:proprietary => false,
-#	},
-	'lsi_megacli' => {
-		:desc => 'newest LSI MegaRAID SAS adapters',
-		:classname => 'LSIMegaCli',
-		:proprietary => true,
-	},
-	'adaptec_aaccli' => {
-		:desc => 'older Adaptec SCSI adapters that use aaccli',
-		:classname => 'AdaptecAacCli',
-		:proprietary => true,
-	},
-	'adaptec_arcconf' => {
-		:desc => 'newer Adaptec adapters that use arcconf',
-		:classname => 'AdaptecArcConf',
-		:proprietary => true,
-	},
-	'amcc' => {
-		:desc => '3Ware/AMCC RAID 7/8/9xxx/95xxx series controllers that use tw_cli',
-		:classname => 'Amcc',
-		:proprietary => true,
-	}
-#	'software' => {
-#		:desc => 'Linux software RAID devices',
-#		:classname => 'Software',
-#		:proprietary => false,
-#	}
-}
+require 'src/raid/meta'
 
 #===============================================================================
 # Initialize options from environment and with detected defaults
 #===============================================================================
 
 options = {
+	'DEST_DIR' => '',
 	'BIN_DIR' => ENV['BIN_DIR'] || '/usr/local/bin',
 	'RUBY_SHARE_DIR' => (ENV['RUBY_SHARE_DIR'] || RbConfig::CONFIG['sitelibdir']) + '/raid',
 	'RUBY_LIB_DIR' => (ENV['RUBY_LIB_DIR'] || (RbConfig::CONFIG['vendorarchdir'] ? RbConfig::CONFIG['vendorarchdir'] : RbConfig::CONFIG['archdir'])) + '/raid',
-	'LIB_DIR' => ENV['LIB_DIR'] || '/usr/local/lib',
 	'TARGET' => ENV['TARGET'] || `uname -m`.chomp,
+	'EINARC_VAR_DIR' => ENV['EINARC_VAR_DIR'] || '/var/lib/einarc',
+	'modules' => [],
 }
-options['EINARC_LIB_DIR'] = (ENV['EINARC_LIB_DIR'] || options['LIB_DIR']) + '/einarc'
-options['modules'] = RAIDS.keys
+
+options['EINARC_LIB_DIR'] = ENV['EINARC_LIB_DIR'] || options['EINARC_VAR_DIR'] + '/tools'
 
 #===============================================================================
 # Parse command-line
@@ -76,16 +32,22 @@ begin
 
 		padding = "\n" + opts.summary_indent + ' ' * (opts.summary_width + 3)
 		module_help = padding + 'all - SPECIAL: build all available modules'
-		RAIDS.each_pair { |k, v| module_help += "#{padding}#{k} - #{v[:desc]}" }
+		RAID::MODULES.each_pair { |k, v| module_help += "#{padding}#{k} - #{v[:desc]}" }
 
 		opts.on('--target=TARGET', "target to build for [#{options['TARGET']}]") { |t| options['TARGET'] = t }
+		opts.on('--destdir=DIR', "destination root [#{options['DEST_DIR']}]") { |d| options['DEST_DIR'] = d }
 		opts.on('--bindir=DIR', "user executables [#{options['BIN_DIR']}]") { |d| options['BIN_DIR'] = d }
 		opts.on('--rubysharedir=DIR', "ruby share directory [#{options['RUBY_SHARE_DIR']}]") { |d| options['RUBY_SHARE_DIR'] = d }
 		opts.on('--rubylibdir=DIR', "ruby binary extensions directory [#{options['RUBY_LIB_DIR']}]") { |d| options['RUBY_LIB_DIR'] = d }
+		opts.on('--einarcvardir=DIR', "generic variable content directory [#{options['EINARC_VAR_DIR']}]") { |d| options['EINARC_VAR_DIR'] = d }
 		opts.on('--einarclibdir=DIR', "proprietary extensions directory [#{options['EINARC_LIB_DIR']}]") { |d| options['EINARC_LIB_DIR'] = d }
-		opts.on('--modules=LIST', "a comma-separated list of storage support modules to build [all]:#{module_help}") { |d|
-			options['modules'] = d.split(/, */) unless d == 'all'
-			options['modules'].each { |m| raise OptionParser::InvalidArgument unless RAIDS[m] }
+		opts.on('--modules=LIST', "a comma-separated list of storage support modules to build [none]:#{module_help}") { |d|
+			options['modules'] = case d
+			when 'all' then RAID::MODULES.keys
+			when 'none' then []
+			else d.split(/, */)
+			end
+			options['modules'].each { |m| raise OptionParser::InvalidArgument unless RAID::MODULES[m] }
 		}
 		opts.on_tail('-h', '--help', 'Show this message') { puts opts; exit }
 	}.parse!
@@ -99,39 +61,39 @@ end
 # Output results
 #===============================================================================
 
-
-File.open('Makefile.config', 'w') { |f|
+File.open('config.Makefile', 'w') { |f|
 	f.puts <<__EOF__
 # DO NOT EDIT: IT'S A GENERATED FILE! USE ./configure to REGENERATE!
 
+DESTDIR=#{options['DEST_DIR']}
 BIN_DIR=#{options['BIN_DIR']}
 RUBY_SHARE_DIR=#{options['RUBY_SHARE_DIR']}
 RUBY_LIB_DIR=#{options['RUBY_LIB_DIR']}
+EINARC_VAR_DIR=#{options['EINARC_VAR_DIR']}
 EINARC_LIB_DIR=#{options['EINARC_LIB_DIR']}
 TARGET=#{options['TARGET']}
 
 # Modules to build: #{options['modules'].join(', ')}
 
 tools: \\
-#{options['modules'].collect { |m| "\ttools/#{m}/cli" if RAIDS[m][:proprietary] }.compact.join(" \\\n")}
+#{options['modules'].collect { |m| "\ttools/#{m}/cli" if RAID::MODULES[m][:proprietary] }.compact.join(" \\\n")}
 __EOF__
 }
 
-File.open('src/raid/config.rb', 'w') { |f|
+File.open('src/raid/build-config.rb', 'w') { |f|
 	f.puts <<__EOF__
 # DO NOT EDIT: IT'S A GENERATED FILE! USE ./configure to REGENERATE!
 
 module RAID
 	$EINARC_LIB = '#{options['EINARC_LIB_DIR']}'
-
-#{options['modules'].collect { |m| "\trequire 'raid/#{m}'" }.join("\n")}
-
-	RAIDS = {
-#{options['modules'].collect { |m| "\t\t'#{m}' => #{RAIDS[m][:classname]}," }.join("\n")}
-	}
+	$EINARC_VAR = '#{options['EINARC_VAR_DIR']}'
+	$TARGET = '#{options['TARGET']}'
+	$RUBY_SHARE_DIR = '#{options['RUBY_SHARE_DIR']}'
 end
 __EOF__
 }
+
+RAID.generate_ruby_config(options['modules'], 'config.rb')
 
 #===============================================================================
 # Report success
@@ -145,6 +107,7 @@ Directories
 User executables:       #{options['BIN_DIR']}
 Ruby share:             #{options['RUBY_SHARE_DIR']}
 Ruby libraries:         #{options['RUBY_LIB_DIR']}
+Variable content:       #{options['EINARC_VAR_DIR']}
 Proprietary extensions: #{options['EINARC_LIB_DIR']}
 
 Modules

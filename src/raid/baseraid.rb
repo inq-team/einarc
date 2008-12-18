@@ -1,4 +1,7 @@
 module RAID
+
+	# We have no modules loaded by default
+
 	class Error < RuntimeError
 		attr_reader :text
 
@@ -221,4 +224,9 @@ module RAID
 	end
 end
 
-require 'raid/config'
+require 'raid/build-config'
+begin
+	require "#{$EINARC_VAR}/config"
+rescue LoadError
+	RAID::RAIDS = {}
+end

@@ -1,0 +1,89 @@
+#!/usr/bin/env ruby
+
+$LOAD_PATH << 'src'
+
+begin
+	require 'raid/build-config'
+rescue LoadError
+	$stderr.puts 'Unable to find build config file'
+	exit 1
+end
+
+require 'optparse'
+require 'raid/meta'
+
+#===============================================================================
+# Parse command-line
+#===============================================================================
+
+@modules = RAID::MODULES.keys
+
+begin
+	OptionParser.new { |opts|
+		opts.banner = <<__EOF__
+Usage: ./einarc-install --modules=LIST
+
+Downloads and installs proprietary modules needed for hardware RAID
+management for Einarc.
+
+__EOF__
+		padding = "\n" + opts.summary_indent + ' ' * (opts.summary_width + 3)
+		module_help = padding + 'all - SPECIAL: build all available modules'
+		RAID::MODULES.each_pair { |k, v| module_help += "#{padding}#{k} - #{v[:desc]}" }
+
+		opts.on('--modules=LIST', "a comma-separated list of storage support modules to build:#{module_help}") { |d|
+			@modules = d.split(/, */) unless d == 'all'
+			@modules.each { |m| raise OptionParser::InvalidArgument unless RAID::MODULES[m] }
+		}
+		opts.on_tail('-h', '--help', 'Show this message') { puts opts; exit }
+	}.parse!
+	raise OptionParser::ParseError.new("Can't parse extra arguments in command line: #{ARGV.join(' ')}") unless ARGV.empty?
+rescue OptionParser::ParseError => e
+	$stderr.puts e.message
+	exit 1
+end
+
+unless FileTest.exists?($EINARC_VAR)
+	$stderr.puts "einarc-install works on installed Einarc copy"
+	$stderr.puts "If you haven't installed Einarc yet, you can use --modules option in ./configure"
+	exit 1
+end
+
+#===============================================================================
+# Generate configs and makefiles
+#===============================================================================
+
+File.open("#{$EINARC_VAR}/config.Makefile", 'w') { |f|
+	f.puts <<__EOF__
+# DO NOT EDIT: IT'S A GENERATED FILE! USE ./einarc-install to REGENERATE!
+
+TARGET=#{$TARGET}
+
+# Modules to build: #{@modules.join(', ')}
+
+tools: \\
+#{@modules.collect { |m| "\ttools/#{m}/cli" if RAID::MODULES[m][:proprietary] }.compact.join(" \\\n")}
+
+include #{$RUBY_SHARE_DIR}/proprietary.Makefile
+__EOF__
+}
+
+RAID::generate_ruby_config(@modules, "#{$EINARC_VAR}/config.rb")
+
+#===============================================================================
+# Report success
+#===============================================================================
+
+puts <<__EOF__
+Einarc proprietary CLI installer
+
+Modules
+-------
+#{@modules.join("\n")}
+
+Preparing to download and install...
+
+__EOF__
+
+Dir.chdir($EINARC_VAR)
+system("make -f #{$EINARC_VAR}/config.Makefile")
