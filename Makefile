@@ -37,4 +37,11 @@ clean:
 veryclean: clean
 	rm -rf proprietary config.Makefile src/raid/build-config.rb config.rb doc/xhtml
 
+# Several aliases for veryclean
+clobber: veryclean
+
+mrproper: veryclean
+
+distclean: veryclean
+
 include proprietary.Makefile
