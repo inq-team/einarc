@@ -32,6 +32,7 @@ begin
 
 		padding = "\n" + opts.summary_indent + ' ' * (opts.summary_width + 3)
 		module_help = padding + 'all - SPECIAL: build all available modules'
+		module_help += padding + 'auto - SPECIAL: autodetect which modules are required'
 		RAID::MODULES.each_pair { |k, v| module_help += "#{padding}#{k} - #{v[:desc]}" }
 
 		opts.on('--target=TARGET', "target to build for [#{options['TARGET']}]") { |t| options['TARGET'] = t }
@@ -45,6 +46,10 @@ begin
 			options['modules'] = case d
 			when 'all' then RAID::MODULES.keys
 			when 'none' then []
+			when 'auto'
+				$LOAD_PATH.unshift('src')
+				require 'raid/autodetect'
+				RAID::autodetect
 			else d.split(/, */)
 			end
 			options['modules'].each { |m| raise OptionParser::InvalidArgument unless RAID::MODULES[m] }

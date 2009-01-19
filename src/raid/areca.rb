@@ -3,19 +3,18 @@ require 'expect'
 
 module RAID
 	class Areca < BaseRaid
-	
-		PCI_PRODUCT_IDS = {
-			'ARC-1110' => '1110',
-			'ARC-1120' => '1120',
-			'ARC-1130' => '1130',
-			'ARC-1160' => '1160',
-			'ARC-1170' => '1170',
-			'ARC-1210' => '1210',
-			'ARC-1220' => '1220',
-			'ARC-1230' => '1230',
-			'ARC-1260' => '1260',
-			'ARC-1261' => '1280',
-			'ARC-1231' => '1280',
+		PCI_IDS = {
+			'ARC-1110' => ['17d3', '1110'],
+			'ARC-1120' => ['17d3', '1120'],
+			'ARC-1130' => ['17d3', '1130'],
+			'ARC-1160' => ['17d3', '1160'],
+			'ARC-1170' => ['17d3', '1170'],
+			'ARC-1210' => ['17d3', '1210'],
+			'ARC-1220' => ['17d3', '1220'],
+			'ARC-1230' => ['17d3', '1230'],
+			'ARC-1260' => ['17d3', '1260'],
+			'ARC-1261' => ['17d3', '1280'],
+			'ARC-1231' => ['17d3', '1280'],
 		}
 		CLI = "#{$EINARC_LIB}/areca/cli"
 		ARECA_PASSWORD = '0000'
@@ -64,11 +63,11 @@ module RAID
 				when 'Serial Number' then 'Serial number'
 				when 'Firmware Version' then 'Firmware version'
 				else key
-		    end
+				end
 				res[key] = value
 			}
-			res['PCI vendor ID'] = '17d3'
-			res['PCI product ID'] = PCI_PRODUCT_IDS[res['Controller Name']]
+			name = res['Controller Name']
+			res['PCI vendor ID'], res['PCI product ID'] = PCI_IDS[name]
 			return res
 		end
 
