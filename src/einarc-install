@@ -16,8 +16,6 @@ require 'raid/meta'
 # Parse command-line
 #===============================================================================
 
-@modules = RAID::MODULES.keys
-
 begin
 	OptionParser.new { |opts|
 		opts.banner = <<__EOF__
@@ -29,10 +27,19 @@ management for Einarc.
 __EOF__
 		padding = "\n" + opts.summary_indent + ' ' * (opts.summary_width + 3)
 		module_help = padding + 'all - SPECIAL: build all available modules'
+		module_help += padding + 'auto - SPECIAL: autodetect which modules are required'
 		RAID::MODULES.each_pair { |k, v| module_help += "#{padding}#{k} - #{v[:desc]}" }
 
 		opts.on('--modules=LIST', "a comma-separated list of storage support modules to build:#{module_help}") { |d|
-			@modules = d.split(/, */) unless d == 'all'
+			@modules = case d
+			when 'none' then []
+			when 'all' then RAID::MODULES.keys
+			when 'auto'
+				$LOAD_PATH.unshift('src')
+				require 'raid/autodetect'
+				RAID::autodetect
+			else d.split(/, */)
+			end
 			@modules.each { |m| raise OptionParser::InvalidArgument unless RAID::MODULES[m] }
 		}
 		opts.on_tail('-h', '--help', 'Show this message') { puts opts; exit }
