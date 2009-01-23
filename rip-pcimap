@@ -25,6 +25,6 @@ $stdin.each_line { |l|
 		a << subvendor
 		a << subdevice
 	end
-	puts "\t\t\t'#{a.join('-')}' => #{a.inspect}"
+	puts "\t\t\t'#{a.join('-')}' => #{a.inspect},"
 }
 puts "\t\t}"

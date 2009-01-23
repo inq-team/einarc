@@ -2,7 +2,7 @@ module RAID
 	class AdaptecArcConf < BaseRaid
 		CLI = "#{$EINARC_LIB}/adaptec_arcconf/cli"
 
-		PCI_PRODUCT_IDS = {
+		PCI_IDS = {
 			'Adaptec 3805'  => ['9005', '0285', '9005', '02bc'],
 			'Adaptec 5805'  => ['9005', '0285', '9005', '02b6'],
 			'Adaptec 2230S' => ['9005', '0286', '9005', '028c'],

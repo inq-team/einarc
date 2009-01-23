@@ -3,12 +3,12 @@
 module RAID
 	class Amcc < BaseRaid
 		PCI_IDS = {
-			'5xxx/6xxx-series PATA-RAID' => ["13c1", "1000"]
-			'7xxx/8xxx-series PATA/SATA-RAID' => ["13c1", "1001"]
-			'9xxx-series SATA-RAID' => ["13c1", "1002"]
-			'9550SX SATA-RAID' => ["13c1", "1003"]
-			'9650SE SATA-II RAID' => ["13c1", "1004"]
-			'9690SA SAS/SATA-II RAID PCIe' => ["13c1", "1005"]
+			'5xxx/6xxx-series PATA-RAID' => ["13c1", "1000"],
+			'7xxx/8xxx-series PATA/SATA-RAID' => ["13c1", "1001"],
+			'9xxx-series SATA-RAID' => ["13c1", "1002"],
+			'9550SX SATA-RAID' => ["13c1", "1003"],
+			'9650SE SATA-II RAID' => ["13c1", "1004"],
+			'9690SA SAS/SATA-II RAID PCIe' => ["13c1", "1005"],
 		}
 
 		TWCLI = "#{$EINARC_LIB}/amcc/cli"
