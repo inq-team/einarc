@@ -1,0 +1,30 @@
+#!/usr/bin/env ruby
+
+# Greps through Linux kernel's "modules.pcimap" and outputs PCI_IDS
+# structure in out format.
+#
+# Usage:
+# stdin - modules.pcimap
+# first argument - module to grep for
+# stdout - PCI_IDS
+
+need_name = ARGV[0]
+
+puts "\t\tPCI_IDS = {"
+$stdin.each_line { |l|
+	name, vendor, device, subvendor, subdevice, devclass, class_mask, driver_data = l.split(/\s+/)
+	next unless name == need_name
+	vendor = vendor[6..10]
+	device = device[6..10]
+	subvendor = subvendor[6..10]
+	subdevice = subdevice[6..10]
+	subvendor = nil if subvendor == 'ffff'
+	subdevice = nil if subdevice == 'ffff'
+	a = [vendor, device]
+	if subvendor or subdevice then
+		a << subvendor
+		a << subdevice
+	end
+	puts "\t\t\t'#{a.join('-')}' => #{a.inspect}"
+}
+puts "\t\t}"
