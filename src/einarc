@@ -37,19 +37,24 @@ EOF
 		need_list = true
 	when '--version'
 		print <<EOF;
-Universal disc controller command line interface
+Einarc v#{RAID::VERSION}: unified storage/RAID controller command line interface
 
 License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
 This is free software: you are free to change and redistribute it.
 There is NO WARRANTY, to the extent permitted by law.
+
+Installed modules
+-----------------
 EOF
+		RAID::RAIDS.each_key { |k| puts k }
+		exit
 	when '--adapter'
 		adapter_num = arg.to_i
 	when '--type'
 		adapter_type = arg
 	when '--human'
 		$humanize = true
-    end
+	end
 }
 
 begin

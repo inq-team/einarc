@@ -1,5 +1,7 @@
 module RAID
 
+	VERSION = '1.4'
+
 	# We have no modules loaded by default
 
 	class Error < RuntimeError
