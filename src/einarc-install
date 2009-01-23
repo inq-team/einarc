@@ -16,6 +16,9 @@ require 'raid/meta'
 # Parse command-line
 #===============================================================================
 
+# Default for --modules
+@modules = RAID::MODULES.keys
+
 begin
 	OptionParser.new { |opts|
 		opts.banner = <<__EOF__
@@ -26,7 +29,7 @@ management for Einarc.
 
 __EOF__
 		padding = "\n" + opts.summary_indent + ' ' * (opts.summary_width + 3)
-		module_help = padding + 'all - SPECIAL: build all available modules'
+		module_help = padding + 'all - SPECIAL: build all available modules (default)'
 		module_help += padding + 'auto - SPECIAL: autodetect which modules are required'
 		RAID::MODULES.each_pair { |k, v| module_help += "#{padding}#{k} - #{v[:desc]}" }
 
