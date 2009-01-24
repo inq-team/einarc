@@ -1,0 +1,12 @@
+#!/bin/sh
+
+RELEASEDIR=$HOME
+RPMDIR=$HOME/RPM
+VERSION=`sed 's/Einarc v//' <../VERSION`
+
+rm -rf $RELEASEDIR/einarc-$VERSION
+svn export https://inq.svn.sourceforge.net/svnroot/inq/trunk/client/lib/einarc $RELEASEDIR/einarc-$VERSION
+cd $RELEASEDIR
+rm -rf maintenance
+tar -cvf $RPMDIR/SOURCES/einarc-$VERSION.tar einarc-$VERSION
+rpmbuild -ba $RPMDIR/SPECS/einarc.spec

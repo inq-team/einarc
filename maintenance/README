@@ -1,0 +1,3 @@
+This directory contains tools required for development, maintenance and
+release management of Einarc. It's generally not interesting for regular
+users, so it should be excluded from distribution tarball.
