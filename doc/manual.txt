@@ -1,6 +1,6 @@
 = Einarc: Reference manual
 
-:Revision: 1.3
+:Revision: 1.4
 
 == Concept
 
@@ -63,23 +63,23 @@ implement a couple of methods that would translate requests.
 
 Currently, there are following modules available:
 
-* *adaptec_aaccli* - supports older Adaptec SCSI RAID controllers, such
+* *adaptec_aaccli* -- supports older Adaptec SCSI RAID controllers, such
 as Adaptec SCSI RAID 2230SLP, Adaptec SCSI RAID 2130SLP, Adaptec SCSI
 RAID 2120S, Adaptec SCSI RAID 2020ZCR, Adaptec SCSI RAID 2025ZCR.
-* *adaptec_arcconf* - supports newer Adaptec SAS/SATA RAID controllers,
+* *adaptec_arcconf* -- supports newer Adaptec SAS/SATA RAID controllers,
 such as Adaptec RAID 5405, Adaptec RAID 5445, Adaptec RAID 5805, Adaptec
 RAID 5085, Adaptec RAID 51245, Adaptec RAID 51645, Adaptec RAID 52445,
 Adaptec RAID 3405, Adaptec RAID 3085, Adaptec RAID 3805, Adaptec RAID
 31205, Adaptec RAID 31605, Adaptec RAID 2405, Adaptec RAID 2045, Adaptec
 RAID 4000, Adaptec RAID 4800SAS, Adaptec RAID 4805SAS.
-* *amcc* - supports all AMCC/3ware controllers, such as 3ware 7000
+* *amcc* -- supports all AMCC/3ware controllers, such as 3ware 7000
 series, 3ware 8000 series, 3ware 9690SA, 3ware 9650SE, 3ware 9550SX,
 3ware 9500S, 3ware 8506.
-* *areca* - supports all Areca SATA RAID controllers, such as ARC-1110,
+* *areca* -- supports all Areca SATA RAID controllers, such as ARC-1110,
 ARC-1120, ARC-1130, ARC-1160, ARC-1130ML, ARC-1160ML, ARC-1170,
 ARC-1200, ARC-1210, ARC-1220, ARC-1230, ARC-1260, ARC-1231ML,
 ARC-1261ML, ARC-1280ML, ARC-1280.
-* *lsi_megacli* - supports newer LSI MegaRAID SAS/SATA RAID controllers, such
+* *lsi_megacli* -- supports newer LSI MegaRAID SAS/SATA RAID controllers, such
 as LSI MegaRAID SAS 8208ELP, LSI MegaRAID SAS 8208XLP, LSI MegaRAID SAS
 8204ELP, LSI MegaRAID SAS 8204XLP, LSI MegaRAID SAS 84016E, LSI MegaRAID
 SAS 8704ELP, LSI MegaRAID SAS 8708ELP, LSI MegaRAID SAS 8300XLP, LSI
@@ -87,7 +87,7 @@ MegaRAID SAS 8708EM2, LSI MegaRAID SAS 8888ELP, LSI MegaRAID SAS
 8880EM2, as well as rebranded copies of these controllers from Dell, HP
 and Intel, as well as all on-board or daughterboard products based on
 LSI SAS 1078 chipset.
-* *lsi_megarc* - support older LSI MegaRAID SCSI/SATA RAID controllers,
+* *lsi_megarc* -- support older LSI MegaRAID SCSI/SATA RAID controllers,
 such as  LSI MegaRAID SATA 150-4 (523), LSI MegaRAID SATA 150-6 (523),
 LSI MegaRAID SATA 300-8X, LSI MegaRAID SATA 300-8XLP, LSI MegaRAID SATA
 300-4XLP, LSI MegaRAID SCSI 320-0 (520-0 CH), LSI MegaRAID SCSI 320-0X
@@ -96,15 +96,16 @@ LSI MegaRAID SATA 300-8X, LSI MegaRAID SATA 300-8XLP, LSI MegaRAID SATA
 LSI MegaRAID SCSI 320-2X (532), as well as rebranded copies of these
 controllers from Dell, HP and Intel, as well as all on-board or
 daughterboard products based on LSI MegaRAID 160/320 or 150/300 chipset.
-* *lsi_mpt* - Fusion/MPT, now branded as LSI MPT design of HBAs,
+* *lsi_mpt* -- Fusion/MPT, now branded as LSI MPT design of HBAs,
 available in such adapters as LSI20160, LSIU320, LSI20320-R, LSI20320IE,
 LSI21320-R, LSI22320-R, LSI22320SE.
-* *software* - Linux software RAID device (md), for a sake of
+* *software* -- Linux software RAID device (md), for a sake of
 completeness.
 
 This is not a complete list. To check if your adapter is supported, just
-run `./configure` without options to select all available modules.
-There's a good chance that your adapter would be supported too.
+run `./configure` or `einarc-install` without options to select all
+available modules. There's a good chance that your adapter would be
+supported too.
 
 == Installation
 
@@ -112,31 +113,40 @@ Currently, Einarc is a sub-project of
 http://www.inquisitor.ru/[Inquisitor hardware testing framework] and can
 be downloaded either bundled with Inquisitor itself or
 http://www.inquisitor.ru/doc/einarc/[from its own mini-homepage].
+Alternatively, your favourite distributed may provide you with pre-built
+package.
+
+=== Manual installation
 
 After downloading, extract the contents of tarball (this would yield a
 directory with sources), then run `./configure`. You can use the
 following options:
 
-`--target=TARGET`::
+`\--target=TARGET`::
   target to build for; default is selected by looking up architecture of current host
-`--bindir=DIR`::
+`\--bindir=DIR`::
   where to place user executables
-`--rubysharedir=DIR`::
+`\--rubysharedir=DIR`::
   ruby share directory
-`--rubylibdir=DIR`::
+`\--rubylibdir=DIR`::
   ruby binary extensions directory
-`--einarclibdir=DIR`::
+`\--einarclibdir=DIR`::
   proprietary extensions directory
-`--modules=LIST`::
+`\--modules=LIST`::
   a comma-separated list of storage support modules to build:
-* all - SPECIAL: build all available modules, default
-* lsi_megarc - older LSI MegaRAID SCSI/SATA adapters
-* adaptec_arcconf - newer Adaptec adapters that use arcconf
-* amcc - 3Ware/AMCC RAID 7/8/9xxx/95xxx series controllers that use tw_cli
-* lsi_megacli - newest LSI MegaRAID SAS adapters
-* adaptec_aaccli - older Adaptec SCSI adapters that use aaccli
-* areca - Areca adapters
-`-h`, `--help`::
+* all -- SPECIAL: build all available modules, default
+* auto -- SPECIAL: autodetect which modules are required -- experimental
+feature, added since v1.4, tries to make an automatic guess by analysing
+PCI IDs of machine where you run `./configure`; requires `lspci` to run.
+If in doubt, just use "all" -- it will download everything, all CLIs not
+usable on current machine just won't be used.
+* lsi_megarc -- older LSI MegaRAID SCSI/SATA adapters
+* adaptec_arcconf -- newer Adaptec adapters that use arcconf
+* amcc -- 3Ware/AMCC RAID 7/8/9xxx/95xxx series controllers that use tw_cli
+* lsi_megacli -- newest LSI MegaRAID SAS adapters
+* adaptec_aaccli -- older Adaptec SCSI adapters that use aaccli
+* areca -- Areca adapters
+`-h`, `\--help`::
   show help
 
 After running `./configure` with options, file `Makefile.config` would
@@ -150,6 +160,34 @@ After downloading, unpacking and preparing all required tools, you can
 run `make install` (usually requires root privileges) to install Einarc
 in your system.
 
+=== Package installation
+
+Since version 1.4, it's possible to package and install Einarc as
+pre-built binary package (rpm, deb) from major distribution
+repositories. Recommended name for a package is `einarc`.
+
+After installation of package, all Einarc modules that don't require
+proprietary CLIs are available (so far it's only `software` module to
+control Linux software RAIDs), so in most case you'll still have to
+download necessary proprietary CLIs to make Einarc useful. It can be
+done automatically on target machine by running `einarc-install`. It can
+be called with the same `--modules` option as in `./configure`:
+
+`\--modules=LIST`::
+  a comma-separated list of storage support modules to build:
+* all -- SPECIAL: download and build all available modules, default
+* auto -- SPECIAL: autodetect which modules are required -- experimental
+feature, added since v1.4, tries to make an automatic guess by analysing
+PCI IDs of machine where you run `./configure`; requires `lspci` to run.
+If in doubt, just use "all" -- it will download everything, all CLIs not
+usable on current machine just won't be used.
+* lsi_megarc -- older LSI MegaRAID SCSI/SATA adapters
+* adaptec_arcconf -- newer Adaptec adapters that use arcconf
+* amcc -- 3Ware/AMCC RAID 7/8/9xxx/95xxx series controllers that use tw_cli
+* lsi_megacli -- newest LSI MegaRAID SAS adapters
+* adaptec_aaccli -- older Adaptec SCSI adapters that use aaccli
+* areca -- Areca adapters
+
 == Command-line interface (CLI)
 
 Simplest way to use Einarc is to use command-line interface. Einarc
@@ -159,17 +197,17 @@ can be invoked using:
 
 Options:
 
-`-l`, `--list`::
+`-l`, `\--list`::
   list all adapters found in system and exit
-`-V`, `--version`::
+`-V`, `\--version`::
   print program version and exit
-`--help`::
+`\--help`::
   show short help text and exit
-`-h`, `--human`::
+`-h`, `\--human`::
   output human-readable information
-`-t`, `--type=TYPE`::
+`-t`, `\--type=TYPE`::
   type (manufacturer) of RAID adapter
-`-a`, `--adapter=NUM`::
+`-a`, `\--adapter=NUM`::
   select the adapter if multiple adapters are present
 
 Refer to <<object_interface,object interface description>> for particular object.
@@ -294,6 +332,7 @@ should be called as:
  a.object_method(all, other, arguments, ...)
 +
 For example:
+
  a.adapter_info
  PCI product ID          1160
  System Memory           56MB/333MHz
@@ -354,9 +393,9 @@ areca       01         ARC-1120             PCI
 
 Properties:
 
-*alarm*:: (mute, disable, enable) - mode of adapter's beeper alarm
+*alarm*:: (mute, disable, enable) -- mode of adapter's beeper alarm
 *coercion*:: (0, 1)
-*rebuildrate*:: (0-3) - a priority of rebuilding and other background tasks, 0 being the lowest (least percent of time slices goes to that tasks), 3 being the highest.
+*rebuildrate*:: (0-3) -- a priority of rebuilding and other background tasks, 0 being the lowest (least percent of time slices goes to that tasks), 3 being the highest.
 
 ==== info
 
@@ -452,8 +491,8 @@ properties and settings with `get` and `set`.
 
 Properties:
 
- * *hotspare* (0, 1) - if true, a physical drive is considered a global hotspare.
- * *state* (free, hotspare, *logical drive ID*) - shows that drive is either free, reserved for hotspare, or belongs to the one of the logical drives (numeric).
+ * *hotspare* (0, 1) -- if true, a physical drive is considered a global hotspare.
+ * *state* (free, hotspare, *logical drive ID*) -- shows that drive is either free, reserved for hotspare, or belongs to the one of the logical drives (numeric).
 
 ==== list
 
@@ -496,10 +535,10 @@ Logical drive is a virtual drive, set up on regions of one or several physical d
 
 Properties:
 
- * *raidlevel* (passthrough, 0, 1, 5) - a RAID level of array or *passthrough* - a special logical disc without any RAIDs that will directly access single physical disc.
- * *stripe* - stripe size of logical drive in kilobytes; possible values vary with adapter, 64 is typical default.
- * *cache* (writeback, writethrough) - a write cache mode.
- * *state* (normal, degraded, initializing, migrating, rebuilding, checking) - state of array.
+ * *raidlevel* (passthrough, 0, 1, 5) -- a RAID level of array or *passthrough* -- a special logical disc without any RAIDs that will directly access single physical disc.
+ * *stripe* -- stripe size of logical drive in kilobytes; possible values vary with adapter, 64 is typical default.
+ * *cache* (writeback, writethrough) -- a write cache mode.
+ * *state* (normal, degraded, initializing, migrating, rebuilding, checking) -- state of array.
 
 ==== list
 
@@ -633,7 +672,7 @@ Einarc:
 * Adaptec raidutils
 * Chelsio TOE
 * Emulex dfc / lputil
-* ICP Vortex RAID Storage Console - icpcon
+* ICP Vortex RAID Storage Console -- icpcon
 * HighPoint RocketRAID hptraidconf
 * Some HP rebranded controllers using HP Array Configuration Utility CLI
 * LSI (former IBM, former Mylex) DAC960/DAC1100
