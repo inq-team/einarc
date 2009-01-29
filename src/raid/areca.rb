@@ -140,33 +140,60 @@ module RAID
 		def _physical_list
 			res = {}
 			run_cli('disk info').each do |l|
-				if l =~ /^\s+\d+\s+(\d+)\s+(\S+)\s+(\S+)\s+(.+)$/
+#  Ch# ModelName                       Capacity  Usage
+#===============================================================================
+#  1  1  WDC WD10EACS-00D6B0             1000.2GB  Raid Set # 02   
+#  2  2  WDC WD10EACS-00D6B0             1000.2GB  Raid Set # 00   
+#  7  7  WDC WD10EACS-00D6B0             1000.2GB  Raid Set # 01   
+#  8  8  WDC WD10EACS-00D6B0             1000.2GB  Raid Set # 02   
+#  9  9  WDC WD10EACS-00D6B0             1000.2GB  HotSpare  
+# 18 18  WDC WD10EACS-00D6B0             1000.2GB  Free      
+# 19 19  N.A.                               0.0GB  N.A.      
+# 20 20  WDC WD10EACS-00D6B0             1000.2GB  Free                         
+				if l =~ /^\s*\d+\s(....)(...............................)(..........)(.*)$/
 					num = $1.strip
 					target = "0:#{num}"
 					d = {
-						:model => $2,
-						:size => $3,
-						:state => case $4.strip
-						when /HotSpare/ then  'Spare'
-						when /Raid Set/ then 'RAID Member'
-						when /N.A./ then 'n.a.'
-						else 'Free'
-						end						
+						:model => $2.strip,
+						:size => $3.strip,
+						:state => $4.strip,
 					}
-					next if d[:size] == 'N.A.' || d[:size] == '0.0GB'
+
+					next if d[:state] == 'N.A.'
+					d[:state] = 'hotspare' if d[:state] =~ /HotSpare/
+					d[:state] = 'free' if d[:state] =~ /Free/
+					if d[:state] =~ /Raid Set # (\d+).*/
+						rsnum = $1.to_i
+						d[:state] = []
+						volumesets.each do |vs|
+							next unless vs
+							d[:state] << vs[:num] if vs[:raidset] == rsnum
+						end
+					end
+
 					d[:size] = areca2mb(d[:size].strip.gsub(/GB$/, '').to_i)
-#					if d[:state] =~ /raid set # (\d+)/
-#						rsnum = $1.to_i
-#						d[:state] = []
-#						volumesets.each do |vs|
-#							next unless vs
-#							d[:state] << vs[:num] if vs[:raidset] == rsnum
-#						end
-#					end
+                                        
+					#Retrieving SN and firmware version for each disk
+#Drive Information 
+#===============================================================
+#IDE Channel                        : 1
+#Model Name                         : WDC WD10EACS-00D6B0                     
+#Serial Number                      : WD-WCAU40389497
+#Firmware Rev.                      : 01.01A01
+#Disk Capacity                      : 1000.2GB
+#Device State                       : NORMAL
+#Timeout Count                      : 0
+#Media Error Count                  : 0
+#SMART Read Error Rate              : 200(51)
+#SMART Spinup Time                  : 146(21)
+#SMART Reallocation Count           : 200(140)
+#SMART Seek Error Rate              : 200(51)
+#SMART Spinup Retries               : 100(51)
+#SMART Calibration Retries          : 100(51)
+#===============================================================
 					run_cli("disk info drv=#{num}").each do |dl|
-						d[:serial] = $1 if dl =~ /^Serial Number .+: (\S+) +$/
-#						d[:state] = $1.downcase if dl =~ /^Device State .+: (\S+) *$/
-						d[:revision] = $1 if dl =~ /^Firmware Rev\. .+: (\S+) +$/
+						d[:serial] = $1 if dl =~ /^Serial Number\s*:\s+(\S+).*$/
+						d[:revision] = $1 if dl =~ /^Firmware Rev\.\s*:\s+(\S+).*$/
 					end
 					res[target] = d
 				end
