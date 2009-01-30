@@ -276,6 +276,12 @@ module RAID
 
 		# ======================================================================
 
+		def _bbu_info
+			raise NotImplementedError
+		end
+
+		# ======================================================================
+
 		private
 		def parse_physical_string(str)
 			res = []
