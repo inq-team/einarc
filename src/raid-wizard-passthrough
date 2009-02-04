@@ -5,6 +5,8 @@ require 'raid/baseraid'
 DISK_GROUP_SIZE=ARGV[0].to_i
 GROUP_NUMBER=ARGV[1].to_i
 
+exit 1 if RAID::BaseRaid::query_adapters.length == 0
+
 RAID::BaseRaid::query_adapters.each { |ad|
 	a = RAID::RAIDS[ad[:driver]].new(ad[:num])
 	a.logical_clear
