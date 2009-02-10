@@ -188,6 +188,7 @@ module RAID
 
 		def logical_clear
 			run("-CfgClr #{@args}")
+			run("-CfgForeign -Clear #{@args}")
 		end
 
 		def _physical_list
