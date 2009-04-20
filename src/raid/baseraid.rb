@@ -214,6 +214,16 @@ module RAID
 		end
 
 
+		def find_dev_via_hal(name)
+		#FIXME: some  configuration check sould be made here
+		#	safely returning nil in case of system that doesn't support hal?
+		#	currently it is not present due to the fact that software module
+		#	relies heavlity on hal without any checks
+
+			id = `hal-find-by-property --key storage.model --string #{ name } `
+			dev = `hal-get-property --udi #{ id.strip } --key block.device` if id
+		end
+
 		def find_dev_by_name(name)
 			for dir in Dir["/sys/block/*/device/"]
 				dev = dir.gsub(/^\/sys\/block/, '/dev').gsub(/\/device\/$/, '')

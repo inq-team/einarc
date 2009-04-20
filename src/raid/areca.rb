@@ -220,7 +220,7 @@ module RAID
 					:physical => raidsets[vs[:raidset] + 1][:channels].collect { |c| "0:#{c}" },
 					:capacity => areca2mb(vs[:capacity]),
 					:state => vs[:state],
-					:dev => @dev ? @dev[vs[:num] - 1] : nil,
+					:dev => @dev ? @dev[vs[:num] - 1] : find_dev_via_hal(vs[:name]),
 				}
 			}.compact
 		end
