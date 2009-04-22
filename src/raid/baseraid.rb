@@ -221,7 +221,7 @@ module RAID
 		#	relies heavlity on hal without any checks
 
 			id = `hal-find-by-property --key storage.model --string #{ name } `
-			dev = `hal-get-property --udi #{ id.strip } --key block.device` if id
+			dev = `hal-get-property --udi #{ id.strip } --key block.device`.chomp if id
 		end
 
 		def find_dev_by_name(name)
