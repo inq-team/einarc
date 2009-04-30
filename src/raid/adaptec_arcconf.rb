@@ -205,10 +205,15 @@ module RAID
 #					ld[:state] = state
 #				when /^Stripe Size: (\d+)kB$/
 #					ld[:stripe] = $1.to_i
-
-#Status of logical device                 : Degraded
 				when /Status of logical device\s+:\s(.+)$/
-					ld[:state] = $1.strip
+					case $1
+						when /Optimal/
+							ld[:state] = "normal"
+						when /Impacted/
+							ld[:state] = "initializing"
+					else
+						ld[:state] = $1.downcase
+					end
 				when /^Logical device name +: (.+)$/
 					ld[:dev] = find_dev_by_name($1.strip)
 				end
