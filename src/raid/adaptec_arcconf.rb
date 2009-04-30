@@ -266,8 +266,8 @@ module RAID
 			# Adaptec doesn't support RAID0 on only 1 disc
 			raid_level = 'linear' if raid_level == '0' and discs.size == 1
 
-			cmd = "create #{@adapter_num} logicaldrive #{opt_cmd}"
 			sizes.each { |s|
+				cmd = "create #{@adapter_num} logicaldrive #{opt_cmd}"
 				raid_level = 'volume' if raid_level == 'linear'
 				cmd += s ? s.to_s : 'MAX'
 				cmd += " #{raid_level} "
