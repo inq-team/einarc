@@ -69,37 +69,10 @@ module RAID
 
 		def log_clear
 			raise NotImplementedError
-			run("-AdpEventLog -Clear #{@args}")
 		end
 
 		def _log_list
 			raise NotImplementedError
-			seq = where = event_time = nil
-			res = []
-			run("-AdpEventLog -GetEvents -f /dev/stdout #{@args}").each { |l|
-				case l
-				when /^seqNum\s*:\s*(.*)$/
-					seq = $1.hex
-					where = event_time = nil
-				when /^Time: (.+?) (.+?) (\d+) (\d+):(\d+):(\d+) (\d+)/
-					month = $2.strip
-					day = $3
-					hour = $4
-					minute = $5
-					second = $6
-					year = $7
-					p year, month, day, hour, minute, second
-					event_time = Time.local(year, month, day, hour, minute, second)
-				when /^Event Description\s*:\s*(.*)$/
-					res << {
-						:id => seq,
-						:time => event_time,
-						:where => where,
-						:what => $1,
-					}
-				end
-			}
-			return res
 		end
 
 		def _logical_list
@@ -144,14 +117,6 @@ module RAID
 					ld[:dev] = $1
 				when /^\s+(\d+:\d+:\d+)/
 					ld[:physical] << cidl2physical($1)
-#				when /^Size\s*:\s*(\d+)MB$/
-#					ld[:capacity] = $1.to_i
-#				when /^State\s*:\s*(.*?)$/
-#					state = $1.downcase
-#					state = 'normal' if state == 'optimal'
-#					ld[:state] = state
-#				when /^Stripe Size: (\d+)kB$/
-#					ld[:stripe] = $1.to_i
 				end
 			}
 			return @logical
@@ -239,7 +204,6 @@ module RAID
 				else
 					raise Error.new("Unsupported RAID level: \"#{raid_level}\"")
 				end
-#				p cmd
 				run(cmd)
 			}
 
@@ -296,54 +260,43 @@ module RAID
 		end
 
 		def get_adapter_alarm(x = nil)
-			l = run("-AdpGetProp AlarmDsply #{@args}").join("\n")
-			return (case l
-				when /Alarm status is Enabled/  then 'enable'
-				when /Alarm status is Disabled/ then 'disable'
-			end)
+			raise NotImplemented
 		end
 
 		def get_adapter_rebuildrate(x = nil)
-			MEGACLI("-GetRbldrate #{@args}")
+			raise NotImplemented
 		end
 
 		def get_adapter_coercion(x = nil)
-			l = MEGACLI("-CoercionVu #{@args}")[0]
-			return (case l
-				when /^Coercion flag OFF/ then 0
-				when /^Coercion flag ON/  then 1
-			end)
+			raise NotImplemented
 		end
 
 		def set_adapter_alarm_disable(x = nil)
-			l = run("-AdpSetProp AlarmDsbl #{@args}").join("\n")
-			raise Error.new(l) unless l =~ /success/
+			raise NotImplemented
 		end
 
 		def set_adapter_alarm_enable(x = nil)
-			l = run("-AdpSetProp AlarmEnbl #{@args}").join("\n")
-			raise Error.new(l) unless l =~ /success/
+			raise NotImplemented
 		end
 
 		def set_adapter_alarm_mute(x = nil)
-			l = run("-AdpSetProp AlarmSilence #{@args}").join("\n")
-			raise Error.new(l) unless l =~ /success/
+			raise NotImplemented
 		end
 
 		def set_adapter_coercion_0(x)
-			MEGACLI("-CoercionOff #{@args}")
+			raise NotImplemented
 		end
 
 		def set_adapter_coercion_1(x)
-			MEGACLI("-CoercionOn #{@args}")
+			raise NotImplemented
 		end
 
 		def set_physical_hotspare_0(drv)
-			run("-PDHSP -Rmv -PhysDrv [#{drv}] #{@args}")
+			raise NotImplemented
 		end
 
 		def set_physical_hotspare_1(drv)
-			run("-PDHSP -Set -PhysDrv [#{drv}] #{@args}")
+			raise NotImplemented
 		end
 		
 		def get_logical_stripe(num)
@@ -353,31 +306,31 @@ module RAID
 		end
 
 		def set_logical_readahead_on(id)
-			MEGACLI("-cldCfg #{@args} -L#{id} RA")
+			raise NotImplemented
 		end
 
 		def set_logical_readahead_off(id)
-			MEGACLI("-cldCfg #{@args} -L#{id} RAN")
+			raise NotImplemented
 		end
 
 		def set_logical_readahead_adaptive(id)
-			MEGACLI("-cldCfg #{@args} -L#{id} RAA")
+			raise NotImplemented
 		end
 
 		def set_logical_write_writethrough(id)
-			MEGACLI("-cldCfg #{@args} -L#{id} WT")
+			raise NotImplemented
 		end
 
 		def set_logical_write_writeback(id)
-			MEGACLI("-cldCfg #{@args} -L#{id} WB")
+			raise NotImplemented
 		end
 
 		def set_logical_io_direct(id)
-			MEGACLI("-cldCfg #{@args} -L#{id} DIO")
+			raise NotImplemented
 		end
 
 		def set_logical_io_cache(id)
-			MEGACLI("-cldCfg #{@args} -L#{id} CIO")
+			raise NotImplemented
 		end
 
 		# ======================================================================

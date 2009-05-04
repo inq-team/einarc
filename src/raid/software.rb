@@ -18,7 +18,7 @@ module RAID
 				:driver => 'software',
 				:num => 0,
 				:model => 'Linux software RAID',
-				:version => `uname -r`,
+				:version => `uname -r`.chomp
 			}
 			return res
 		end
@@ -29,9 +29,9 @@ module RAID
 			res = {}
 			res['Controller Name'] = 'Linux software RAID (md)'
 			res['RAID Level Supported'] = 'linear, 0, 1, 4, 5, 6, 10, mp, faulty'
-			res['Kernel Version'] = `uname -r`
-			res['Current Time'] = `date`
-			res['mdadm Version'] = `mdadm -V 2>&1`
+			res['Kernel Version'] = `uname -r`.chomp
+			res['Current Time'] = `date`.chomp
+			res['mdadm Version'] = `mdadm -V 2>&1`.chomp
 			return res
 		end
 
@@ -76,27 +76,28 @@ module RAID
 				f.each_line { |l|
 					l.chop!
 					case l
-					when /^md(\d+) : (active \S+|inactive) (.+)$/
+					when  /^md(\d+)\s:\s( (?:active|inactive) \s* (?:\([^)]*\))? \s* \S+)\s(.+)$/x
 						num = $1.to_i
-						if $2 == 'inactive'
+						spl = $2.split(' ')
+						if spl.first == 'inactive'
 							state = 'inactive'
 							raid_level = ''
-						elsif $2.split(' ')[0] == 'active'
+						elsif spl.first == 'active'
 							state = 'normal'
-							raid_level = $2.split(' ')[1]
+							raid_level = spl.last
 						end
 						phys = parse_physical_string($3)
-						raid_level = $1.to_i if raid_level =~ /raid(\d+)/
+						raid_level = $1 if raid_level =~ /raid(\d+)/
 						
 						ld = @logical[num] = {
 							:num => num,
 							:dev => "/dev/md#{num}",
-							:physical => [ phys ],
+							:physical => phys,
 							:state => state,
 							:raid_level => raid_level,
 						}
 					when /^\s*(\d+) blocks/
-						ld[:capacity] = $1.to_i / 1024
+						ld[:capacity] = $1.to_i / 1024.0
 					end
 				}
 			}
@@ -210,25 +211,34 @@ module RAID
 			
 			# Extracting data from HAL
 			for udi in udis
+				device = `hal-get-property --udi #{udi} --key block.device 2>/dev/null`.chomp
+				target = phys_to_scsi(device.gsub(/^\/dev\//, ''))
 				d = {}
 				d[:model] = `hal-get-property --udi #{udi} --key storage.model 2>/dev/null`.chomp
-				d[:size] = `hal-get-property --udi #{udi} --key storage.sizel 2>/dev/null`.to_i / 1073741824.0
-				d[:serial] = `hal-get-property --udi #{udi} --key storage.seriall 2>/dev/null`.chomp
-				d[:revision] = `hal-get-property --udi #{udi} --key storage.firmware_versionl 2>/dev/null`.chomp
-				device = `hal-get-property --udi #{udi} --key block.device 2>/dev/null`.chomp
+				d[:size] = `hal-get-property --udi #{udi} --key storage.removable.media_size 2>/dev/null`.to_i / 1048576.0 
+				d[:serial] = `hal-get-property --udi #{udi} --key storage.serial 2>/dev/null`.chomp
+				d[:revision] = `hal-get-property --udi #{udi} --key storage.firmware_version 2>/dev/null`.chomp
 				if raid_member?(device)
-					if spare?(device)
-						d[:state] = 'Spare'
-					else
-						d[:state] = 'RAID Member'
-					end
+					d[:state] = 'hotspare' if spare?(device)
 				else
-					d[:state] = 'Free'
+					d[:state] = 'free'
 				end
-				target = phys_to_scsi(device.gsub(/^\/dev\//, ''))
 				res[target] = d
 			end
-			
+		
+			_logical_list.each do |logical|
+				logical[:physical].each do |target|
+					if res[target][:state].is_a? Array
+						res[target][:state] << logical[:num]
+					else
+						res[target][:state] = [ logical[:num] ]
+					end
+				end
+			end
+			res.each do |k, v|
+				v[:state] = 'unknown' if v[:state].empty?
+			end
+
 			return res
 		end
 

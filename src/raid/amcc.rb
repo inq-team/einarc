@@ -32,7 +32,7 @@ module RAID
 					}
 					res << {
 						:driver => 'amcc',
-						:num => x[0][1..-1],
+						:num => x[0][1..-1].to_i,
 						:model => x[1],
 						:version => version,
 					}

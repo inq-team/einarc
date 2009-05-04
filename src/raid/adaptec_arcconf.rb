@@ -22,7 +22,7 @@ module RAID
 		def self.query(res)
 			run('getversion').each { |vl|
 				if vl =~ /^Controller #(\d+)$/
-					num = $1
+					num = $1.to_i
 					model = '[unknown]'
 					version = '[unknown]'
 					run("getconfig #{num} ad").each { |cl|
@@ -103,37 +103,10 @@ module RAID
 
 		def log_clear
 			raise NotImplementedError
-			run("-AdpEventLog -Clear #{@args}")
 		end
 
 		def _log_list
 			raise NotImplementedError
-			seq = where = event_time = nil
-			res = []
-			run("-AdpEventLog -GetEvents -f /dev/stdout #{@args}").each { |l|
-				case l
-				when /^seqNum\s*:\s*(.*)$/
-					seq = $1.hex
-					where = event_time = nil
-				when /^Time: (.+?) (.+?) (\d+) (\d+):(\d+):(\d+) (\d+)/
-					month = $2.strip
-					day = $3
-					hour = $4
-					minute = $5
-					second = $6
-					year = $7
-					p year, month, day, hour, minute, second
-					event_time = Time.local(year, month, day, hour, minute, second)
-				when /^Event Description\s*:\s*(.*)$/
-					res << {
-						:id => seq,
-						:time => event_time,
-						:where => where,
-						:what => $1,
-					}
-				end
-			}
-			return res
 		end
 
 #Logical device number 0
@@ -173,38 +146,6 @@ module RAID
 					end
 				when /Segment (\d+)\s*:\s*(.*?) \((\d+),(\d+)\)/
 					ld[:physical] << "#{$3}:#{$4}"
-#				when /^ ? ?(\d+)\s*(.......)(.......)(....)(.......)(........)(.......)(..............)/
-#					num = $1.to_i
-#					state = $6.strip.downcase
-#					state = 'normal' if state == 'valid'
-#					ld = @logical[num] = {
-#						:num => num,
-#						:physical => [],
-#						:capacity => textual2mb($3.strip),
-#						:physical => [ cidl2physical($7.strip) ],
-#						:raid_level => case $2.strip
-#						when 'Volume' then 'linear'
-#						when 'Stripe' then 0
-#						when 'Mirror' then 1
-#						when 'RAID-5' then 5
-#						end,
-#						:state => state,
-#					}
-#				when /^ ? ?\/dev\/(.............)...\s+(\S+)\s+(.*?)/
-#					ld[:dev] = $1.strip
-#					ld[:physical] << cidl2physical($2)
-#				when /^ ? ?\/dev\/(\S*)/
-#					ld[:dev] = $1
-#				when /^\s+(\d+:\d+:\d+)/
-#					ld[:physical] << cidl2physical($1)
-#				when /^Size\s*:\s*(\d+)MB$/
-#					ld[:capacity] = $1.to_i
-#				when /^State\s*:\s*(.*?)$/
-#					state = $1.downcase
-#					state = 'normal' if state == 'optimal'
-#					ld[:state] = state
-#				when /^Stripe Size: (\d+)kB$/
-#					ld[:stripe] = $1.to_i
 				when /Status of logical device\s+:\s(.+)$/
 					case $1
 						when /Optimal/
@@ -274,41 +215,8 @@ module RAID
 				cmd += discs.join(' ').gsub(/:/, ',')
 				cmd += ' noprompt'
 
-#				case raid_level
-#				when 'linear'
-#					if s
-#						one_size = coerced_size(s / discs.size)
-#						cmd += discs.collect { |d| "(#{physical2adaptec(d)},#{one_size}K)" }.join(' ')
-#					else
-#						cmd += discs.collect { |d| "(#{physical2adaptec(d)})" }.join(' ')
-#					end
-#				when '0'
-#					cmd = 'container create stripe ' + opt_cmd
-#					if s
-#						one_size = coerced_size(s / (discs.size - 1))
-#						cmd += "(#{physical2adaptec(discs.shift)},#{one_size}K) "
-#					else
-#						cmd += "(#{physical2adaptec(discs.shift)}) "
-#					end
-#					cmd += discs.collect { |d| physical2adaptec(d) }.join(' ')
-#				when '1'
-#					one_size = (s ? ",#{s.to_i}M" : '')
-#					out = run("container create volume #{opt_cmd} (#{physical2adaptec(discs[0])}#{one_size})")
-#					raise Error.new('Unable to find first volume just created') unless out[-1] =~ /Container (\d+) created/
-#					cmd = "container create mirror #{$1} #{physical2adaptec(discs[1])}"
-#				when '5'
-#					cmd = 'container create raid5 ' + opt_cmd
-#					if s
-#						one_size = coerced_size(s / (discs.size - 1))
-#						cmd += "(#{physical2adaptec(discs.shift)},#{one_size}K) "
-#					else
-#						cmd += "(#{physical2adaptec(discs.shift)}) "
-#					end
-#					cmd += discs.collect { |d| physical2adaptec(d) }.join(' ')
-#				else
-#					raise Error.new("Unsupported RAID level: \"#{raid_level}\"")
-#				end
-				p cmd
+#				TODO: 	port size computation/validation logic
+#					from adaptec_aaccli module#r1313,207:241
 				run(cmd)
 			}
 
@@ -370,12 +278,8 @@ module RAID
 				when /Firmware\s*:\s*(.*)$/
 					phys[:revision] = $1
 				when /State\s*:\s*(.*)$/
-					phys[:state] = case $1
-					when 'Ready'
-						'Free'
-					when 'Online'
-						'RAID Member'
-					end
+					phys[:state] = $1.downcase
+					phys[:state] = 'free' if phys[:state] == 'ready'
 				when /Serial number\s*:\s*(.*)$/
 					phys[:serial] = $1
 				end
@@ -404,11 +308,6 @@ module RAID
 
 		def get_adapter_alarm(x = nil)
 			raise NotImplemented
-			l = run("-AdpGetProp AlarmDsply #{@args}").join("\n")
-			return (case l
-				when /Alarm status is Enabled/  then 'enable'
-				when /Alarm status is Disabled/ then 'disable'
-			end)
 		end
 
 		def get_adapter_rebuildrate(x = nil)
@@ -417,42 +316,34 @@ module RAID
 
 		def get_adapter_coercion(x = nil)
 			raise NotImplemented
-			l = MEGACLI("-CoercionVu #{@args}")[0]
-			return (case l
-				when /^Coercion flag OFF/ then 0
-				when /^Coercion flag ON/  then 1
-			end)
 		end
 
 		def set_adapter_alarm_disable(x = nil)
-			l = run("-AdpSetProp AlarmDsbl #{@args}").join("\n")
-			raise Error.new(l) unless l =~ /success/
+			raise NotImplemented
 		end
 
 		def set_adapter_alarm_enable(x = nil)
-			l = run("-AdpSetProp AlarmEnbl #{@args}").join("\n")
-			raise Error.new(l) unless l =~ /success/
+			raise NotImplemented
 		end
 
 		def set_adapter_alarm_mute(x = nil)
-			l = run("-AdpSetProp AlarmSilence #{@args}").join("\n")
-			raise Error.new(l) unless l =~ /success/
+			raise NotImplemented
 		end
 
 		def set_adapter_coercion_0(x)
-			MEGACLI("-CoercionOff #{@args}")
+			raise NotImplemented
 		end
 
 		def set_adapter_coercion_1(x)
-			MEGACLI("-CoercionOn #{@args}")
+			raise NotImplemented
 		end
 
 		def set_physical_hotspare_0(drv)
-			run("-PDHSP -Rmv -PhysDrv [#{drv}] #{@args}")
+			raise NotImplemented
 		end
 
 		def set_physical_hotspare_1(drv)
-			run("-PDHSP -Set -PhysDrv [#{drv}] #{@args}")
+			raise NotImplemented
 		end
 		
 		def get_logical_stripe(num)
@@ -462,31 +353,31 @@ module RAID
 		end
 
 		def set_logical_readahead_on(id)
-			MEGACLI("-cldCfg #{@args} -L#{id} RA")
+			raise NotImplemented
 		end
 
 		def set_logical_readahead_off(id)
-			MEGACLI("-cldCfg #{@args} -L#{id} RAN")
+			raise NotImplemented
 		end
 
 		def set_logical_readahead_adaptive(id)
-			MEGACLI("-cldCfg #{@args} -L#{id} RAA")
+			raise NotImplemented
 		end
 
 		def set_logical_write_writethrough(id)
-			MEGACLI("-cldCfg #{@args} -L#{id} WT")
+			raise NotImplemented
 		end
 
 		def set_logical_write_writeback(id)
-			MEGACLI("-cldCfg #{@args} -L#{id} WB")
+			raise NotImplemented
 		end
 
 		def set_logical_io_direct(id)
-			MEGACLI("-cldCfg #{@args} -L#{id} DIO")
+			raise NotImplemented
 		end
 
 		def set_logical_io_cache(id)
-			MEGACLI("-cldCfg #{@args} -L#{id} CIO")
+			raise NotImplemented
 		end
 
 		# ======================================================================
@@ -534,9 +425,5 @@ module RAID
 			res
 		end
 
-		# Calculates coerced size: kB measurement, 64kB alignment
-		def coerced_size(mb)
-			(mb * 1024 / 64).to_i * 64
-		end
 	end
 end

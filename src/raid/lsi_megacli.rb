@@ -229,14 +229,14 @@ module RAID
 			}
 
 			# Determine related LDs
-#			_logical_list.each_with_index { |l, i|
-#				l[:physical].each { |pd|
-#					@physical[pd][:state] << i
-#				}
-#			}
-#			@physical.each_value { |phys|
-#				phys[:state] = 'unknown' if phys[:state].empty?
-#			}
+			_logical_list.each_with_index { |l, i|
+				l[:physical].each { |pd|
+					@physical[pd][:state] << i
+				}
+			}
+			@physical.each_value { |phys|
+				phys[:state] = 'unknown' if phys[:state].empty?
+			}
 
 			return @physical
 		end

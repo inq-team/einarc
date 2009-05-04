@@ -117,12 +117,13 @@ module RAID
 				_physical_list.each_pair { |num, d|
 					printf(
 						"%-8s%-25s%-15s%-20s%11.2f MB  %s\n",
-						num, d[:model], d[:revision], d[:serial], d[:size], d[:state]
+						num, d[:model], d[:revision], d[:serial], d[:size], 
+							d[:state].is_a?(Array) ? d[:state].join(",") : d[:state]
 					)
 				}
 			else
 				_physical_list.each_pair { |num, d|
-					puts "#{num}\t#{d[:model]}\t#{d[:revision]}\t#{d[:serial]}\t#{d[:size]}\t#{d[:state]}"
+					puts "#{num}\t#{d[:model]}\t#{d[:revision]}\t#{d[:serial]}\t#{d[:size]}\t#{d[:state].is_a?(Array) ? d[:state].join(",") : d[:state]}"
 				}
 			end
 		end
