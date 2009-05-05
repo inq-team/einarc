@@ -147,13 +147,14 @@ module RAID
 				when /Segment (\d+)\s*:\s*(.*?) \((\d+),(\d+)\)/
 					ld[:physical] << "#{$3}:#{$4}"
 				when /Status of logical device\s+:\s(.+)$/
-					case $1
+					state = $1
+					case state
 						when /Optimal/
 							ld[:state] = "normal"
 						when /Impacted/
 							ld[:state] = "initializing"
 					else
-						ld[:state] = $1.downcase
+						ld[:state] = state.downcase
 					end
 				when /^Logical device name +: (.+)$/
 					ld[:dev] = find_dev_by_name($1.strip)
