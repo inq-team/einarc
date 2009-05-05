@@ -280,6 +280,7 @@ module RAID
 				when /State\s*:\s*(.*)$/
 					phys[:state] = $1.downcase
 					phys[:state] = 'free' if phys[:state] == 'ready'
+					phys[:state] = 'hotspare' if phys[:state] == 'hot spare'
 				when /Serial number\s*:\s*(.*)$/
 					phys[:serial] = $1
 				end
@@ -338,12 +339,16 @@ module RAID
 			raise NotImplemented
 		end
 
+		def get_physical_hotspare(drv)
+			(_physical_list[drv][:state] == 'hotspare') ? 1 : 0
+		end
+
 		def set_physical_hotspare_0(drv)
-			raise NotImplemented
+			run("setstate #{@adapter_num} device #{drv.gsub(":"," ")} rdy noprompt")
 		end
 
 		def set_physical_hotspare_1(drv)
-			raise NotImplemented
+			run("setstate #{@adapter_num} device #{drv.gsub(":"," ")} hsp noprompt")
 		end
 		
 		def get_logical_stripe(num)
