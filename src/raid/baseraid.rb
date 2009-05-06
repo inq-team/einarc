@@ -221,8 +221,8 @@ module RAID
 		#	currently it is not present due to the fact that software module
 		#	relies heavlity on hal without any checks
 
-			id = `hal-find-by-property --key storage.model --string #{ name } `
-			dev = `hal-get-property --udi #{ id.strip } --key block.device`.chomp if id
+			id = `hal-find-by-property --key storage.model --string "#{ name }" `
+			dev = `hal-get-property --udi "#{ id.strip }" --key block.device`.chomp if id
 		end
 
 		def find_dev_by_name(name)
