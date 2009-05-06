@@ -89,13 +89,14 @@ module RAID
 						phys = parse_physical_string($3)
 						raid_level = $1 if raid_level =~ /raid(\d+)/
 						
-						ld = @logical[num] = {
+						ld = {
 							:num => num,
 							:dev => "/dev/md#{num}",
 							:physical => phys,
 							:state => state,
 							:raid_level => raid_level,
 						}
+						@logical << ld
 					when /^\s*(\d+) blocks/
 						ld[:capacity] = $1.to_i / 1024.0
 					end
