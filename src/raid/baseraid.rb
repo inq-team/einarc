@@ -230,7 +230,10 @@ module RAID
 				dev = dir.gsub(/^\/sys\/block/, '/dev').gsub(/\/device\/$/, '')
 				mpath = dir + 'model'
 				next unless File.readable?(mpath)
-				return dev if File.read(mpath).chomp.strip == name
+				name_read = File.open(mpath) do |f|
+					f.readline.chomp.strip;
+				end
+				return dev if name_read == name
 			end
 			return nil
 		end
