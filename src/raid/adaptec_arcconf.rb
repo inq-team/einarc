@@ -290,13 +290,14 @@ module RAID
 
 			# Determine related LDs
 			_logical_list.each_with_index { |l, i|
+                                next unless l
 				l[:physical].each { |pd|
 					if @physical[pd][:state].is_a?(Array)
 						@physical[pd][:state] << i
 					else
 						@physical[pd][:state] = [ i ]
 					end
-				}
+				} 
 			}
 
 			return @physical
