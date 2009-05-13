@@ -28,9 +28,8 @@ module RAID
 		def _adapter_info
 			res = {}
 			res['Controller Name'] = 'Linux software RAID (md)'
-			res['RAID Level Supported'] = 'linear, 0, 1, 4, 5, 6, 10, mp, faulty'
+			res['RAID Level Supported'] = '0, 1, 5, 6, 10'
 			res['Kernel Version'] = `uname -r`.chomp
-			res['Current Time'] = `date`.chomp
 			res['mdadm Version'] = `mdadm -V 2>&1`.chomp
 			return res
 		end
@@ -99,6 +98,12 @@ module RAID
 						@logical << ld
 					when /^\s*(\d+) blocks/
 						ld[:capacity] = $1.to_i / 1024.0
+					when /resync=PENDING/
+						ld[:state] = "initializing"
+					when /resync = ([0-9\.\%]+)/
+						ld[:state] = "initializing"
+					when /recovery = ([0-9\.\%]+)/
+						ld[:state] = "rebuilding"
 					end
 				}
 			}
