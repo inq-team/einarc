@@ -234,6 +234,7 @@ module RAID
 		
 			_logical_list.each do |logical|
 				logical[:physical].each do |target|
+					next if res[target][:state] == 'hotspare'
 					if res[target][:state].is_a? Array
 						res[target][:state] << logical[:num]
 					else
@@ -271,6 +272,10 @@ module RAID
 		end
 
 		# ======================================================================
+
+		def get_physical_hotspare(drv)
+			(_physical_list[drv][:state] == 'hotspare') ? 1 : 0
+		end
 
 		def set_physical_hotspare_0(drv)
 			raise Error.new("Device #{drv} is not hotspare") unless spare?(scsi_to_device(drv))
@@ -338,7 +343,7 @@ module RAID
 			# Delete '/dev/' before device name
 			name = device.gsub(/^\/dev\//, '')
 			
-			# Ex. /dev/sda[0](S)
+			# Ex. sda[0](S)
 			return (not File.read('/proc/mdstat').grep(/#{name}\[[^\[]*\]\(S\)/).empty?)
 		end
 		
