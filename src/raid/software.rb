@@ -136,7 +136,7 @@ module RAID
 				rise Error.new('No free discs') if discs.empty?
 			end
 
-			#linear, raid0, 0, stripe, raid1, 1, mirror, raid4, 4, raid5, 5, raid6, 6, raid10, 10, multipath, mp, faulty
+			#raid0, 0, stripe, raid1, 1, mirror, raid5, 5, raid6, 6, raid10, 10
 			case raid_level.downcase
 			when 'passthrough'
 				raise Error.new('Passthrough requires exactly 1 physical disc') unless discs.size == 1
@@ -179,10 +179,10 @@ module RAID
 				`mdadm -S /dev/md#{id}`
 				
 				# Remove disks from RAID
-				disks.each{|d| `mdadm /dev/md#{id} --remove #{d}` }
-				
-				# Delete superblocks
-				disks.each{|d| `mdadm --zero-superblock #{d}` }
+				disks.each{ |d|
+					`mdadm /dev/md#{id} --remove #{d}`
+					`mdadm --zero-superblock #{d}`
+				}
 				
 				# Refresh lists
 				@raids = @devices = nil
@@ -262,7 +262,7 @@ module RAID
 		# ======================================================================
 
 		def get_adapter_raidlevels(x = nil)
-			return %w{linear 0 1 4 5 6 10 mp faulty}
+			return %w{0 1 5 6 10}
 		end
 
 		# ======================================================================
@@ -373,7 +373,7 @@ module RAID
 			md_pattern = Regexp.new("^#{device.gsub(/\/dev\//, '')} : (active \\S+|inactive) (.+)$")
 			
 			File.read('/proc/mdstat').grep(md_pattern) do
-				return $2.split(/\[\d+\](\(S\))? ?/).map{|d| d.gsub('(S)','') }.map{|d| "/dev/#{d}" }
+				return $2.gsub(/raid\d+\s+/, '').split(/\[\d+\](\(S\))? ?/).map{|d| d.gsub('(S)','') }.map{|d| "/dev/#{d}" }
 			end
 		end
 		
