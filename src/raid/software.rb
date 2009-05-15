@@ -112,7 +112,7 @@ module RAID
 
 		# ======================================================================
 
-		def logical_add(raid_level, discs = nil, sizes = nil)
+		def logical_add(raid_level, discs = nil, sizes = nil, options = nil)
 			# Normalize arguments: "discs" and "sizes" are an array, "raid_level" is a string
 			if discs
 				discs = discs.split(/,/) if discs.respond_to?(:split)
@@ -127,9 +127,30 @@ module RAID
 			for d in discs
 				raise Error.new("Device #{d} is already in RAID") if raid_member?(d)
 			end
-			
-			raise Error.new('Software RAID does not support size setting') if sizes
-			
+
+			if sizes
+				raise Error.new('Software RAID does not support multiple arrays on the same devices creation') if sizes.split(/,/).length > 1
+				sizes = (sizes.to_i * 1024).to_s
+			else
+				sizes = "max"
+			end
+
+			# Options are all the same for all commands, pre-parse them
+			opt_cmd = ''
+			if options
+				options = options.split(/,/) if sizes.respond_to?(:split)
+				options.each { |o|
+					if o =~ /^(.*?)=(.*?)$/
+						case $1
+						when 'stripe' then opt_cmd += "--chunk #{$2} "
+						else raise Error.new("Unknown option \"#{o}\"")
+						end
+					else
+						raise Error.new("Unable to parse option \"#{o}\"")
+					end
+				}
+			end
+
 			# If no discs use all free devices
 			if discs.empty?
 				discs = devices.select{ |d| not raid_member?(d) }
@@ -149,9 +170,10 @@ module RAID
 			discs.each{ |d| `umount -f "#{d}" 2>/dev/null` }
 			
 			# Creat RAID using mdadm
-			out = `yes | mdadm --create --verbose #{next_raid_device_name} --auto=yes --force --level=#{raid_level} --raid-devices=#{discs.size} #{discs.join(' ')}`
+			p "yes | mdadm --create --verbose #{next_raid_device_name} --auto=yes --size=#{sizes} #{opt_cmd} --force --level=#{raid_level} --raid-devices=#{discs.size} #{discs.join(' ')}"
+			out = `yes | mdadm --create --verbose #{next_raid_device_name} --auto=yes --size=#{sizes} #{opt_cmd} --force --level=#{raid_level} --raid-devices=#{discs.size} #{discs.join(' ')}`
 			raise Error.new(out) unless $?.success?
-			
+
 			# Refresh lists
 			@raids = @devices = nil
 		end
@@ -178,7 +200,7 @@ module RAID
 				# Stop RAID
 				`mdadm -S /dev/md#{id}`
 				
-				# Remove disks from RAID
+				# Remove disks from RAID and zero superblocks
 				disks.each{ |d|
 					`mdadm /dev/md#{id} --remove #{d}`
 					`mdadm --zero-superblock #{d}`
@@ -262,7 +284,7 @@ module RAID
 		# ======================================================================
 
 		def get_adapter_raidlevels(x = nil)
-			return %w{0 1 5 6 10}
+			return %w{linear 0 1 5 6 10}
 		end
 
 		# ======================================================================
