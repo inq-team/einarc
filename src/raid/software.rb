@@ -75,6 +75,8 @@ module RAID
 				f.each_line { |l|
 					l.chop!
 					case l
+					when /(\d+)k chunk/
+						ld[:stripe] = $1.to_i
 					when  /^md(\d+)\s:\s( (?:active|inactive) \s* (?:\([^)]*\))? \s* \S+)\s(.+)$/x
 						num = $1.to_i
 						spl = $2.split(' ')
@@ -170,7 +172,6 @@ module RAID
 			discs.each{ |d| `umount -f "#{d}" 2>/dev/null` }
 			
 			# Creat RAID using mdadm
-			p "yes | mdadm --create --verbose #{next_raid_device_name} --auto=yes --size=#{sizes} #{opt_cmd} --force --level=#{raid_level} --raid-devices=#{discs.size} #{discs.join(' ')}"
 			out = `yes | mdadm --create --verbose #{next_raid_device_name} --auto=yes --size=#{sizes} #{opt_cmd} --force --level=#{raid_level} --raid-devices=#{discs.size} #{discs.join(' ')}`
 			raise Error.new(out) unless $?.success?
 
@@ -312,7 +313,7 @@ module RAID
 		# ======================================================================
 
 		def get_logical_stripe(num)
-			ld = _logical_list[num.to_i]
+			ld = _logical_list.reject { |logical| logical[:num] != num.to_i }[0]
 			raise Error.new("Unknown logical disc \"#{num}\"") unless ld
 			return ld[:stripe]
 		end
