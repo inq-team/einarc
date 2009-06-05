@@ -1,5 +1,9 @@
 module RAID
 	class Software < BaseRaid
+
+		MDSTAT_PATTERN = /^md(\d+)\s:\s( (?:active|inactive) \s* (?:\([^)]*\))? \s* \S+)\s(.+)$/x
+		MDSTAT_LOCATION = '/proc/mdstat'
+		 
 		def initialize(adapter_num = nil)
 			for l in `mdadm --examine --scan`.grep /^ARRAY.+$/
 				vars = l.split(' ')
@@ -42,7 +46,7 @@ module RAID
 
 		def _task_list
 			res = []
-			lines = File.readlines('/proc/mdstat')
+			lines = File.readlines(MDSTAT_LOCATION)
 			lines.each_with_index do |l, i|
 				if l =~ /^\s+\[.*\]\s+(\S+)\s+=\s+(\S+)%.*/
 					res << {
@@ -71,13 +75,14 @@ module RAID
 		def _logical_list
 			@logical = []
 			ld = nil
-			File.open('/proc/mdstat', 'r') { |f|
+			File.open(MDSTAT_LOCATION, 'r') { |f|
 				f.each_line { |l|
 					l.chop!
-					case l
-					when /(\d+)k chunk/
+					if l =~ /(\d+)k chunk/
 						ld[:stripe] = $1.to_i
-					when  /^md(\d+)\s:\s( (?:active|inactive) \s* (?:\([^)]*\))? \s* \S+)\s(.+)$/x
+					end
+					case l
+					when  MDSTAT_PATTERN
 						num = $1.to_i
 						spl = $2.split(' ')
 						if spl.first == 'inactive'
@@ -359,7 +364,7 @@ module RAID
 			name = device.gsub(/^\/dev\//, '')
 			
 			# Check name existence in mdstat file
-			return (not File.read('/proc/mdstat').grep(Regexp.new(name)).empty?)
+			return (not File.read(MDSTAT_LOCATION).grep(Regexp.new(name)).empty?)
 		end
 
 		def spare?(device)
@@ -367,7 +372,7 @@ module RAID
 			name = device.gsub(/^\/dev\//, '')
 			
 			# Ex. sda[0](S)
-			return (not File.read('/proc/mdstat').grep(/#{name}\[[^\[]*\]\(S\)/).empty?)
+			return (not File.read(MDSTAT_LOCATION).grep(/#{name}\[[^\[]*\]\(S\)/).empty?)
 		end
 		
 		def active?(device)
@@ -375,14 +380,14 @@ module RAID
 			name = device.gsub(/^\/dev\//, '')
 			
 			# Check RAID existence in mdstat file
-			return (not File.read('/proc/mdstat').grep(Regexp.new(name)).empty?)
+			return (not File.read(MDSTAT_LOCATION).grep(Regexp.new(name)).empty?)
 		end
 		
 		def list_raids
 			res = []
-			for l in File.readlines('/proc/mdstat')
+			for l in File.readlines(MDSTAT_LOCATION)
 				# md0 : active raid0 sdb[1] sdc[0]
-				res[$1.to_i] = "/dev/md#{$1}" if l =~ /^md(\d+)\s*:\s*\S+\s*\S+\s*.*$/
+				res[$1.to_i] = "/dev/md#{$1}" if l =~ MDSTAT_PATTERN
 			end
 			return res.compact
 		end
@@ -393,15 +398,13 @@ module RAID
 		
 		def devices_of(device)
 			#md0 : active linear sdc[0]
-			md_pattern = Regexp.new("^#{device.gsub(/\/dev\//, '')} : (active \\S+|inactive) (.+)$")
-			
-			File.read('/proc/mdstat').grep(md_pattern) do
-				return $2.gsub(/raid\d+\s+/, '').split(/\[\d+\](\(S\))? ?/).map{|d| d.gsub('(S)','') }.map{|d| "/dev/#{d}" }
+			File.read(MDSTAT_LOCATION).grep(%r[^#{device.gsub(/\/dev\//, '') }]).grep(MDSTAT_PATTERN) do
+				return $3.split(/\[\d+\](\(S\))? ?/).map{|d| d.gsub('(S)','') }.map{|d| "/dev/#{d}" }
 			end
 		end
 		
 		def level_of(device)
-			File.read('/proc/mdstat').grep(/#{device.gsub(/\/dev\//, '')} : (active|inactive)\s+(\S+)\s/) do
+			File.read(MDSTAT_LOCATION).grep(%r[^#{device.gsub(/\/dev\//, '') }]).grep(MDSTAT_PATTERN) do
 				return $2.map{|l| l.gsub('raid','') }[0]
 			end			
 		end
