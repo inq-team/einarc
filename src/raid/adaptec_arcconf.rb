@@ -307,7 +307,7 @@ module RAID
 		# ======================================================================
 
 		def get_adapter_raidlevels(x = nil)
-			[ 'linear', '0', '1', '5' ]
+			[ 'linear', 'passthrough', '0', '1', '5' ]
 		end
 
 		def get_adapter_alarm(x = nil)

@@ -313,7 +313,7 @@ module RAID
 		# Properties management
 
 		def get_adapter_raidlevels(x = nil)
-			[ '0', '1', '1E', '10', '3', '5', '6' ]
+			[ 'passthrough', '0', '1', '1E', '10', '3', '5', '6' ]
 		end
 
 		def set_adapter_alarm_mute(x = nil)
