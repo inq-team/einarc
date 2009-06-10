@@ -94,6 +94,14 @@ module RAID
 			puts concatenated_logs
 		end
 
+		def log_clear(subsys = nil)
+			if not subsys then
+				_log_discover.each{ |ss| _log_clear(ss) }
+			else
+				_log_clear(subsys)
+			end
+		end
+
 		def task_list
 			if $humanize then
 				printf "%-5s%-12s%-20s%s\n", '#', 'Where', 'What', 'Progress'

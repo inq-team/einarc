@@ -101,8 +101,8 @@ module RAID
 
 		# ======================================================================
 
-		def log_clear
-			raise NotImplementedError
+		def _log_clear(subsys)
+			run("getlogs #{@adapter_num} #{subsys} clear")
 		end
 
 		def _log_discover
