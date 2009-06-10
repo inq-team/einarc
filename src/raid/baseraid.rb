@@ -19,7 +19,7 @@ module RAID
 
 		METHODS = {
 			'adapter' => %w(info restart get set),
-			'log' => %w(clear list test),
+			'log' => %w(clear list test discover dump),
 			'physical' => %w(list get set),
 			'logical' => %w(list add delete clear get set),
 			'task' => %w(list wait),
@@ -68,6 +68,18 @@ module RAID
 				_log_list.each { |l|
 					puts "#{l[:id]}\t#{l[:time].strftime('%Y-%m-%d %H:%M:%S')}\t#{l[:where]}\t#{l[:what]}"
 				}
+			end
+		end
+
+		def log_discover
+			if $humanize then
+				if _log_discover.size > 0 then
+					puts "Available log subsystems: " + _log_discover.join(", ")
+				else
+					puts "Adapter does not support log subsystems selection"
+				end
+			else
+				puts _log_discover
 			end
 		end
 
@@ -217,9 +229,9 @@ module RAID
 
 		def find_dev_via_hal(name)
 		#FIXME: some  configuration check sould be made here
-		#	safely returning nil in case of system that doesn't support hal?
+		#	safely returning nil in case of system that doesn't support HAL?
 		#	currently it is not present due to the fact that software module
-		#	relies heavlity on hal without any checks
+		#	relies heavily on HAL without any checks
 
 			id = `hal-find-by-property --key storage.model --string "#{ name }" `
 			dev = `hal-get-property --udi "#{ id.strip }" --key block.device`.chomp if id

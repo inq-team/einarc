@@ -66,6 +66,10 @@ module RAID
 			raise NotImplementedError
 		end
 
+		def _log_discover
+			[]
+		end
+
 		def _log_list
 			raise NotImplementedError
 		end

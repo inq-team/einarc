@@ -101,6 +101,10 @@ module RAID
 			run_cli 'event clear'
 		end
 
+		def _log_discover
+			[]
+		end
+
 		def _log_list
 			n = 0
 			res = []

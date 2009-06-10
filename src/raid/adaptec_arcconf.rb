@@ -105,6 +105,10 @@ module RAID
 			raise NotImplementedError
 		end
 
+		def _log_discover
+			[ 'device', 'dead', 'event', 'ppi' ]
+		end
+
 		def _log_list
 			raise NotImplementedError
 		end
