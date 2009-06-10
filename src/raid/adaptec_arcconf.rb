@@ -109,6 +109,18 @@ module RAID
 			[ 'device', 'dead', 'event', 'ppi' ]
 		end
 
+		def _log_dump(subsys)
+			# Silently skip PPI log dump, as it can only be cleared
+			return "" if subsys == "ppi"
+
+			parsed_log = ""
+			run("getlogs #{@adapter_num} #{subsys}").each{ |l|
+				next if (l =~ /^Controllers found/ or l =~ /^Command completed successfully/ or l=~ /^$/)
+				parsed_log << l
+			}
+			return parsed_log
+		end
+
 		def _log_list
 			raise NotImplementedError
 		end
