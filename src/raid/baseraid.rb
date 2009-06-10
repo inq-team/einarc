@@ -88,6 +88,7 @@ module RAID
 			if not subsys then
 				_log_discover.each{ |ss| concatenated_logs << _log_dump(ss) }
 			else
+				raise Error.new("No such subsystem; available susbsystems: #{_log_discover.join(", ")}") unless _log_discover.include?(subsys)
 				concatenated_logs = _log_dump(subsys)
 			end
 
@@ -98,6 +99,7 @@ module RAID
 			if not subsys then
 				_log_discover.each{ |ss| _log_clear(ss) }
 			else
+				raise Error.new("No such subsystem; available susbsystems: #{_log_discover.join(", ")}") unless _log_discover.include?(subsys)
 				_log_clear(subsys)
 			end
 		end
