@@ -194,16 +194,6 @@ module RAID
 				# Unmount it first
 				`umount -f /dev/md#{id} 2>/dev/null`
 				
-				# Find all RAIDs
-				raid_udis = `hal-find-by-capability --capability storage.linux_raid`.split("\n")
-				
-				# HAL's UDI of array we want to delete
-				udi_to_delete = raid_udis.select{|udi| 
-					`hal-get-property --udi #{udi} --key block.device`.chomp ==  "/dev/md#{id}" }[0]
-	
-				# HACK: Delete UDI from HAL
-				`hal-device -r #{udi_to_delete}` unless udi_to_delete.nil?
-				
 				# Get list of disks
 				disks = devices_of("/dev/md#{id}")
 
@@ -233,29 +223,19 @@ module RAID
 		# ======================================================================
 
 		def _physical_list
-			# Find all storage hardware from HAL
-			udis = `hal-find-by-property  --key storage.drive_type --string disk`.split("\n")
-			
-			# Find all RAIDs
-			excluded_udis = `hal-find-by-capability --capability storage.linux_raid`.split("\n")
-
-			# Remove RAID devices from found hardware list
-			for udi in excluded_udis
-				udis.delete(udi)
-			end
-			
 			# Resulting hash
 			res = {}
 			
 			# Extracting data from HAL
-			for udi in udis
-				device = `hal-get-property --udi #{udi} --key block.device 2>/dev/null`.chomp
+			for device in list_devices
 				target = phys_to_scsi(device.gsub(/^\/dev\//, ''))
 				d = {}
-				d[:model] = `hal-get-property --udi #{udi} --key storage.model 2>/dev/null`.chomp
-				d[:size] = `hal-get-property --udi #{udi} --key storage.removable.media_size 2>/dev/null`.to_i / 1048576.0 
-				d[:serial] = `hal-get-property --udi #{udi} --key storage.serial 2>/dev/null`.chomp
-				d[:revision] = `hal-get-property --udi #{udi} --key storage.firmware_version 2>/dev/null`.chomp
+				d[:model] = physical_read_file(device, "device/model") or ""
+				d[:revision] = physical_read_file(device, "device/rev") or ""
+				d[:serial] = physical_read_file(device, "device/serial") or ""
+				d[:size] = physical_read_file(device, "size") or 0
+				d[:size] = d[:size].to_f * 512 / 1048576
+
 				if raid_member?(device)
 					d[:state] = 'hotspare' if spare?(device)
 				else
@@ -345,18 +325,8 @@ module RAID
 		end
 		
 		def list_devices
-			# Find all storage hardware from HAL
-			udis = `hal-find-by-property  --key storage.drive_type --string disk`.split("\n")
-			
-			# Find all RAIDs
-			excluded_udis = `hal-find-by-capability --capability storage.linux_raid`.split("\n")
-
-			# Remove RAID devices from found hardware list
-			for udi in excluded_udis
-				udis.delete(udi)
-			end
-			
-			return dis.map{ |udi| `hal-get-property --udi #{udi} --key block.device`.chomp }
+			return File.open("/proc/partitions", "r").collect { |l|
+				"/dev/" + $1 if l =~ /^\s+[38]\s+\d+\s+\d+\s+([a-z]+)$/ }.compact
 		end
 		
 		def devices
@@ -442,6 +412,14 @@ module RAID
 			res += ('a'[0] + parts[1].to_i).chr
 			res += parts[2].to_s if parts.size == 3
 			return res
+		end
+
+		def physical_read_file(device, source)
+			begin
+				return File.open("/sys/block/#{device.gsub(/^\/dev\//, '')}/#{source}", "r").readline.chop
+			rescue Errno::ENOENT
+				return nil
+			end
 		end
 	end
 end
