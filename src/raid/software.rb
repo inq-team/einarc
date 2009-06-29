@@ -229,7 +229,7 @@ module RAID
 			# Extracting data from HAL
 			for device in list_devices
 				target = phys_to_scsi(device.gsub(/^\/dev\//, ''))
-				d = {}
+				d = { :state => 'unknown' }
 				d[:model] = physical_read_file(device, "device/model") or ""
 				d[:revision] = physical_read_file(device, "device/rev") or ""
 				d[:serial] = physical_read_file(device, "device/serial") or ""
@@ -253,9 +253,6 @@ module RAID
 						res[target][:state] = [ logical[:num] ]
 					end
 				end
-			end
-			res.each do |k, v|
-				v[:state] = 'unknown' if v[:state].empty?
 			end
 
 			return res
