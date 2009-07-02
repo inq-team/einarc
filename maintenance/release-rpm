@@ -7,6 +7,6 @@ VERSION=`sed 's/Einarc v//' <../VERSION`
 rm -rf $RELEASEDIR/einarc-$VERSION
 svn export https://inq.svn.sourceforge.net/svnroot/inq/trunk/client/lib/einarc $RELEASEDIR/einarc-$VERSION
 cd $RELEASEDIR
-rm -rf maintenance
+rm -rf einarc-$VERSION/maintenance
 tar -cvf $RPMDIR/SOURCES/einarc-$VERSION.tar einarc-$VERSION
 rpmbuild -ba $RPMDIR/SPECS/einarc.spec
