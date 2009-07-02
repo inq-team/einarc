@@ -1,3 +1,12 @@
+== v1.4
+
+* Support for post-build reconfiguration of proprietary CLIs and
+supporting modules. This allows Einarc to be supplied via usual binary
+packaging methods (rpm/deb): proprietary CLIs can be installed after
+binary package installation using special setup tool "einarc-install".
+* Experimental support for hardware RAID autodetection in both
+build-time (configure) and run-time (einarc-install).
+
 == v1.3
 
 * Support for 3ware / AMCC controllers by Andras Horvath.
