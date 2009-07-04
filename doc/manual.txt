@@ -198,37 +198,51 @@ can be invoked using:
 Options:
 
 `-l`, `\--list`::
-  list all adapters found in system and exit
+  List all adapters found in system and exit.
 `-V`, `\--version`::
-  print program version and exit
+  Print program version and exit.
 `\--help`::
-  show short help text and exit
+  Show short help text and exit.
 `-h`, `\--human`::
-  output human-readable information
+  Output human-readable information. By default, Einarc outputs data in
+  tab-separated format that's easier to parse in scripts. Using this
+  option makes output a bit more comfortable to read by humans: tables
+  would have headers and they will be formatted with spaces to ensure
+  fixed width fields.
 `-t`, `\--type=TYPE`::
   type (manufacturer) of RAID adapter
 `-a`, `\--adapter=NUM`::
-  select the adapter if multiple adapters are present
+  select the adapter if multiple adapters of a given type are present
 
-Refer to <<object_interface,object interface description>> for particular object.
+Refer to <<object_interface,object interface description>> for particular objects.
 
-Note that command-line interface is always ready to provide a
-hint. For example, one can forget almost everything and start with
-just calling "einarc". Consider this session:
+Note that command-line interface is always ready to provide a hint. For
+example, one can forget almost everything and start with just calling
+"einarc". Note that we will use `-h` option in all further examples to
+ensure human-friendly output. If there's only one adapter available at
+the system, things can go as easy as:
 
- $ einarc
- Adapter type not specified: use --list to list all adapters and choose one
- $ einarc --list
- areca   1       ARC-1160        PCI
- $ einarc -h -t areca
- Object not specified; available objects: logical, log, adapter, task, physical
+ $ einarc -h
+ Object not specified; available objects: logical, physical, log, adapter, firmware, task, bbu
 
-Let's start with showing all logical drives. We don't know what method
-we should choose, but Einarc will give a hint:
+If there's more than 1 adapter in the system, one would get a message
+hinting that one should specify which adapter we'll work with:
 
- $ einarc -h -t areca logical
+ $ einarc -h
+ Multiple adapters exist: use --list to list all adapters, choose one and specify it with --type and --adapter
+ $ einarc -h --list
+ Type           Adapter #  Model                         Version
+ lsi_megacli    0          MegaRAID SAS PCI Express(TM)  8.0.1-0038
+ areca          1          ARC-1160                      PCI
+ $ einarc -h --type=areca
+ Object not specified; available objects: logical, physical, log, adapter, firmware, task, bbu
+
+Let's start with showing all logical drives. We don't
+know what method we should choose, but Einarc will give a hint:
+
+ $ einarc -h logical
  Command not specified; available commands: list, add, delete, clear, get, set
- $ einarc -h -t areca logical list
+ $ einarc -h logical list
  #  RAID level   Physical drives                 Capacity     Device  State
  1  5            0:1,0:2,0:4,0:5,0:8            762939.45 MB          normal
  2  1+0          0:6,0:7                        190734.86 MB          normal
@@ -240,24 +254,29 @@ or not. Such simple boolean flag is available as a property of
 `physical` object, and Einarc will give a hint on how to get it and when
 to add a reference to particular physical disc ID:
 
- $ einarc -h -t areca physical
+ $ einarc -h physical
  Command not specified; available commands: list, get, set
- $ einarc -h -t areca physical get
+ $ einarc -h physical get
  Object identifier not specified
- $ einarc -h -t areca physical get 0:1
+ $ einarc -h physical list
+ ID      Model                    Revision       Serial                     Size     State
+ 0:1     WDC WD2000JD-00          08.02D08       WD-WMAL00000001       190734.86 MB  1
+ 0:2     WDC WD2000JD-00          08.02D08       WD-WMAL00000002       190734.86 MB  1
+ ...
+ $ einarc -h physical get 0:1
  Property not specified; available properties: hotspare
- $ einarc -h -t areca physical get 0:1 hotspare
+ $ einarc -h physical get 0:1 hotspare
  0
 
 Getting a property of adapter is in fact even simpler: there shouldn't
 be any IDs. Here we'll get a list of all RAID levels a particular
 adapter supports:
 
- $ einarc -h -t areca adapter
+ $ einarc -h adapter
  Command not specified; available commands: info, restart, get, set
- $ einarc -h -t areca adapter get
- Property not specified; available properties: raidlevels
- $ einarc -h -t areca adapter get raidlevels
+ $ einarc -h adapter get
+ Property not specified; available properties: coercion, raidlevels, alarm, rebuildrate
+ $ einarc -h adapter get raidlevels
  0
  1
  1E
