@@ -62,8 +62,19 @@ begin
 		RAID::BaseRaid.list_adapters
 		exit
 	end
-	raise RAID::Error.new('Adapter type not specified: use --list to list all adapters and choose one') unless adapter_type
-	a = RAID::RAIDS[adapter_type].new(adapter_num)
+	if adapter_type
+		a = RAID::RAIDS[adapter_type].new(adapter_num)
+	else
+		# No adapter specified, try to guess one if it's obvious
+		ads = RAID::BaseRaid.query_adapters
+		if ads.length == 0
+			raise RAID::Error.new('No supported adapters found')
+		elsif ads.length == 1
+			a = RAID::RAIDS[ads[0][:driver]].new(ads[0][:num])
+		else
+			raise RAID::Error.new('Multiple adapters exist: use --list to list all adapters, choose one and specify it with --type and --adapter')
+		end
+	end
 	a.handle_method(ARGV)
 rescue RAID::Error => e
 	puts e.to_s
