@@ -210,7 +210,7 @@ module RAID
 
 		def handle_method(arg)
 			obj_name = arg.shift
-			raise Error.new('Object not specified') unless obj_name
+			raise Error.new('Object not specified; available objects: ' + METHODS.keys.join(', ')) unless obj_name
 			obj = self.class::METHODS[obj_name]
 			raise Error.new("Unknown object '#{obj_name}'; available objects: " + METHODS.keys.join(', ')) unless obj
 
