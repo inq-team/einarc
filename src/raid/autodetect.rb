@@ -21,7 +21,7 @@ module RAID
 
 		res = []
 		pci.split("\n").each { |l|
-			next unless l =~ /^(.*?) "(.*?)" "(.*?)" "(.*?)" (.*?) "(.*?)" "(.*?)"$/
+			next unless l =~ /^(.*?) "(.*?)" "(.*?)" "(.*?)"(.*?)"(.*?)" "(.*?)"$/
 			vendor_id = $3
 			product_id = $4
 #			p [vendor_id, product_id]
