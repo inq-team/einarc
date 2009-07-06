@@ -226,7 +226,6 @@ module RAID
 			# Resulting hash
 			res = {}
 			
-			# Extracting data from HAL
 			for device in list_devices
 				target = phys_to_scsi(device.gsub(/^\/dev\//, ''))
 				d = { :state => 'unknown' }
@@ -323,7 +322,8 @@ module RAID
 		
 		def list_devices
 			return File.open("/proc/partitions", "r").collect { |l|
-				"/dev/" + $1 if l =~ /^\s+[38]\s+\d+\s+\d+\s+([a-z]+)$/ }.compact
+				"/dev/" + $1 if l =~ /^\s+[38]\s+\d+\s+\d+\s+([a-z]+)$/ }.compact.select { |d|
+					not phys_belongs_to_adapters(d) }
 		end
 		
 		def devices
@@ -411,12 +411,25 @@ module RAID
 			return res
 		end
 
+		# Read single line from block device-related files in sysfs
 		def physical_read_file(device, source)
 			begin
 				return File.open("/sys/block/#{device.gsub(/^\/dev\//, '')}/#{source}", "r").readline.chop
 			rescue Errno::ENOENT
 				return nil
 			end
+		end
+
+		# Determine if device belongs to any known by Einarc controller
+		def phys_belongs_to_adapters(device)
+			sysfs_pciid = File.readlink("/sys/block/#{device.gsub(/^\/dev\//, '')}/device").split("/").select { |f|
+				f =~ /^\d+:\d+:[\w\.]+$/ }[-1]
+			vendor_id = File.open("/sys/bus/pci/devices/#{sysfs_pciid}/vendor").readline.chop.gsub(/^0x/, "")
+			product_id = File.open("/sys/bus/pci/devices/#{sysfs_pciid}/device").readline.chop.gsub(/^0x/, "")
+			sub_vendor_id = File.open("/sys/bus/pci/devices/#{sysfs_pciid}/subsystem_vendor").readline.chop.gsub(/^0x/, "")
+			sub_product_id = File.open("/sys/bus/pci/devices/#{sysfs_pciid}/subsystem_device").readline.chop.gsub(/^0x/, "")
+
+			return BaseRaid.find_adapter_by_pciid(vendor_id, product_id, sub_vendor_id, sub_product_id) ? true : false
 		end
 	end
 end

@@ -1,23 +1,9 @@
 require 'raid/baseraid'
 
-RAID::MODULES.each_key { |k, v| require "raid/#{k}" }
-
 module RAID
 	def self.autodetect
 		pci = `lspci -mn`
 		raise "Error executing 'lspci': autodetection is not possible" if $?.exitstatus != 0
-
-		pcimap = {}
-		MODULES.each_pair { |filename, m|
-			klass = self.const_get(m[:classname])
-			if klass.constants.include?('PCI_IDS')
-				klass::PCI_IDS.each_value { |ids|
-					pcimap[ids] = filename
-				}
-			else
-				$stderr.puts "WARNING: #{m[:classname]} does not supply PCI identifiers"
-			end
-		}
 
 		res = []
 		pci.split("\n").each { |l|
@@ -25,10 +11,10 @@ module RAID
 			vendor_id = $3
 			product_id = $4
 #			p [vendor_id, product_id]
-			m = pcimap[[vendor_id, product_id]]
-			if m
-				puts "Detected device supported by \"#{m}\" (#{vendor_id}:#{product_id})"
-				res << m
+			adapter = BaseRaid.find_adapter_by_pciid(vendor_id, product_id)
+			if adapter
+				puts "Detected device supported by \"#{adapter}\" (#{vendor_id}:#{product_id})"
+				res << adapter
 			end
 		}
 		res.sort!.uniq!

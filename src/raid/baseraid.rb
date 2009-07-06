@@ -247,17 +247,6 @@ module RAID
 			}
 		end
 
-
-		def find_dev_via_hal(name)
-		#FIXME: some  configuration check sould be made here
-		#	safely returning nil in case of system that doesn't support HAL?
-		#	currently it is not present due to the fact that software module
-		#	relies heavily on HAL without any checks
-
-			id = `hal-find-by-property --key storage.model --string "#{ name }" `
-			dev = `hal-get-property --udi "#{ id.strip }" --key block.device`.chomp if id
-		end
-
 		def find_dev_by_name(name)
 			for dir in Dir["/sys/block/*/device/"]
 				dev = dir.gsub(/^\/sys\/block/, '/dev').gsub(/\/device\/$/, '')
@@ -269,6 +258,22 @@ module RAID
 				return dev if name_read == name
 			end
 			return nil
+		end
+
+		# Find corresponding Einarc's module working with controller specified by PCI ID
+		def self.find_adapter_by_pciid(vendor_id, product_id, sub_vendor_id, sub_product_id)
+			require 'raid/meta.rb'
+			MODULES.each_key { |k, v| require "raid/#{k}" }
+
+			pcimap = {}
+			MODULES.each_pair { |filename, m|
+				klass = RAID.const_get(m[:classname])
+				if klass.constants.include?('PCI_IDS')
+					klass::PCI_IDS.each_value { |ids| pcimap[ids] = filename }
+				end
+			}
+
+			return ( pcimap[[vendor_id, product_id, sub_vendor_id, sub_product_id]] or pcimap[[vendor_id, product_id]] )
 		end
 	end
 end
