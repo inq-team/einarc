@@ -63,6 +63,7 @@ begin
 		exit
 	end
 	if adapter_type
+		raise RAID::Error.new("Unknown adapter type specified: \"#{adapter_type}\"") unless RAID::RAIDS[adapter_type]
 		a = RAID::RAIDS[adapter_type].new(adapter_num)
 	else
 		# No adapter specified, try to guess one if it's obvious
