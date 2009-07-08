@@ -136,7 +136,7 @@ module RAID
 			raid_level = raid_level.to_s
 
 			# Replace SCSI enumerations by devices
-			discs.map!{ |d| scsi_to_device(d) }
+			discs.map! { |d| scsi_to_device(d) }
 
 			# Check if discs are already RAID members
 			for d in discs
@@ -390,8 +390,8 @@ module RAID
 			return last_id.nil? ? "/dev/md0" : "/dev/md#{last_id + 1}"
 		end
 
-		# Converts physical name (sda) to SCSI enumeration (1:0)
-		def phys_to_scsi(name)
+		# Converts physical name (hda) to SCSI enumeration (1:0)
+		def self.phys_to_scsi(name)
 			case name
 			when /^hd(.)(\d*)$/
 				res = "1:#{$1[0] - 'a'[0]}"
@@ -405,13 +405,12 @@ module RAID
 			return res
 		end
 
-		# Converts SCSI enumeration to physical device name
-		def scsi_to_device(id)
-			parts = id.split(':')
-			res = "/dev/hd" if parts[0] == '1'
-			res = "/dev/sd" if parts[0] == '0'
-			res += ('a'[0] + parts[1].to_i).chr
-			res += parts[2].to_s if parts.size == 3
+		# Converts SCSI enumeration (1:0) to physical device name (hda)
+		def self.scsi_to_device(id)
+			raise Error.new("Invalid physical disc specification \"#{id}\": \"a:b\" or \"a:b:c\" expected") unless id =~ /^([01]):(\d+)(:(\d+))?$/
+			res = ($1 == '1') ? '/dev/hd' : '/dev/sd'
+			res += ('a'[0] + $2.to_i).chr
+			res += $4 if $4
 			return res
 		end
 
