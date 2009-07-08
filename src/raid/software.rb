@@ -1,9 +1,13 @@
+# Software RAID module needs autodetect to distinguish standalone
+# physical HDDs from logical HDDs made by hardware RAID controllers
+require 'raid/autodetect'
+
 module RAID
 	class Software < BaseRaid
 
 		MDSTAT_PATTERN = /^md(\d+)\s:\s( (?:active|inactive) \s* (?:\([^)]*\))? \s* \S+)\s(.+)$/x
 		MDSTAT_LOCATION = '/proc/mdstat'
-		 
+
 		def initialize(adapter_num = nil)
 			for l in `mdadm --examine --scan`.grep /^ARRAY.+$/
 				vars = l.split(' ')
@@ -98,7 +102,7 @@ module RAID
 						end
 						phys = parse_physical_string($3)
 						raid_level = $1 if raid_level =~ /raid(\d+)/
-						
+
 						ld = {
 							:num => num,
 							:dev => "/dev/md#{num}",
@@ -130,10 +134,10 @@ module RAID
 				discs = [discs] unless discs.respond_to?(:each)
 			end
 			raid_level = raid_level.to_s
-			
+
 			# Replace SCSI enumerations by devices
 			discs.map!{ |d| scsi_to_device(d) }
-			
+
 			# Check if discs are already RAID members
 			for d in discs
 				raise Error.new("Device #{d} is already in RAID") if raid_member?(d)
@@ -176,10 +180,10 @@ module RAID
 			when '5'
 				raise Error.new('RAID 5 requires 3 or more discs') unless discs.size > 2
 			end
-			
+
 			# Unmount all devices
 			discs.each{ |d| `umount -f "#{d}" 2>/dev/null` }
-			
+
 			# Creat RAID using mdadm
 			out = `yes | mdadm --create --verbose #{next_raid_device_name} --auto=yes --size=#{sizes} #{opt_cmd} --force --level=#{raid_level} --raid-devices=#{discs.size} #{discs.join(' ')}`
 			raise Error.new(out) unless $?.success?
@@ -193,19 +197,19 @@ module RAID
 		def logical_delete(id)
 				# Unmount it first
 				`umount -f /dev/md#{id} 2>/dev/null`
-				
+
 				# Get list of disks
 				disks = devices_of("/dev/md#{id}")
 
 				# Stop RAID
 				`mdadm -S /dev/md#{id}`
-				
+
 				# Remove disks from RAID and zero superblocks
 				disks.each{ |d|
 					`mdadm /dev/md#{id} --remove #{d}`
 					`mdadm --zero-superblock #{d}`
 				}
-				
+
 				# Refresh lists
 				@raids = @devices = nil
 		end
@@ -215,7 +219,7 @@ module RAID
 		def logical_clear
 			# Consistently delete all devices
 			raids.each{|r| logical_delete(r.gsub(/\/dev\/md/, '')) }
-			
+
 			# Refresh lists
 			@raids = @devices = nil
 		end
@@ -225,7 +229,7 @@ module RAID
 		def _physical_list
 			# Resulting hash
 			res = {}
-			
+
 			for device in list_devices
 				target = phys_to_scsi(device.gsub(/^\/dev\//, ''))
 				d = { :state => 'unknown' }
@@ -242,7 +246,7 @@ module RAID
 				end
 				res[target] = d
 			end
-		
+
 			_logical_list.each do |logical|
 				logical[:physical].each do |target|
 					next if res[target][:state] == 'hotspare'
@@ -319,17 +323,17 @@ module RAID
 			}
 			return res.compact
 		end
-		
+
 		def list_devices
 			return File.open("/proc/partitions", "r").collect { |l|
 				"/dev/" + $1 if l =~ /^\s+[38]\s+\d+\s+\d+\s+([a-z]+)$/ }.compact.select { |d|
 					not phys_belongs_to_adapters(d) }
 		end
-		
+
 		def devices
 			@devices ||= list_devices
 		end
-		
+
 		def raid_member?(device)
 			# Delete '/dev/' before device name
 			name = device.gsub(/^\/dev\//, '')
@@ -341,11 +345,11 @@ module RAID
 		def spare?(device)
 			# Delete '/dev/' before device name
 			name = device.gsub(/^\/dev\//, '')
-			
+
 			# Ex. sda[0](S)
 			return (not File.read(MDSTAT_LOCATION).grep(/#{name}\[[^\[]*\]\(S\)/).empty?)
 		end
-		
+
 		def active?(device)
 			# Delete '/dev/' before device name
 			name = device.gsub(/^\/dev\//, '')
@@ -353,7 +357,7 @@ module RAID
 			# Check RAID existence in mdstat file
 			return (not File.read(MDSTAT_LOCATION).grep(Regexp.new(name)).empty?)
 		end
-		
+
 		def list_raids
 			res = []
 			for l in File.readlines(MDSTAT_LOCATION)
@@ -362,24 +366,24 @@ module RAID
 			end
 			return res.compact
 		end
-		
+
 		def raids
 			@raids ||= list_raids
 		end
-		
+
 		def devices_of(device)
 			#md0 : active linear sdc[0]
 			File.read(MDSTAT_LOCATION).grep(%r[^#{device.gsub(/\/dev\//, '') }]).grep(MDSTAT_PATTERN) do
 				return $3.split(/\[\d+\](\(S\))? ?/).map{|d| d.gsub('(S)','') }.map{|d| "/dev/#{d}" }
 			end
 		end
-		
+
 		def level_of(device)
 			File.read(MDSTAT_LOCATION).grep(%r[^#{device.gsub(/\/dev\//, '') }]).grep(MDSTAT_PATTERN) do
 				return $2.map{|l| l.gsub('raid','') }[0]
 			end			
 		end
-		
+
 		# Returns next free name for md device
 		def next_raid_device_name
 			last_id = raids.map{ |dev| dev.gsub(/\/dev\/md/, '').to_i }.sort[-1]
@@ -400,7 +404,7 @@ module RAID
 			end
 			return res
 		end
-		
+
 		# Converts SCSI enumeration to physical device name
 		def scsi_to_device(id)
 			parts = id.split(':')
@@ -423,13 +427,14 @@ module RAID
 		# Determine if device belongs to any known by Einarc controller
 		def phys_belongs_to_adapters(device)
 			sysfs_pciid = File.readlink("/sys/block/#{device.gsub(/^\/dev\//, '')}/device").split("/").select { |f|
-				f =~ /^\d+:\d+:[\w\.]+$/ }[-1]
+				f =~ /^\d+:\d+:[\w\.]+$/
+			}[-1]
 			vendor_id = File.open("/sys/bus/pci/devices/#{sysfs_pciid}/vendor").readline.chop.gsub(/^0x/, "")
 			product_id = File.open("/sys/bus/pci/devices/#{sysfs_pciid}/device").readline.chop.gsub(/^0x/, "")
 			sub_vendor_id = File.open("/sys/bus/pci/devices/#{sysfs_pciid}/subsystem_vendor").readline.chop.gsub(/^0x/, "")
 			sub_product_id = File.open("/sys/bus/pci/devices/#{sysfs_pciid}/subsystem_device").readline.chop.gsub(/^0x/, "")
 
-			return BaseRaid.find_adapter_by_pciid(vendor_id, product_id, sub_vendor_id, sub_product_id) ? true : false
+			return RAID::find_adapter_by_pciid(vendor_id, product_id, sub_vendor_id, sub_product_id) ? true : false
 		end
 	end
 end

@@ -259,22 +259,6 @@ module RAID
 			end
 			return nil
 		end
-
-		# Find corresponding Einarc's module working with controller specified by PCI ID
-		def self.find_adapter_by_pciid(vendor_id, product_id, sub_vendor_id, sub_product_id)
-			require 'raid/meta.rb'
-			MODULES.each_key { |k, v| require "raid/#{k}" }
-
-			pcimap = {}
-			MODULES.each_pair { |filename, m|
-				klass = RAID.const_get(m[:classname])
-				if klass.constants.include?('PCI_IDS')
-					klass::PCI_IDS.each_value { |ids| pcimap[ids] = filename }
-				end
-			}
-
-			return ( pcimap[[vendor_id, product_id, sub_vendor_id, sub_product_id]] or pcimap[[vendor_id, product_id]] )
-		end
 	end
 end
 
