@@ -114,7 +114,7 @@ module RAID
 					when /^\s*(\d+) blocks/
 						ld[:capacity] = $1.to_i / 1024.0
 					when /resync=PENDING/
-						ld[:state] = "initializing"
+						ld[:state] = "pending"
 					when /resync = ([0-9\.\%]+)/
 						ld[:state] = "initializing"
 					when /recovery = ([0-9\.\%]+)/
@@ -226,6 +226,38 @@ module RAID
 
 		# ======================================================================
 
+		def logical_hotspare_add(ld, drv)
+			raise Error.new("Device #{drv} is already in RAID") if raid_member?(scsi_to_device(drv))
+			raise Error.new("Can not add hotspare to level 0 RAID") if level_of("/dev/md#{ld}") == '0'
+			`mdadm /dev/md#{ld} -a #{scsi_to_device(drv)}`
+		end
+
+		def logical_hotspare_delete(ld, drv)
+			raise Error.new("Hotspare is dedicated not to that array") unless _logical_physical_list(ld).select { |d| d[:num] == drv }.empty?
+			`mdadm /dev/md#{ld} -r #{scsi_to_device(drv)}`
+		end
+
+		# ======================================================================
+
+		def _logical_physical_list(ld)
+			res = []
+			File.open("/proc/mdstat", "r"){ |f| f.each_line { |l| l.chop!
+				next unless l =~ /^md#{ld}/
+				l.split(" ").each{ |ent|
+					state = ld
+					next unless ent =~ /(\w+)\[\d+\]/
+					state = "hotspare" if spare?($1)
+					state = "failed" if failed?($1)
+					drv = phys_to_scsi($1)
+
+					res.push( { :num => drv, :state => state } )
+				}
+			}}
+			return res
+		end
+
+		# ======================================================================
+
 		def _physical_list
 			# Resulting hash
 			res = {}
@@ -241,6 +273,7 @@ module RAID
 
 				if raid_member?(device)
 					d[:state] = 'hotspare' if spare?(device)
+					d[:state] = 'failed' if failed?(device)
 				else
 					d[:state] = 'free'
 				end
@@ -249,6 +282,7 @@ module RAID
 
 			_logical_list.each do |logical|
 				logical[:physical].each do |target|
+					next if failed?( scsi_to_device(target) )
 					next if res[target][:state] == 'hotspare'
 					if res[target][:state].is_a? Array
 						res[target][:state] << logical[:num]
@@ -290,13 +324,11 @@ module RAID
 		end
 
 		def set_physical_hotspare_0(drv)
-			raise Error.new("Device #{drv} is not hotspare") unless spare?(scsi_to_device(drv))
-			raids.each { |r| `mdadm #{r} -r #{scsi_to_device(drv)}` }
+			raise NotImplementedError
 		end
 
 		def set_physical_hotspare_1(drv)
-			raise Error.new("Device #{drv} is already in RAID") if raid_member?(scsi_to_device(drv))
-			raids.each { |r| `mdadm #{r} -a #{scsi_to_device(drv)}` unless level_of(r) == '0' }
+			raise NotImplementedError
 		end
 
 		# ======================================================================
@@ -350,6 +382,14 @@ module RAID
 			return (not File.read(MDSTAT_LOCATION).grep(/#{name}\[[^\[]*\]\(S\)/).empty?)
 		end
 
+		def failed?(device)
+			# Delete '/dev/' before device name
+			name = device.gsub(/^\/dev\//, '')
+
+			# Ex. sda[0](F)
+			return (not File.read(MDSTAT_LOCATION).grep(/#{name}\[[^\[]*\]\(F\)/).empty?)
+		end
+
 		def active?(device)
 			# Delete '/dev/' before device name
 			name = device.gsub(/^\/dev\//, '')
@@ -391,7 +431,7 @@ module RAID
 		end
 
 		# Converts physical name (hda) to SCSI enumeration (1:0)
-		def self.phys_to_scsi(name)
+		def phys_to_scsi(name)
 			case name
 			when /^hd(.)(\d*)$/
 				res = "1:#{$1[0] - 'a'[0]}"
@@ -406,7 +446,7 @@ module RAID
 		end
 
 		# Converts SCSI enumeration (1:0) to physical device name (hda)
-		def self.scsi_to_device(id)
+		def scsi_to_device(id)
 			raise Error.new("Invalid physical disc specification \"#{id}\": \"a:b\" or \"a:b:c\" expected") unless id =~ /^([01]):(\d+)(:(\d+))?$/
 			res = ($1 == '1') ? '/dev/hd' : '/dev/sd'
 			res += ('a'[0] + $2.to_i).chr

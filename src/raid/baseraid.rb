@@ -21,7 +21,7 @@ module RAID
 			'adapter' => %w(info restart get set),
 			'log' => %w(clear list test discover dump),
 			'physical' => %w(list get set),
-			'logical' => %w(list add delete clear get set),
+			'logical' => %w(list add delete clear get set hotspare_add hotspare_delete physical_list),
 			'task' => %w(list wait),
 			'firmware' => %w(read write),
 			'bbu' => %w(info)
@@ -140,6 +140,19 @@ module RAID
 				_logical_list.each { |d|
 					next unless d
 					puts [d[:num], d[:raid_level], d[:physical].join(','), d[:capacity], d[:dev], d[:state]].join("\t")
+				}
+			end
+		end
+
+		def logical_physical_list(ld)
+			if $humanize then
+				puts "ID      State"
+				_logical_physical_list(ld).each{ |d|
+					printf("%-8s%s\n", d[:num], d[:state])
+				}
+			else
+				_logical_physical_list(ld).each{ |d|
+					puts [d[:num], d[:state]].join("\t")
 				}
 			end
 		end
