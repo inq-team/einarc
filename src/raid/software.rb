@@ -263,11 +263,13 @@ module RAID
 			res = {}
 
 			for device in list_devices
+				# Possibility to skip USB mass storage devices
+				# next if usb_device?(device)
 				target = phys_to_scsi(device.gsub(/^\/dev\//, ''))
 				d = { :state => 'unknown' }
 				d[:model] = physical_read_file(device, "device/model") or ""
 				d[:revision] = physical_read_file(device, "device/rev") or ""
-				d[:serial] = physical_read_file(device, "device/serial") or ""
+				d[:serial] = physical_read_file(device, "device/serial") or physical_get_serial_via_udev(device)
 				d[:size] = physical_read_file(device, "size") or 0
 				d[:size] = d[:size].to_f * 512 / 1048576
 
@@ -390,6 +392,11 @@ module RAID
 			return (not File.read(MDSTAT_LOCATION).grep(/#{name}\[[^\[]*\]\(F\)/).empty?)
 		end
 
+		def usb_device?(device)
+			name = device.gsub(/^\/dev\//, '')
+			return (not File.read("/sys/block/#{name}/uevent").grep(/usb/).empty?)
+		end
+
 		def active?(device)
 			# Delete '/dev/' before device name
 			name = device.gsub(/^\/dev\//, '')
@@ -461,6 +468,11 @@ module RAID
 			rescue Errno::ENOENT
 				return nil
 			end
+		end
+
+		def physical_get_serial_via_udev(device)
+			`udevinfo --query=env --name=#{device}` =~ /ID_SERIAL=(.*)\n/
+			return $1 ? $1 : ""
 		end
 
 		# Determine if device belongs to any known by Einarc controller
