@@ -269,9 +269,10 @@ module RAID
 				d = { :state => 'unknown' }
 				d[:model] = physical_read_file(device, "device/model") or ""
 				d[:revision] = physical_read_file(device, "device/rev") or ""
-				d[:serial] = physical_read_file(device, "device/serial") or physical_get_serial_via_udev(device)
 				d[:size] = physical_read_file(device, "size") or 0
 				d[:size] = d[:size].to_f * 512 / 1048576
+				d[:serial] = physical_read_file(device, "device/serial")
+				d[:serial] = physical_get_serial_via_udev(device) unless d[:serial]
 
 				if raid_member?(device)
 					d[:state] = 'hotspare' if spare?(device)
@@ -471,7 +472,10 @@ module RAID
 		end
 
 		def physical_get_serial_via_udev(device)
-			`udevinfo --query=env --name=#{device}` =~ /ID_SERIAL=(.*)\n/
+			info = `udevinfo --query=env --name=#{device}`
+			info =~ /ID_SERIAL_SHORT=(.*)\n/
+			return $1 if $1
+			info =~ /ID_SERIAL=(.*)\n/
 			return $1 ? $1 : ""
 		end
 
