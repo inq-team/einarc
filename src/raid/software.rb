@@ -233,7 +233,8 @@ module RAID
 		end
 
 		def logical_hotspare_delete(ld, drv)
-			raise Error.new("Hotspare is dedicated not to that array") unless _logical_physical_list(ld).select { |d| d[:num] == drv }.empty?
+			raise Error.new("This drive is not hotspare") unless get_physical_hotspare(drv)
+			raise Error.new("Hotspare is dedicated not to that array") if _logical_physical_list(ld).select { |d| d[:num] == drv }.empty?
 			`mdadm /dev/md#{ld} -r #{scsi_to_device(drv)}`
 		end
 
