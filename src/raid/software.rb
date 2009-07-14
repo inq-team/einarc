@@ -429,7 +429,7 @@ module RAID
 
 		def level_of(device)
 			File.read(MDSTAT_LOCATION).grep(%r[^#{device.gsub(/\/dev\//, '') }]).grep(MDSTAT_PATTERN) do
-				return $2.map{|l| l.gsub('raid','') }[0]
+				return $2.split.last.gsub('raid','')
 			end			
 		end
 
