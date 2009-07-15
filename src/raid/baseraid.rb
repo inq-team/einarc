@@ -17,6 +17,18 @@ module RAID
 		attr_accessor :logical
 		attr_accessor :physical
 
+		SHORTCUTS = {
+			'adapter' => %w( ad ),
+			'physical' => %w( pd ),
+			'logical' => %w( ld ),
+			'delete' => %w( del rm ),
+			'list' => %w( ls ),
+			'hotspare_add' => %w( hsadd hs_add ),
+			'hotspare_delete' => %w( hsdel hs_del hs_rm ),
+			'physical_list' => %w( pdls pd_ls ),
+			'firmware' => %w( fw )
+		}
+
 		METHODS = {
 			'adapter' => %w(info restart get set),
 			'log' => %w(clear list test discover dump),
@@ -26,6 +38,53 @@ module RAID
 			'firmware' => %w(read write),
 			'bbu' => %w(info)
 		}
+
+		def method_names
+			self.class::METHODS
+		end	
+
+		def shortcuts
+			self.class::SHORTCUTS
+		end
+
+  		def lookup_shortcut(str)
+			@reverse_shortcuts ||= SHORTCUTS.inject({}) do |hash, kv|
+				key, value = kv
+				hash.update(Hash[ *value.zip([ key ] * value.size).flatten ])
+			end
+			@reverse_shortcuts[str]
+		end
+
+		def translate_parameter(str)
+			#guard agains empty strings
+			return str unless str
+
+			@objects ||= method_names.keys
+			@methods ||= method_names.values.flatten
+			@keywords ||= @objects + @methods
+			# ordinary values
+			return str if @keywords.include?(str)
+			# gnu style options use dash instead of underscore
+			# which may be more convenient for some users
+			nodash = str.gsub('-', '_')
+			return nodash if @keywords.include?(nodash)
+			# check the list of all supported shortcuts
+			exp = lookup_shortcut(str)
+			return exp if @keywords.include?(exp)
+			exp = lookup_shortcut(nodash)
+			return exp if @keywords.include?(exp)
+			# finally return the original value for futher processing
+			str
+		end
+
+		def append_shortcuts(key)
+			shortcuts = SHORTCUTS[key]
+			if shortcuts && !shortcuts.empty? 
+				"#{ key } (#{ shortcuts.join(', ') })"
+			else
+				key
+			end
+		end
 
 		def self.query_adapters
 			res = []
@@ -222,14 +281,16 @@ module RAID
 		end
 
 		def handle_method(arg)
-			obj_name = arg.shift
-			raise Error.new('Object not specified; available objects: ' + METHODS.keys.join(', ')) unless obj_name
-			obj = self.class::METHODS[obj_name]
-			raise Error.new("Unknown object '#{obj_name}'; available objects: " + METHODS.keys.join(', ')) unless obj
+			obj_name = translate_parameter(arg.shift)
+			avail_objs = method_names.keys.collect { |key| append_shortcuts(key) }.join(', ')
+ 			raise Error.new("Object not specified; available objects: #{ avail_objs }") unless obj_name
+			obj = method_names[obj_name]
+			raise Error.new("Unknown object '#{obj_name}'; available objects: #{ avail_objs }") unless obj
 
-			command = arg.shift
-			raise Error.new('Command not specified; available commands: ' + obj.join(', ')) unless command
-			raise Error.new("Unknown command '#{command}' in object '#{obj_name}'; available commands: " + obj.join(', ')) if obj.grep(command).empty?
+			command = translate_parameter(arg.shift)
+			avail_cmds = obj.collect { |key| append_shortcuts(key) }.join(', ')
+			raise Error.new("Command not specified; available commands: #{ avail_cmds }") unless command
+			raise Error.new("Unknown command '#{command}' in object '#{obj_name}'; available commands: #{ avail_cmds } ") if obj.grep(command).empty?
 
 			if command == 'set' or command == 'get'
 				if obj_name == 'adapter'
