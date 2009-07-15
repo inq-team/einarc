@@ -162,6 +162,8 @@ module RAID
 					end
 				when /Segment (\d+)\s*:\s*(.*?) \((\d+),(\d+)\)/
 					ld[:physical] << "#{$3}:#{$4}"
+				when /Dedicated Hot-Spare\s*:\s*(\d+),(\d+)/
+					ld[:physical] << "#{$1}:#{$2}"
 				when /Status of logical device\s+:\s(.+)$/
 					state = $1
 					case state
@@ -247,6 +249,18 @@ module RAID
 			run("delete #{@adapter_num} logicaldrive all noprompt", false)
 		end
 
+		def _logical_physical_list(ld)
+			res = []
+			_logical_list.select { |l| l[:num] == ld.to_i }[0][:physical].each { |d|
+				state = nil
+				_physical_list.each_pair { |num, drv|
+					state = "hotspare" if drv[:dedicated_to] == ld and num == d
+				}
+				res.push( { :num => d, :state => state ? state : ld } )
+			}
+			return res
+		end
+
 #Controllers found: 1
 #----------------------------------------------------------------------
 #Physical Device information
@@ -300,15 +314,17 @@ module RAID
 					phys[:state] = 'hotspare' if phys[:state] == 'hot spare'
 				when /Serial number\s*:\s*(.*)$/
 					phys[:serial] = $1
+				when /Dedicated Spare for\s*:\s*logical device\s*(\d+)$/
+					phys[:dedicated_to] = $1
 				end
 			}
-
 
 			# Determine related LDs
 			_logical_list.each_with_index { |l, i|
                                 next unless l
 				l[:physical].each { |pd|
 					next if %w{ failed }.include?(@physical[pd][:state])
+					next if @physical[pd][:state] == "hotspare"
 					if @physical[pd][:state].is_a?(Array)
 						@physical[pd][:state] << i
 					else
