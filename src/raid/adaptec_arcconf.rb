@@ -249,6 +249,15 @@ module RAID
 			run("delete #{@adapter_num} logicaldrive all noprompt", false)
 		end
 
+
+		def logical_hotspare_add(ld, drv)
+			run("setstate #{@adapter_num} device #{drv.gsub(":"," ")} hsp logicaldrive #{ld} noprompt")
+		end
+
+		def logical_hotspare_delete(ld, drv)
+			set_physical_hotspare_0(drv)
+		end
+
 		def _logical_physical_list(ld)
 			res = []
 			_logical_list.select { |l| l[:num] == ld.to_i }[0][:physical].each { |d|
