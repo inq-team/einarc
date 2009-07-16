@@ -15,6 +15,8 @@ install:
 	mkdir -p $(DESTDIR)$(BIN_DIR) $(DESTDIR)$(RUBY_SHARE_DIR) $(DESTDIR)$(EINARC_VAR_DIR) $(DESTDIR)$(EINARC_LIB_DIR)
 	install -m755 $(BIN_FILES) $(DESTDIR)$(BIN_DIR)
 	cp src/raid/*.rb proprietary.Makefile $(DESTDIR)$(RUBY_SHARE_DIR)
+	install -d $(DESTDIR)$(RUBY_SHARE_DIR)/extensions
+	cp src/raid/extensions/*.rb $(DESTDIR)$(RUBY_SHARE_DIR)/extensions
 	if test -r config.rb; then cp config.rb $(DESTDIR)$(EINARC_VAR_DIR); fi
 	if test -r proprietary/agreed; then mkdir -p $(DESTDIR)$(EINARC_VAR_DIR)/proprietary && cp proprietary/agreed $(DESTDIR)$(EINARC_VAR_DIR)/proprietary; fi
 	if test -d tools; then cp -r tools/* $(DESTDIR)$(EINARC_LIB_DIR); fi

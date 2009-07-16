@@ -1,5 +1,10 @@
+require 'raid/extensions/hotspare'
+
 module RAID
 	class AdaptecArcConf < BaseRaid
+
+		include Extensions::Hotspare
+
 		CLI = "#{$EINARC_LIB}/adaptec_arcconf/cli"
 
 		PCI_IDS = {

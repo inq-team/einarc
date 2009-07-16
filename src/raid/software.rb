@@ -2,8 +2,12 @@
 # physical HDDs from logical HDDs made by hardware RAID controllers
 require 'raid/autodetect'
 
+require 'raid/extensions/hotspare.rb'
+
 module RAID
 	class Software < BaseRaid
+
+		include Extensions::Hotspare
 
 		MDSTAT_PATTERN = /^md(\d+)\s:\s( (?:active|inactive) \s* (?:\([^)]*\))? \s* \S+)\s(.+)$/x
 		MDSTAT_LOCATION = '/proc/mdstat'
