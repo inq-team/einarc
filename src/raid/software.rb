@@ -148,8 +148,10 @@ module RAID
 			end
 
 			if sizes
-				raise Error.new('Software RAID does not support multiple arrays on the same devices creation') if sizes.split(/,/).length > 1
-				sizes = (sizes.to_i * 1024).to_s
+				sizes = sizes.split(/,/) if sizes.respond_to?(:split)
+				sizes = [sizes] unless sizes.respond_to?(:each)
+				raise Error.new('Software RAID does not support multiple arrays on the same devices creation') if sizes.length > 1
+				sizes = (sizes[0].to_i * 1024).to_s
 			else
 				sizes = "max"
 			end
