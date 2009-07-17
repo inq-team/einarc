@@ -13,14 +13,7 @@ module RAID
 		MDSTAT_LOCATION = '/proc/mdstat'
 
 		def initialize(adapter_num = nil)
-			for l in `mdadm --examine --scan`.grep /^ARRAY.+$/
-				vars = l.split(' ')
-				name = vars[1]
-				uuid = vars[4].gsub(/UUID=/, '')
-				unless active?(name)
-					`mdadm -A -u #{uuid} #{name}`
-				end
-			end
+			find_all_arrays
 		end
 
 		# ======================================================================
@@ -46,8 +39,21 @@ module RAID
 			return res
 		end
 
+		def find_all_arrays
+			for l in `mdadm --examine --scan`.grep /^ARRAY.+$/
+				vars = l.split(' ')
+				name = vars[1]
+				uuid = vars[4].gsub(/UUID=/, '')
+				unless active?(name)
+					`mdadm -A -u #{uuid} #{name}`
+				end
+			end
+		end
+
 		def adapter_restart
-			raise NotImplementedError
+			# Stop all arrays
+			_logical_list.each { |logical| `mdadm --stop /dev/md#{logical[:num]}` }
+			find_all_arrays
 		end
 
 		# ======================================================================
