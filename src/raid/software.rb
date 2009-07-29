@@ -9,7 +9,7 @@ module RAID
 
 		include Extensions::Hotspare
 
-		MDSTAT_PATTERN = /^md(\d+)\s:\s( (?:active|inactive) \s* (?:\([^)]*\))? \s* \S+)\s(.+)$/x
+		MDSTAT_PATTERN = /^md(\d+)\s:\s( (?:active|inactive) \s* (?:\([^)]*\))? \s* \S*)\s(.+)$/x
 		MDSTAT_LOCATION = '/proc/mdstat'
 
 		def initialize(adapter_num = nil)
