@@ -143,45 +143,48 @@ module RAID
 				discs = discs.split(/,/) if discs.respond_to?(:split)
 				discs = [discs] unless discs.respond_to?(:each)
 			end
+			raise Error.new("Physical drives not specified") unless discs and !discs.empty?
+
 			raid_level = raid_level.to_s
 
-			# Replace SCSI enumerations by devices
-			discs.map! { |d| scsi_to_device(d) }
-
-			# Check if discs are already RAID members
-			for d in discs
-				raise Error.new("Device #{d} is already in RAID") if raid_member?(d)
+			phs = _physical_list
+			discs = discs.inject([]) do |ary, address|
+				ls = phs[address]
+				raise Error.new("Physical drive #{ address } not found") unless ls
+				raise Error.new("Physical drive #{ address } is not available; see state") if ls[:state] != "free"
+				ary << {
+					:address => address,
+					:devnode => scsi_to_device(address),
+					:info => ls
+				}
 			end
 
 			if sizes
 				sizes = sizes.split(/,/) if sizes.respond_to?(:split)
 				sizes = [sizes] unless sizes.respond_to?(:each)
 				raise Error.new('Software RAID does not support multiple arrays on the same devices creation') if sizes.length > 1
-				sizes = (sizes[0].to_i * 1024).to_s
 			else
-				sizes = "max"
+				sizes = ["max"]
 			end
 
 			# Options are all the same for all commands, pre-parse them
+			chunk_size = nil
 			opt_cmd = ''
 			if options
 				options = options.split(/,/) if sizes.respond_to?(:split)
 				options.each { |o|
 					if o =~ /^(.*?)=(.*?)$/
 						case $1
-						when 'stripe' then opt_cmd += "--chunk #{$2} "
-						else raise Error.new("Unknown option \"#{o}\"")
+						when 'stripe' 
+							opt_cmd += "--chunk #{$2} "
+							chunk_size = $2.to_i
+						else 
+							raise Error.new("Unknown option \"#{o}\"")
 						end
 					else
 						raise Error.new("Unable to parse option \"#{o}\"")
 					end
 				}
-			end
-
-			# If no discs use all free devices
-			if discs.empty?
-				discs = devices.select{ |d| not raid_member?(d) }
-				rise Error.new('No free discs') if discs.empty?
 			end
 
 			#raid0, 0, stripe, raid1, 1, mirror, raid5, 5, raid6, 6, raid10, 10
@@ -190,14 +193,17 @@ module RAID
 				raise Error.new('Passthrough requires exactly 1 physical disc') unless discs.size == 1
 				raid_level = 'linear'
 			when '5'
-				raise Error.new('RAID 5 requires 3 or more discs') unless discs.size > 2
+				raise Error.new('RAID 5 requires 3 or more discs') unless discs.size >= 3
+			when '6'
+				raise Error.new('RAID 6 requires 4 or more discs') unless discs.size >= 6
+			when '10' 
+				raise Error.new('RAID 10 requires an even number of discs, but at least 4') if dics.size % 2 != 0 or discs.size < 4
 			end
 
-			# Unmount all devices
-			discs.each{ |d| `umount -f "#{d}" 2>/dev/null` }
+			calculated_size = calculate_per_disc_requirements(discs, raid_level, sizes.first, chunk_size)
 
 			# Creat RAID using mdadm
-			out = `yes | mdadm --create --verbose #{next_raid_device_name} --auto=yes --size=#{sizes} #{opt_cmd} --force --level=#{raid_level} --raid-devices=#{discs.size} #{discs.join(' ')}`
+			out = `yes | mdadm --create --verbose #{next_raid_device_name} --auto=yes --size=#{ calculated_size } #{opt_cmd} --force --level=#{raid_level} --raid-devices=#{discs.size} #{discs.collect { |d| d[:devnode] }.join(' ')}`
 			raise Error.new(out) unless $?.success?
 
 			# Refresh lists
@@ -207,20 +213,15 @@ module RAID
 		# ======================================================================
 
 		def logical_delete(id)
-				# Unmount it first
-				`umount -f /dev/md#{id} 2>/dev/null`
-
 				# Get list of disks
 				disks = devices_of("/dev/md#{id}")
 
 				# Stop RAID
 				`mdadm -S /dev/md#{id}`
-
 				# Remove disks from RAID and zero superblocks
-				disks.each{ |d|
-					`mdadm /dev/md#{id} --remove #{d}`
+				disks.each do |d|
 					`mdadm --zero-superblock #{d}`
-				}
+				end
 
 				# Refresh lists
 				@raids = @devices = nil
@@ -435,7 +436,7 @@ module RAID
 		def devices_of(device)
 			#md0 : active linear sdc[0]
 			File.read(MDSTAT_LOCATION).grep(%r[^#{device.gsub(/\/dev\//, '') }]).grep(MDSTAT_PATTERN) do
-				return $3.split(/\[\d+\](\(S\))? ?/).map{|d| d.gsub('(S)','') }.map{|d| "/dev/#{d}" }
+				return $3.split(/\[\d+\](?:\(S\))? ?/).map{|d| d.gsub('(S)','') }.map{|d| "/dev/#{d}" }
 			end
 		end
 
@@ -503,6 +504,27 @@ module RAID
 			sub_product_id = File.open("/sys/bus/pci/devices/#{sysfs_pciid}/subsystem_device").readline.chop.gsub(/^0x/, "")
 
 			return RAID::find_adapter_by_pciid(vendor_id, product_id, sub_vendor_id, sub_product_id) ? true : false
+		end
+
+		def calculate_per_disc_requirements(discs, raid_level, requested_size, chunk_size)
+			return "max" if requested_size == "max"
+
+			chunk_size ||= 64
+			count = discs.size
+			requested_size = requested_size.to_f * 1024
+			calculated_size = case raid_level
+			when "1"
+				requested_size
+			when "4", "5"
+				requested_size / (count - 1)
+			when "6"
+				requested_size / (count - 2)
+			else
+				# ignore size specified by passing the default value
+				return "max"
+			end
+			# according to the man page, size specified should be a multiple of chunk size
+			(calculated_size / chunk_size).to_i * chunk_size
 		end
 	end
 end
