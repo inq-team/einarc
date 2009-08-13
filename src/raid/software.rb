@@ -299,7 +299,9 @@ module RAID
 
 			_logical_list.each do |logical|
 				logical[:physical].each do |target|
-					next if failed?( scsi_to_device(target) )
+					# Skip failed or non-existent drives
+					next if failed?( scsi_to_device(target) ) or not res[target]
+
 					next if res[target][:state] == 'hotspare'
 					if res[target][:state].is_a? Array
 						res[target][:state] << logical[:num]
