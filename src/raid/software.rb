@@ -195,7 +195,7 @@ module RAID
 			when '5'
 				raise Error.new('RAID 5 requires 3 or more discs') unless discs.size >= 3
 			when '6'
-				raise Error.new('RAID 6 requires 4 or more discs') unless discs.size >= 6
+				raise Error.new('RAID 6 requires 4 or more discs') unless discs.size >= 4
 			when '10' 
 				raise Error.new('RAID 10 requires an even number of discs, but at least 4') if dics.size % 2 != 0 or discs.size < 4
 			end
