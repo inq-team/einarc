@@ -281,7 +281,9 @@ module RAID
 				# next if usb_device?(device)
 				target = phys_to_scsi(device.gsub(/^\/dev\//, ''))
 				d = { :state => 'unknown' }
+				d[:vendor] = physical_read_file(device, "device/vendor") or ""
 				d[:model] = physical_read_file(device, "device/model") or ""
+				d[:model] = "#{d[:vendor]} #{d[:model]}" if d[:vendor]
 				d[:revision] = physical_read_file(device, "device/rev") or ""
 				d[:size] = physical_read_file(device, "size") or 0
 				d[:size] = d[:size].to_f * 512 / 1048576
