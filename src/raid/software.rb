@@ -360,6 +360,27 @@ module RAID
 			return ld[:stripe]
 		end
 
+		def _get_physical_smart(drv)
+			info = []
+			`smartctl -A #{ scsi_to_device drv }`.each { |line|
+				line =~ /^\s*(\d+)\s+(.+)\s+([0-9a-fx]+)\s+(\d+)\s+(\d+)\s+(\d+)\s+([^ ]+)\s+(\w+)\s+([^ ]+)\s+(.*)$/
+				next unless $1
+				entity = { :id => $1.to_i,
+					   :attribute => $2,
+					   :flag => $3.to_i(16),
+					   :value => $4.to_i,
+					   :worst => $5.to_i,
+					   :thres => $6.to_i,
+					   :type => $7,
+					   :updated => $8,
+					   :when_failed => $9,
+					   :raw_value => $10 }
+				entity.each_pair { |k, v| entity[k] = v.is_a?(String) ? v.gsub(/\s*$/, "") : v }
+				info.push entity
+			}
+			return info
+		end
+
 		# ======================================================================
 
 		def _bbu_info

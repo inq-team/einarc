@@ -244,6 +244,29 @@ module RAID
 		    end
 		end
 
+		def get_physical_smart(drv)
+			format_human = "%-4s%-24s%-5s%-6s%-6s%-7s%-9s%-8s%-12s%s"
+			format_raw = "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s"
+			info = _get_physical_smart(drv)
+			if $humanize then
+				header = {}
+				info.last.keys.each { |k| header[k] = lambda { |s| s = s.split(""); ([s.shift.upcase] + s).join }.call( k.to_s.gsub(/_/, " ") ) }
+				info.unshift header
+			end
+			info.collect{ |l|
+					sprintf( $humanize ? format_human : format_raw, l[:id],
+											l[:attribute],
+											l[:flag],
+											l[:value],
+											l[:worst],
+											l[:thres],
+											l[:type],
+											l[:updated],
+											l[:when_failed],
+											l[:raw_value])
+			}
+		end
+
 		def handle_property(obj_name, command, obj_num, prop_name, value = nil)
 #			p obj_name, obj_num, command, prop_name, value
 
