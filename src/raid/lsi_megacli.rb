@@ -146,6 +146,24 @@ module RAID
 					ld[:stripe] = $1.to_i
 				end
 			}
+
+			# Try to find corresponding /dev-entries
+			devices = Dir.entries("/sys/block").collect { |dev|
+					"/sys/block/#{dev}/device/model"
+				}.select { |model|
+					File.readable?(model)
+				}.select { |model|
+					File.open(model) { |f| f.readline } =~ /^MegaRAID/
+				}.collect { |model|
+					$1 if model =~ /block\/(\w+)\/device/
+				}
+			devs = {}
+			devices.each { |dev|
+				devs[ Dir.entries("/sys/block/#{dev}/device").collect { |ent|
+					"#{$1}:#{$2}" if ent =~ /scsi_disk:\d+:(\d+):(\d+):\d/}.compact.last ] = dev
+			}
+			devs_ordered = devs.keys.sort.collect { |k| "/dev/#{devs[k]}" }
+			@logical.each { |ld| ld[:dev] = devs_ordered.shift }
 			return @logical
 		end
 
