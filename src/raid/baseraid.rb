@@ -32,7 +32,7 @@ module RAID
 		METHODS = {
 			'adapter' => %w(info restart get set),
 			'log' => %w(clear list test discover dump),
-			'physical' => %w(list get set),
+			'physical' => %w(list smart get set),
 			'logical' => %w(list add delete clear get set hotspare_add hotspare_delete physical_list),
 			'task' => %w(list wait),
 			'firmware' => %w(read write),
@@ -232,29 +232,18 @@ module RAID
 				}
 			end
 		end
-		
-		def bbu_info
-		    info = _bbu_info
-		    if $humanize then
-			puts "Manufacturer   Model    Serial  Capacity"
-			printf("%-15s%-9s%-8s%-15s\n",
-			info[:vendor], info[:device], info[:serial], info[:capacity])
-		    else
-			puts "#{info[:vendor]}\t#{info[:device]}\t#{info[:serial]}\t#{info[:capacity]}"				
-		    end
-		end
 
-		def get_physical_smart(drv)
+		def physical_smart(drv)
 			format_human = "%-4s%-24s%-5s%-6s%-6s%-7s%-9s%-8s%-12s%s"
-			format_raw = "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s"
-			info = _get_physical_smart(drv)
+			format_raw = ("%s\t" * 10).chop
+			info = _physical_smart(drv)
 			if $humanize then
 				header = {}
-				info.last.keys.each { |k| header[k] = lambda { |s| s = s.split(""); ([s.shift.upcase] + s).join }.call( k.to_s.gsub(/_/, " ") ) }
+				info.last.keys.each { |k| header[k] = k.to_s.gsub(/_/, " ").capitalize }
 				info.unshift header
 			end
-			info.collect{ |l|
-					sprintf( $humanize ? format_human : format_raw, l[:id],
+			info.each{ |l|
+				printf( ($humanize ? format_human : format_raw) + "\n", l[:id],
 											l[:attribute],
 											l[:flag],
 											l[:value],
@@ -265,6 +254,17 @@ module RAID
 											l[:when_failed],
 											l[:raw_value])
 			}
+		end
+
+		def bbu_info
+		    info = _bbu_info
+		    if $humanize then
+			puts "Manufacturer   Model    Serial  Capacity"
+			printf("%-15s%-9s%-8s%-15s\n",
+			info[:vendor], info[:device], info[:serial], info[:capacity])
+		    else
+			puts "#{info[:vendor]}\t#{info[:device]}\t#{info[:serial]}\t#{info[:capacity]}"				
+		    end
 		end
 
 		def handle_property(obj_name, command, obj_num, prop_name, value = nil)
@@ -355,6 +355,21 @@ module RAID
 				return dev if name_read == name
 			end
 			return nil
+		end
+
+		def generate_smart_info (id, attribute, flag, value, worst, thres, type, updated, when_failed, raw_value)
+			info = { :id => id.to_i,
+				 :attribute => attribute,
+				 :flag => flag =~ /0x/ ? flag.to_i(16) : flag.to_i,
+				 :value => value.to_i,
+				 :worst => worst.to_i,
+				 :thres => thres.to_i,
+				 :type => type,
+				 :updated => updated,
+				 :when_failed => when_failed,
+				 :raw_value => raw_value }
+			info.each_pair { |k, v| info[k] = v.is_a?(String) ? v.gsub(/\s*$/, "") : v }
+			return info
 		end
 	end
 end
