@@ -493,7 +493,7 @@ module RAID
 		# Read single line from block device-related files in sysfs
 		def physical_read_file(device, source)
 			begin
-				return File.open("/sys/block/#{device.gsub(/^\/dev\//, '')}/#{source}", "r").readline.chop
+				return File.open("/sys/block/#{device.gsub(/^\/dev\//, '')}/#{source}", "r").readline.chop.gsub(/[^[:print:]]/,"")
 			rescue Errno::ENOENT
 				return nil
 			end
