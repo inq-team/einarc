@@ -510,8 +510,8 @@ module RAID
 		# Determine if device belongs to any known by Einarc controller
 		def phys_belongs_to_adapters(device)
 			sysfs_pciid = File.readlink("/sys/block/#{device.gsub(/^\/dev\//, '')}/device").split("/").select { |f|
-				f =~ /^\d+:\d+:[\w\.]+$/
-			}[-1]
+				f =~ /^\w{4}:\w{2}:\w{2}\.\w$/
+			}.last
 			vendor_id = File.open("/sys/bus/pci/devices/#{sysfs_pciid}/vendor").readline.chop.gsub(/^0x/, "")
 			product_id = File.open("/sys/bus/pci/devices/#{sysfs_pciid}/device").readline.chop.gsub(/^0x/, "")
 			sub_vendor_id = File.open("/sys/bus/pci/devices/#{sysfs_pciid}/subsystem_vendor").readline.chop.gsub(/^0x/, "")
