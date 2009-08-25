@@ -234,14 +234,10 @@ module RAID
 		end
 
 		def physical_smart(drv)
-			format_human = "%-4s%-24s%-5s%-6s%-6s%-7s%-9s%-8s%-12s%s"
+			format_human = "%-4s%-24s%-5s%-6s%-6s%-11s%-9s%-8s%-12s%s"
 			format_raw = ("%s\t" * 10).chop
 			info = _physical_smart(drv)
-			if $humanize then
-				header = {}
-				info.last.keys.each { |k| header[k] = k.to_s.gsub(/_/, " ").capitalize }
-				info.unshift header
-			end
+			puts "Id  Attribute               Flag Value Worst Threshold  Type     Updated When failed Raw value" if $humanize
 			info.each{ |l|
 				printf( ($humanize ? format_human : format_raw) + "\n", l[:id],
 											l[:attribute],
@@ -355,21 +351,6 @@ module RAID
 				return dev if name_read == name
 			end
 			return nil
-		end
-
-		def generate_smart_info (id, attribute, flag, value, worst, thres, type, updated, when_failed, raw_value)
-			info = { :id => id.to_i,
-				 :attribute => attribute,
-				 :flag => flag =~ /0x/ ? flag.to_i(16) : flag.to_i,
-				 :value => value.to_i,
-				 :worst => worst.to_i,
-				 :thres => thres.to_i,
-				 :type => type,
-				 :updated => updated,
-				 :when_failed => when_failed,
-				 :raw_value => raw_value }
-			info.each_pair { |k, v| info[k] = v.is_a?(String) ? v.gsub(/\s*$/, "") : v }
-			return info
 		end
 	end
 end
