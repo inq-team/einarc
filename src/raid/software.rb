@@ -320,8 +320,8 @@ module RAID
 			res = []
 			got_smart = false
 			`smartctl -A #{ scsi_to_device drv }`.each { |line|
-				got_line = true if line =~ /START OF READ SMART DATA SECTION/ 
-				next unless got_line
+				got_smart = true if line =~ /START OF READ SMART DATA SECTION/ 
+				next unless got_smart
 				if line =~ /^\s*(\d+)\s+(.+?)\s+([0-9a-fx]+?)\s+(\d+)\s+(\d+)\s+(\d+)\s+([^ ]+?)\s+(\w+?)\s+([^ ]+?)\s+(.*)$/
 					res.push({ :id => $1.to_i,
 						   :attribute => $2,
