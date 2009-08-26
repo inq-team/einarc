@@ -15,7 +15,7 @@ opts = GetoptLong.new(
 )
 
 adapter_type = adapter_num = nil
-$humanize = false
+$humanize = $stdout.isatty
 need_list = false
 
 opts.each { |opt, arg|
