@@ -319,8 +319,15 @@ module RAID
 		def _physical_smart(drv)
 			res = []
 			got_smart = false
-			`smartctl -A #{ scsi_to_device drv }`.each { |line|
-				got_smart = true if line =~ /START OF READ SMART DATA SECTION/ 
+
+			needed_smart_section_re = /START OF READ SMART DATA SECTION/ 
+
+			# Determine do we need to use "-d ata" option
+			smart_output = `smartctl -A #{ scsi_to_device drv }`
+			smart_output = `smartctl -d ata -A #{ scsi_to_device drv }` unless smart_output =~ needed_smart_section_re
+
+			smart_output.split(/\n/).each { |line|
+				got_smart = true if line =~ needed_smart_section_re
 				next unless got_smart
 				if line =~ /^\s*(\d+)\s+(.+?)\s+([0-9a-fx]+?)\s+(\d+)\s+(\d+)\s+(\d+)\s+([^ ]+?)\s+(\w+?)\s+([^ ]+?)\s+(.*)$/
 					res.push({ :id => $1.to_i,
