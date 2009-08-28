@@ -125,7 +125,7 @@ module RAID
 						ld[:capacity] = $1.to_i / 1024.0
 					when /resync=PENDING/
 						ld[:state] = "pending"
-					when /resync = ([0-9\.\%]+)/
+					when /resync = ([ 0-9\.\%]+)/
 						ld[:state] = "initializing"
 					when /recovery = ([0-9\.\%]+)/
 						ld[:state] = "rebuilding"
