@@ -67,7 +67,7 @@ module RAID
 						:id => res.size,
 						:what => $1,
 						:progress => $2,
-						:where => lines[i - 2].gsub(/ : .+/, '').chomp,
+						:where => lines[i - 2].gsub(/ : .+/, '').gsub(/^md/, '').chomp,
 					}
 				end
 			end
