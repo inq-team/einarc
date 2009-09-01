@@ -548,6 +548,32 @@ Input::
 Output::
   none normally, error message if error happened
 
+==== smart
+
+Input::
+  * physical disc address
+Output::
+  SMART info for disc. One attribute per line, tab-separated:
++
+[grid="all"]
+'--.-----------------------.----.-----.-----.----------.--------.-------.-----------.---------
+Id  Attribute               Flag Value Worst Threshold  Type     Updated When failed Raw value
+----------------------------------------------------------------------------------------------
+1   Raw_Read_Error_Rate     15   100   253   6          Pre-fail Always  -           0
+3   Spin_Up_Time            3    97    97    0          Pre-fail Always  -           0
+4   Start_Stop_Count        50   100   100   20         Old_age  Always  -           202
+5   Reallocated_Sector_Ct   51   100   100   36         Pre-fail Always  -           23
+7   Seek_Error_Rate         15   75    60    30         Pre-fail Always  -           31760414
+9   Power_On_Hours          50   95    95    0          Old_age  Always  -           5065
+10  Spin_Retry_Count        19   100   100   97         Pre-fail Always  -           0
+12  Power_Cycle_Count       50   100   100   20         Old_age  Always  -           202
+187 Reported_Uncorrect      50   100   100   0          Old_age  Always  -           0
+189 High_Fly_Writes         58   100   100   0          Old_age  Always  -           0
+190 Airflow_Temperature_Cel 34   58    33    45         Old_age  Always  In_the_past 42
+194 Temperature_Celsius     34   42    67    0          Old_age  Always  -           42
+195 Hardware_ECC_Recovered  26   75    59    0          Old_age  Always  -           353642
+----------------------------------------------------------------------------------------------
+
 === logical
 
 Logical drive is a virtual drive, set up on regions of one or several physical drives. It is referenced with a *logical drive ID*, a plain integer number.
