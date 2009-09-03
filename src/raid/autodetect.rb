@@ -15,6 +15,7 @@ module RAID
 				klass::PCI_IDS.each_value { |ids| @@pcimap[ids] = filename }
 			end
 		}
+		return @@pcimap
 	end
 
 	def self.autodetect
