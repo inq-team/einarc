@@ -356,7 +356,10 @@ module RAID
 					next
 				end
 			}
-			return res
+
+			# Throw out elements without an ID if necessary
+			non_nil_ids = res.select { |ent| not ent[:id].nil? }
+			return non_nil_ids.size > 0 ? non_nil_ids : res
 		end
 
 
