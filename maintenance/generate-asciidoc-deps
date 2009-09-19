@@ -1,0 +1,16 @@
+#!/bin/sh
+
+DOC_DIR=../doc
+DEP_FILE=$DOC_DIR/dep.Makefile
+
+echo '# Warning! This is a generated file. Use "maintenance/generate-asciidoc-deps" to regenerate' >"$DEP_FILE"
+echo >>"$DEP_FILE"
+
+for I in $DOC_DIR/*.txt; do
+	NAME=$(basename $I | sed 's/.txt//; s/-/_/g;')
+	echo $NAME
+
+	echo "DEPS_$NAME=\\" >>"$DEP_FILE"
+	sed -ne '/^include::/ { s/^include::\(.*\)\[.*$/	\1 \\/; p }' <$I >>"$DEP_FILE"
+	echo >>"$DEP_FILE"
+done
