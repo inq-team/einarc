@@ -1,0 +1,38 @@
+include::inc/man-header.txt[]
+
+= einarc-install(8)
+
+== Name
+
+einarc-install - download, unpack and install proprietary RAID
+command-line utilities for einarc
+
+== Synopsis
+
+*einarc-install* --modules=_LIST_
+
+== Description
+
+*einarc-install* downloads, unpacks and prepares to use proprietary RAID
+utilities that may be required by *einarc* to manage RAIDs.
+
+Unless you use software RAID, hardware RAIDs usually require some sort
+of proprietary utility to control it. *einarc* acts as a wrapper for
+this proprietary utility, but before using it, this utility should be
+downloaded and properly installed first. *einarc-install* takes care of
+this task.
+
+== Options
+
+The only argument that *einarc-install* requires is a list of modules to
+install.
+
+include::inc/modules-options.txt[]
+`-h`, `\--help`::
+  show help
+
+include::inc/man-footer.txt[]
+
+== See also
+
+*einarc*(1)

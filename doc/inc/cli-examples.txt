@@ -1,0 +1,68 @@
+Note that command-line interface is always ready to provide a hint. For
+example, one can forget almost everything and start with just calling
+"einarc". Note that we will use `-h` option in all further examples to
+ensure human-friendly output. If there's only one adapter available at
+the system, things can go as easy as:
+
+ $ einarc -h
+ Object not specified; available objects: logical, physical, log, adapter, firmware, task, bbu
+
+If there's more than 1 adapter in the system, one would get a message
+hinting that one should specify which adapter we'll work with:
+
+ $ einarc -h
+ Multiple adapters exist: use --list to list all adapters, choose one and specify it with --type and --adapter
+ $ einarc -h --list
+ Type           Adapter #  Model                         Version
+ lsi_megacli    0          MegaRAID SAS PCI Express(TM)  8.0.1-0038
+ areca          1          ARC-1160                      PCI
+ $ einarc -h --type=areca
+ Object not specified; available objects: logical, physical, log, adapter, firmware, task, bbu
+
+Let's start with showing all logical drives. We don't
+know what method we should choose, but Einarc will give a hint:
+
+ $ einarc -h logical
+ Command not specified; available commands: list, add, delete, clear, get, set
+ $ einarc -h logical list
+ #  RAID level   Physical drives                 Capacity     Device  State
+ 1  5            0:1,0:2,0:4,0:5,0:8            762939.45 MB          normal
+ 2  1+0          0:6,0:7                        190734.86 MB          normal
+ 3  5            0:9,0:10,0:11,0:12,0:13       1907348.63 MB          normal
+ 4  1+0          0:15,0:16                      476837.16 MB          normal
+
+More complex example: let's check if a physical drive is hotspare drive
+or not. Such simple boolean flag is available as a property of
+`physical` object, and Einarc will give a hint on how to get it and when
+to add a reference to particular physical disc ID:
+
+ $ einarc -h physical
+ Command not specified; available commands: list, get, set
+ $ einarc -h physical get
+ Object identifier not specified
+ $ einarc -h physical list
+ ID      Model                    Revision       Serial                     Size     State
+ 0:1     WDC WD2000JD-00          08.02D08       WD-WMAL00000001       190734.86 MB  1
+ 0:2     WDC WD2000JD-00          08.02D08       WD-WMAL00000002       190734.86 MB  1
+ ...
+ $ einarc -h physical get 0:1
+ Property not specified; available properties: hotspare
+ $ einarc -h physical get 0:1 hotspare
+ 0
+
+Getting a property of adapter is in fact even simpler: there shouldn't
+be any IDs. Here we'll get a list of all RAID levels a particular
+adapter supports:
+
+ $ einarc -h adapter
+ Command not specified; available commands: info, restart, get, set
+ $ einarc -h adapter get
+ Property not specified; available properties: coercion, raidlevels, alarm, rebuildrate
+ $ einarc -h adapter get raidlevels
+ 0
+ 1
+ 1E
+ 10
+ 3
+ 5
+ 6

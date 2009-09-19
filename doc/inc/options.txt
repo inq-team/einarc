@@ -1,0 +1,20 @@
+`-V`, `\--version`::
+  Print program version and exit.
+`\--help`::
+  Show short help text and exit.
+`-l`, `\--list`::
+  List all adapters found in system and exit.
+`-h`, `\--human`::
+  Output human-readable information. By default, Einarc outputs data in
+  tab-separated format that's easier to parse in scripts. Using this
+  option makes output a bit more comfortable to read by humans: tables
+  would have headers and they will be formatted with spaces to ensure
+  fixed width fields.
+`-t`, `\--type=TYPE`::
+  type (manufacturer) of RAID adapter; use `-l` (`\--list`) option to
+  list all types of 
+`-a`, `\--adapter=NUM`::
+  select the adapter if multiple adapters of a given type are present.
+
+You can omit `-t` if there's only one adapter type in the system.
+Omitting `-a` would select first available adapter of that type.

@@ -1,0 +1,14 @@
+`\--modules=LIST`::
+  a comma-separated list of storage support modules to build:
+* all -- SPECIAL: build all available modules, default
+* auto -- SPECIAL: autodetect which modules are required -- experimental
+feature, added since v1.4, tries to make an automatic guess by analysing
+PCI IDs of machine where you run `./configure`; requires `lspci` to run.
+If in doubt, just use "all" -- it will download everything, all CLIs not
+usable on current machine just won't be used.
+* lsi_megarc -- older LSI MegaRAID SCSI/SATA adapters
+* adaptec_arcconf -- newer Adaptec adapters that use arcconf
+* amcc -- 3Ware/AMCC RAID 7/8/9xxx/95xxx series controllers that use tw_cli
+* lsi_megacli -- newest LSI MegaRAID SAS adapters
+* adaptec_aaccli -- older Adaptec SCSI adapters that use aaccli
+* areca -- Areca adapters

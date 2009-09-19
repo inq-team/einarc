@@ -1,0 +1,4 @@
+:man source:   Einarc
+:man version:  {include:VERSION}
+:man manual:   Einarc Manual
+:author:       Inquisitor team

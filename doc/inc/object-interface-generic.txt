@@ -1,0 +1,299 @@
+=== adapter
+
+"adapter" is an object related to the controller card. It stores various settings with properties that can be read and wriiten with *get* and *set* and can be examined for general info with *info* command.
+
+Properties:
+
+*alarm*:: (mute, disable, enable) -- mode of adapter's beeper alarm
+*coercion*:: (0, 1)
+*rebuildrate*:: (0-3) -- a priority of rebuilding and other background tasks, 0 being the lowest (least percent of time slices goes to that tasks), 3 being the highest.
+
+==== info
+
+Gets general information about adapter. Information is returned as
+key-value pairs. Some keys are fixed and are consistent across all adapters:
+
+* `Serial number`
+* `Firmware version`
+* `PCI vendor ID`
+* `PCI product ID`
+* `PCI subvendor ID`
+* `PCI subproduct ID`
+
+Other keys are adapter- and implementation-specific and thus vary.
+
+Input::
+  none
+Output::
+  several tab-separated lines in format
++
+[grid="all"]
+'---------------.-----
+Name             Value
+----------------------
+Firmware Version 1L37
+BIOS Version     G119
+DRAM             64MB
+----------------------
+
+==== get
+
+Input::
+  name of property
+Output::
+  value of property
+
+==== set
+
+Input::
+- name of property
+- value of property
+Output::
+  none normally, error message if error happened
+
+=== log
+
+"log" is an object to access adapter's event log in NVRAM.
+
+==== clear
+
+Clears event log in NVRAM.
+
+Input::
+  none
+Output::
+  none normally, error message if error happened
+
+[[log_list]]
+==== list
+
+Display full event log in NVRAM.
+
+Input::
+  none
+Output::
+  log entries, one per line, in following tab-separated format:
++
+[grid="all"]
+'----------.------------.----------.-------------------.-----------------
+  Entry ID   YYYY-MM-DD   HH:MI:SE   Where it happened   What happened    
+-------------------------------------------------------------------------
+  0          2006-12-04   14:13:24   ARC-1120-VOL#00     Create Volume
+  1          2006-12-04   14:13:24   Raid Set # 00       Create RaidSet   
+-------------------------------------------------------------------------
+
+==== test
+
+Posts a test message in log. Can be later read back to see that logging works.
+
+Input::
+  none
+Output::
+  none normally, error message if error happened; <<log_list,log
+  list>> would now return at least this test message.
+
+=== physical
+
+"physical" is an object to access physical disc drives attached to
+adapter. It's possible to get list with `list` and read and write it's
+properties and settings with `get` and `set`.
+
+*Physical disc address* is *a*`:`*b*, where *a* is channel number and *b* is a device number on that channel. Usually, it's best to assume that it's a string to pass through.
+
+Properties:
+
+ * *hotspare* (0, 1) -- if true, a physical drive is considered a global hotspare.
+ * *state* (free, hotspare, *logical drive ID*) -- shows that drive is either free, reserved for hotspare, or belongs to the one of the logical drives (numeric).
+
+==== list
+
+Shows a list of all physical disc drives attached to adapter.
+
+Input::
+  none
+Output::
+  info on one disc drive per line, tab-separated:
++
+[grid="all"]
+'--------------------.----------------------.--------------------------------------------.---------------.----------.-----------
+Physical disc address Drive vendor and model Drive version, revision, firmware, misc info Drive serial    Drive size Drive state
+--------------------------------------------------------------------------------------------------------------------------------
+0:1                   WDC WD800JD-00J        05.01C05                                     WD-WMAM97310565 80000      hotspare
+0:2                   WDC WD1600JB-00EVA0    15.05R15                                     WD-WMAEK1016963 160000     0
+1:7                   WDC WD3200JD-00KLB0    08.05J08                                     WD-WMAMR1259708 320000     free
+--------------------------------------------------------------------------------------------------------------------------------
+
+==== get
+
+Input::
+  * physical disc address
+  * name of property
+Output::
+  value of property
+
+==== set
+
+Input::
+  * physical disc address
+  * name of property
+  * value of property
+Output::
+  none normally, error message if error happened
+
+==== smart
+
+Input::
+  * physical disc address
+Output::
+  SMART info for disc. One attribute per line, tab-separated:
++
+[grid="all"]
+'--.-----------------------.----.-----.-----.----------.--------.-------.-----------.---------
+Id  Attribute               Flag Value Worst Threshold  Type     Updated When failed Raw value
+----------------------------------------------------------------------------------------------
+1   Raw_Read_Error_Rate     15   100   253   6          Pre-fail Always  -           0
+3   Spin_Up_Time            3    97    97    0          Pre-fail Always  -           0
+4   Start_Stop_Count        50   100   100   20         Old_age  Always  -           202
+5   Reallocated_Sector_Ct   51   100   100   36         Pre-fail Always  -           23
+7   Seek_Error_Rate         15   75    60    30         Pre-fail Always  -           31760414
+9   Power_On_Hours          50   95    95    0          Old_age  Always  -           5065
+10  Spin_Retry_Count        19   100   100   97         Pre-fail Always  -           0
+12  Power_Cycle_Count       50   100   100   20         Old_age  Always  -           202
+187 Reported_Uncorrect      50   100   100   0          Old_age  Always  -           0
+189 High_Fly_Writes         58   100   100   0          Old_age  Always  -           0
+190 Airflow_Temperature_Cel 34   58    33    45         Old_age  Always  In_the_past 42
+194 Temperature_Celsius     34   42    67    0          Old_age  Always  -           42
+195 Hardware_ECC_Recovered  26   75    59    0          Old_age  Always  -           353642
+----------------------------------------------------------------------------------------------
+
+=== logical
+
+Logical drive is a virtual drive, set up on regions of one or several physical drives. It is referenced with a *logical drive ID*, a plain integer number.
+
+Properties:
+
+ * *raidlevel* (passthrough, 0, 1, 5) -- a RAID level of array or *passthrough* -- a special logical disc without any RAIDs that will directly access single physical disc.
+ * *stripe* -- stripe size of logical drive in kilobytes; possible values vary with adapter, 64 is typical default.
+ * *cache* (writeback, writethrough) -- a write cache mode.
+ * *state* (normal, degraded, initializing, migrating, rebuilding, checking) -- state of array.
+
+==== list
+
+Displays a list of logical drives.
+
+Input::
+  none
+Output::
+  info on one logical drive per line, tab-separated:
++
+[grid="all"]
+'---------------.-----------.----------------------------------------.-------------.--------
+Logical drive ID RAID level  Physical discs included, comma-separated Capacity (MB) State
+--------------------------------------------------------------------------------------------
+1                0           0:1                                      80000         normal
+2                5           0:2,0:3,0:4                              10000         degraded
+3                passthrough 0:7                                      73400         normal
+--------------------------------------------------------------------------------------------
+
+==== add
+
+Creates one or more new logical drives.
+
+Input::
+  * RAID level (as in *raidlevel* property), for example `5`
+  * *(optional)* Physical discs to include, comma-separated, for example `0:2,0:3,0:4`. By default, use all available physical discs. Various RAID levels place limits on what arrays can be created with a given set of discs. Obviously, *passthrough* can be created only on one physical disc.
+  * *(optional)* Size of logical discs to create, comma-separated, for example `200,3500`. By default, create one logical disc with maximal size. Not applicable while creating passthrough disc.
+  * *(optional)* Properties, comma-separated pairs of `name=value`, for example `stripe=64,cache=readahead`.
+Output::
+  none normally, error message if error happened.
+
+==== delete
+
+Deletes a logical drive.
+
+Input::
+  logical drive ID.
+Output::
+  none normally, error message if error happened.
+
+==== clear
+
+Deletes all logical drives. Leaves array of free physical discs, ready
+for creation of new array.
+
+Input::
+  none.
+Output::
+  none normally, error message if error happened.
+
+==== get
+
+Input::
+  * logical drive ID
+  * name of property
+Output::
+  value of property
+
+==== set
+
+Input::
+  * logical drive ID
+  * name of property
+  * value of property
+Output::
+  none normally, error message if error happened.
+
+=== task
+
+Tasks are processes that are executed in background on an adapter,
+such as building or checking the logical disc.
+
+==== list
+
+Displays a list of tasks.
+
+Input::
+  none.
+Output::
+  info on one task per line, tab-separated:
++
+[grid="all"]
+'------.-----.--------.--------
+Task ID Where What     Progress 
+-------------------------------
+112     0     Bld/Vfy  0.0% 
+113     1:1   Checking 24.0%
+-------------------------------
+
+==== wait
+
+Pauses further execution until all tasks are finished (it does so by
+waiting while regularly polling the task list for changes).
+
+Input::
+  none
+Output::
+  none
+
+=== firmware
+
+A special object that deals with adapter-related firmware
+reading/writing operations.
+
+==== read
+
+Extracts a firmware from the adapter into a file.
+
+Input::
+  filename (would be overwritten)
+Output::
+  none normally, error message if error happened.
+
+==== write
+
+Flashes a firmware from a file into the adapter.
+
+Input::
+  filename
+Output::
+  none normally, error message if error happened.

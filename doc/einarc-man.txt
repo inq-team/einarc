@@ -1,0 +1,45 @@
+include::inc/man-header.txt[]
+
+= einarc(1)
+
+== Name
+
+einarc - manage and monitor hardware/software RAID controllers
+
+== Synopsis
+
+einarc [options] <object> <command> [<operands>]
+
+== Description
+
+*Einarc* manages and monitors hardware/software RAID controllers.
+It unifies various RAIDs and storage devices, providing a simple
+object-oriented interface for end-user. Inside, it works as a proxy,
+translating commands from that object interface to RAID-specific
+commands for it's proprietary CLI, and back, translating response from
+proprietary CLI into unified answer.
+
+*Einarc* is most useful as a scriptable power tool, so it outputs
+everything in tab-separated machine-readable format by default.
+
+Note that you still have to download and install proprietary CLIs (if
+you want to use any hardware RAID). See *einarc-install*(8) for an
+utility that automates this task.
+
+== Options
+
+include::inc/options.txt[]
+
+== Objects and commands
+
+include::inc/object-interface-generic.txt[]
+
+== Examples
+
+include::inc/cli-examples.txt[]
+
+include::inc/man-footer.txt[]
+
+== See also
+
+*einarc-install*(8)

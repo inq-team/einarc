@@ -1,5 +1,7 @@
 -include config.Makefile
 
+.PHONY: all install doc clean veryclean clobber mrproper distclean
+
 all: tools src/raid/build-config.rb
 #all: ext/lsi_mpt.so
 
@@ -25,19 +27,15 @@ install:
 #		cp 'ext/lsi_mpt.so', INSTALL_DIR_PREFIX + LIB_DIR
 #	end
 
-doc: doc/xhtml
-
-doc/xhtml: doc/manual.txt
-	mkdir -p doc/xhtml
-	a2x -f xhtml --destination-dir=doc/xhtml doc/manual.txt
-	cp -r doc/images doc/xhtml
+doc:
+	$(MAKE) -C $@
 
 clean:
 	rm -rf tools
 	rm -f ext/lsi_mpt.o ext/lsi_mpt.so
 
 veryclean: clean
-	rm -rf proprietary config.Makefile src/raid/build-config.rb config.rb doc/xhtml
+	rm -rf proprietary config.Makefile src/raid/build-config.rb config.rb doc/xhtml doc/man
 
 # Several aliases for veryclean
 clobber: veryclean
