@@ -4,7 +4,9 @@ users, so it should be excluded from distribution tarball.
 
 == Memo: how to make a release
 
-1. Pump version in VERSION
+1. Pump version in:
+	VERSION
+	src/raid/baseraid.rb
 2. Document changes in NEWS
 3. Commit everything
 4. release-tarball
