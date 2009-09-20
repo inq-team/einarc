@@ -35,4 +35,4 @@ include::inc/man-footer.txt[]
 
 == See also
 
-*einarc*(1)
+*einarc*(8)

@@ -1,0 +1,7 @@
+*Warning!* Don't run this unless you know what you're doing. This wizard
+asks no questions and, unless you run it during the system installation
+phase, most likely would delete all the data on all of your hard drives.
+
+*einarc* should be properly installed in the system (i.e. all required
+proprietary CLIs are downloaded, unpacked and installed) before using
+this script. See *einarc-install*(8) on this topic.

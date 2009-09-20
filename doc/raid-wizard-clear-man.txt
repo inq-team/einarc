@@ -1,0 +1,27 @@
+include::inc/man-header.txt[]
+
+= raid-wizard-clear(8)
+
+== Name
+
+raid-wizard-clear - remove all logical discs on all available RAID
+controllers
+
+== Synopsis
+
+*raid-wizard-clear*
+
+== Description
+
+*raid-wizard-clear* removes all logical discs on all available RAID
+controllers, supported by local installation of *einarc*(8). You can be
+sure that there are no logical discs left and all physical discs are
+clean and ready to be assembled into logical discs.
+
+include::inc/wizard-common.txt[]
+
+include::inc/man-footer.txt[]
+
+== See also
+
+*einarc*(8), *einarc-install*(8)

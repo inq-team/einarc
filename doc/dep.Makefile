@@ -20,3 +20,13 @@ DEPS_manual=\
 	inc/object-interface-generic.txt \
 	NEWS \
 
+DEPS_raid_wizard_clear_man=\
+	inc/man-header.txt \
+	inc/wizard-common.txt \
+	inc/man-footer.txt \
+
+DEPS_raid_wizard_passthrough_man=\
+	inc/man-header.txt \
+	inc/wizard-common.txt \
+	inc/man-footer.txt \
+

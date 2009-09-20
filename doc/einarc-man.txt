@@ -1,6 +1,6 @@
 include::inc/man-header.txt[]
 
-= einarc(1)
+= einarc(8)
 
 == Name
 

@@ -1,0 +1,67 @@
+include::inc/man-header.txt[]
+
+= raid-wizard-passthrough(8)
+
+== Name
+
+raid-wizard-passthrough - makes some physical discs to appear in the
+system as distinct devices
+
+== Synopsis
+
+*raid-wizard-passthrough* [_GROUP-SIZE_] [_GROUP-NUMBER_]
+
+== Description
+
+*raid-wizard-passthrough* makes some of the physical discs (connected to
+RAID controllers) visible in the system as distinct devices (i.e.
+logical discs). It does so by doing the following for every supported
+RAID controller:
+
+1. Remove all logical discs present at the controller.
+2. Add all physical discs as logical discs, trying to use "passthrough"
+mode, if possible.
+
+include::inc/wizard-common.txt[]
+
+== Options
+
+By default, *raid-wizard-passthrough* would work with all physical
+discs, connected to the controller, thus making a *logical disc* from
+every single *physical disc*. However, some systems and/or RAID
+controllers might have limits on a number of logical discs that can be
+created simultaneously.
+
+To work around this issue, we can work on a subset of physical discs.
+For ease of enumeration, we work with groups of the same size, and
+iterate over group numbers.
+
+_GROUP-SIZE_::
+  number of physical discs in a group
+
+_GROUP-NUMBER_::
+  sequential number of a group (starting from 0)
+
+== Example
+
+Given a system with 24 physical discs (0:0 to 0:23), one might use
+sequential calls to *raid-wizard-passthrough* to iterate over all 24
+discs, 8 discs at a time:
+
+ raid-wizard-passthrough 8 0
+
+(yields 0:0 to 0:7 as /dev/sda .. /dev/sdh)
+
+ raid-wizard-passthrough 8 1
+
+(yields 0:8 to 0:15 as /dev/sda .. /dev/sdh)
+
+ raid-wizard-passthrough 8 2
+
+(yields 0:16 to 0:23 as /dev/sda .. /dev/sdh)
+
+include::inc/man-footer.txt[]
+
+== See also
+
+*einarc*(8), *einarc-install*(8)
