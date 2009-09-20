@@ -10,9 +10,9 @@ all: \
 	man/einarc-install.8
 
 xhtml/manual.html: manual.txt VERSION $(DEPS_manual)
-	mkdir -p xhtml
+	mkdir -p xhtml/images
 	a2x -f xhtml --destination-dir=xhtml manual.txt
-	cp -r images/*.png xhtml
+	cp -r images/*.png xhtml/images
 
 man/einarc.8: einarc-man.txt VERSION $(DEPS_einarc_man)
 	mkdir -p man
