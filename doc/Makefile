@@ -7,6 +7,7 @@ all: \
 	man/einarc.8 \
 	man/raid-wizard-clear.8 \
 	man/raid-wizard-passthrough.8 \
+	man/raid-wizard-optimal.8 \
 	man/einarc-install.8
 
 xhtml/manual.html: manual.txt VERSION $(DEPS_manual)
@@ -29,6 +30,10 @@ man/raid-wizard-clear.8: raid-wizard-clear-man.txt VERSION $(DEPS_raid_wizard_cl
 man/raid-wizard-passthrough.8: raid-wizard-passthrough-man.txt VERSION $(DEPS_raid_wizard_passthrough)
 	mkdir -p man
 	a2x -f manpage --destination-dir=man raid-wizard-passthrough-man.txt
+
+man/raid-wizard-optimal.8: raid-wizard-optimal-man.txt VERSION $(DEPS_raid_wizard_optimal)
+	mkdir -p man
+	a2x -f manpage --destination-dir=man raid-wizard-optimal-man.txt
 
 VERSION: ../VERSION
 	sed 's/^Einarc //' <../VERSION >VERSION

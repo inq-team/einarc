@@ -1,0 +1,66 @@
+include::inc/man-header.txt[]
+
+= raid-wizard-optimal(8)
+
+== Name
+
+raid-wizard-optimal - create optimal array configuration for all RAID
+adapters
+
+== Synopsis
+
+*raid-wizard-optimal*
+
+== Description
+
+*raid-wizard-optimal* tries to create an optimal array configuration for
+all RAID adapters available in the system using *einarc*(1). It tries to
+guess system builder's intent for hard disc allocation, although,
+"optimal" is highly subjective and your mileage may vary.
+
+include::inc/wizard-common.txt[]
+
+This wizard does the the following for every supported RAID controller:
+
+1. Removes all logical discs present at the controller.
+2. Groups all available physical discs by model (model usually includes
+size).
+3. For every group, if there are:
+* 1 disc in the group - creates RAID 0 logical disc;
+* 2 discs in the group - creates RAID 1 logical disc;
+* >=3 discs in the group:
+** If RAID controller supports RAID 5, creates RAID 5 logical disc that
+includes all discs in the group.
+** Otherwise, breaks group into pairs of same discs, creating RAID 1 on
+each pair, and, possibly, one standalone disc that would be initialized
+as passthrough.
+4. Waits for controller to finish initialization.
+
+== Examples
+
+Adapter that supports RAID 5, physical discs include 2 fast SAS 146GB
+discs (0:0, 0:1) and 5 slower SATA 1TB discs (1:0, 1:1, 1:2, 1:3, 1:4).
+*raid-wizard-optimal* would create a following configuration:
+
+* Logical disc 0: RAID 1 (0:0, 0:1) - 146GB
+* Logical disc 1: RAID 5 (1:0, 1:1, 1:2, 1:3, 1:4) - 4TB
+
+Same disc configuration, but adapter does not support RAID 5:
+
+* Logical disc 0: RAID 1 (0:0, 0:1) - 146GB
+* Logical disc 1: RAID 1 (1:0, 1:1) - 1TB
+* Logical disc 2: RAID 1 (1:2, 1:3) - 1TB
+* Logical disc 3: Passthrough (1:4) - 1TB
+
+Adapter that supports RAID 5, 3 SATA discs of various sizes and models -
+250GB, 500GB, 750GB (0:0, 0:1, 0:2):
+
+* Logical disc 0: RAID 0 (0:0) - 250GB
+* Logical disc 1: RAID 0 (0:1) - 500GB
+* Logical disc 2: RAID 0 (0:2) - 750GB
+
+include::inc/man-footer.txt[]
+
+== See also
+
+*einarc*(8), *einarc-install*(8)
