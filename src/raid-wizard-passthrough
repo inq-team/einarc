@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+
 $LOAD_PATH.unshift('.')
 require 'raid/baseraid'
 
@@ -7,14 +8,18 @@ GROUP_NUMBER=ARGV[1].to_i
 
 exit 1 if RAID::BaseRaid::query_adapters.length == 0
 
+succeeded = 0
+
 RAID::BaseRaid::query_adapters.each { |ad|
 	a = RAID::RAIDS[ad[:driver]].new(ad[:num])
 	a.logical_clear
 	pl = a._physical_list.keys.sort
 
 	if (DISK_GROUP_SIZE != 0) then
-		exit 1 if pl.length <= (DISK_GROUP_SIZE * GROUP_NUMBER)
+		next if pl.length <= (DISK_GROUP_SIZE * GROUP_NUMBER)
 	end
+
+	succeeded += 1
 
 	if (DISK_GROUP_SIZE != 0) then
 		now_testing = pl[ (DISK_GROUP_SIZE * GROUP_NUMBER) .. (DISK_GROUP_SIZE * (GROUP_NUMBER+1)-1) ]
@@ -31,3 +36,5 @@ RAID::BaseRaid::query_adapters.each { |ad|
 	a.adapter_restart
 	a.logical_list
 }
+
+exit 1 if succeeded == 0

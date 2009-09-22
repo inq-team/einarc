@@ -1,11 +1,14 @@
 #!/usr/bin/env ruby
 require 'raid/baseraid'
 
+FLASH_THRESHOLD = 32 * 1024.0 
+
 RAID::BaseRaid::query_adapters.each { |ad|
 	a = RAID::RAIDS[ad[:driver]].new(ad[:num])
 	a.logical_clear
 	sleep 2
 	pl = a._physical_list
+	pl.each_pair { |id, pd| pl.delete(id) unless pd[:size] > FLASH_THRESHOLD }
 
 	levels = a.get_adapter_raidlevels(nil)
 

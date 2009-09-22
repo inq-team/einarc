@@ -40,19 +40,17 @@ module RAID
 		end
 
 		def find_all_arrays
-			for l in `mdadm --examine --scan`.grep /^ARRAY.+$/
+			for l in run("--examine --scan").grep /^ARRAY.+$/
 				vars = l.split(' ')
 				name = vars[1]
 				uuid = vars[4].gsub(/UUID=/, '')
-				unless active?(name)
-					`mdadm -A -u #{uuid} #{name}`
-				end
+				run("--assemble --uuid=#{uuid} #{name}") unless active?(name)
 			end
 		end
 
 		def adapter_restart
 			# Stop all arrays
-			_logical_list.each { |logical| `mdadm --stop /dev/md#{logical[:num]}` }
+			_logical_list.each { |logical| run("--stop /dev/md#{logical[:num]}") }
 			find_all_arrays
 		end
 
@@ -217,10 +215,10 @@ module RAID
 				disks = devices_of("/dev/md#{id}")
 
 				# Stop RAID
-				`mdadm -S /dev/md#{id}`
+				run("--stop /dev/md#{id}")
 				# Remove disks from RAID and zero superblocks
 				disks.each do |d|
-					`mdadm --zero-superblock #{d}`
+					run("--zero-superblock #{d}")
 				end
 
 				# Refresh lists
@@ -242,13 +240,13 @@ module RAID
 		def logical_hotspare_add(ld, drv)
 			raise Error.new("Device #{drv} is already in RAID") if raid_member?(scsi_to_device(drv))
 			raise Error.new("Can not add hotspare to level 0 RAID") if level_of("/dev/md#{ld}") == '0'
-			`mdadm /dev/md#{ld} -a #{scsi_to_device(drv)}`
+			run("/dev/md#{ld} --add #{scsi_to_device(drv)}")
 		end
 
 		def logical_hotspare_delete(ld, drv)
 			raise Error.new("This drive is not hotspare") unless get_physical_hotspare(drv)
 			raise Error.new("Hotspare is dedicated not to that array") if _logical_physical_list(ld).select { |d| d[:num] == drv }.empty?
-			`mdadm /dev/md#{ld} -r #{scsi_to_device(drv)}`
+			run("/dev/md#{ld} --remove #{scsi_to_device(drv)}")
 		end
 
 		# ======================================================================
@@ -416,6 +414,14 @@ module RAID
 		# ======================================================================
 
 		private
+
+		def run(command)
+			out = `mdadm #{command} 2>&1`.split("\n").collect { |l| l.strip }
+			raise Error.new(out.join("\n")) if $?.exitstatus != 0
+			out = [] if out.select { |l| l =~ /No devices listed in/ }.size > 0
+			return out
+		end
+
 		def parse_physical_string(str)
 			res = []
 			str.split(/ /).each { |ph|
@@ -426,7 +432,7 @@ module RAID
 
 		def list_devices
 			return File.open("/proc/partitions", "r").collect { |l|
-				"/dev/" + $1 if l =~ /^\s+[38]\s+\d+\s+\d+\s+([a-z]+)$/ }.compact.select { |d|
+				"/dev/" + $2 if l =~ /^\s+(3|8|22)\s+\d+\s+\d+\s+([a-z]+)$/ }.compact.select { |d|
 					not phys_belongs_to_adapters(d) }
 		end
 
