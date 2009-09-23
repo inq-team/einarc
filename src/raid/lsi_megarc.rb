@@ -22,7 +22,7 @@ module RAID
 		def initialize(adapter_num = nil)
 			adapter_num = 0 if !adapter_num
 			@args = "-a#{adapter_num}"
-			@dev = []
+			@dev = {}
 		end
 
 		# ======================================================================
@@ -123,6 +123,14 @@ module RAID
 		def _logical_list
 			@logical = []
 			num = nil
+
+			# Find all corresponding devices
+			Dir.entries( "/sys/block" ).select { |dev|
+				physical_read_file( dev, "device/vendor" ) =~ /^MegaRAID/
+			}.each { |dev|
+				@dev[ $1.to_i ] = dev if physical_read_file( dev, "device/model" ) =~ /^LD (\d+) RAID/
+			}
+
 			megarc("-ldinfo #{@args} -Lall").each { |l|
 				case l
 				when /^Logical Drive\s*:\s*(\d+).*Status:\s*(.*?)\s*$/
@@ -166,6 +174,7 @@ module RAID
 					'?'
 				end
 			}
+
 			return @logical
 		end
 
