@@ -229,7 +229,7 @@ module RAID
 
 		def logical_clear
 			# Consistently delete all devices
-			raids.each{|r| logical_delete(r.gsub(/\/dev\/md/, '')) }
+			raids.each { |r| logical_delete(r.gsub(/\/dev\/md/, '')) }
 
 			# Refresh lists
 			@raids = @devices = nil
@@ -417,8 +417,8 @@ module RAID
 
 		def run(command)
 			out = `mdadm #{command} 2>&1`.split("\n").collect { |l| l.strip }
+			return [] if out.select { |l| l =~ /No devices listed in/ }.size > 0
 			raise Error.new(out.join("\n")) if $?.exitstatus != 0
-			out = [] if out.select { |l| l =~ /No devices listed in/ }.size > 0
 			return out
 		end
 
