@@ -315,49 +315,13 @@ module RAID
 		end
 
 		def _physical_smart(drv)
-			res = []
-			got_smart = false
-
 			needed_smart_section_re = /START OF READ SMART DATA SECTION/ 
 
 			# Determine do we need to use "-d ata" option
 			smart_output = `smartctl -A #{ scsi_to_device drv }`
 			smart_output = `smartctl -d ata -A #{ scsi_to_device drv }` unless smart_output =~ needed_smart_section_re
 
-			smart_output.split(/\n/).each { |line|
-				got_smart = true if line =~ needed_smart_section_re
-				next unless got_smart
-				if line =~ /^\s*(\d+)\s+(.+?)\s+([0-9a-fx]+?)\s+(\d+)\s+(\d+)\s+(\d+)\s+([^ ]+?)\s+(\w+?)\s+([^ ]+?)\s+(.*)$/
-					res.push({ :id => $1.to_i,
-						   :attribute => $2,
-						   :flag => $3.to_i(16),
-						   :value => $4.to_i,
-						   :worst => $5.to_i,
-						   :thres => $6.to_i,
-						   :type => $7,
-						   :updated => $8,
-						   :when_failed => $9,
-						   :raw_value => $10 })
-				elsif line =~ /^\s*(.*)(:| = )\s*(\d+).*$/
-					res.push({ :id => nil,
-						   :attribute => $1,
-						   :flag => nil,
-						   :value => $3.to_i,
-						   :worst => nil,
-						   :thres => nil,
-						   :type => nil,
-						   :updated => nil,
-						   :when_failed => nil,
-						   :raw_value => nil })
-
-				else
-					next
-				end
-			}
-
-			# Throw out elements without an ID if necessary
-			non_nil_ids = res.select { |ent| not ent[:id].nil? }
-			return non_nil_ids.size > 0 ? non_nil_ids : res
+			return parse_smart_output( smart_output )
 		end
 
 
