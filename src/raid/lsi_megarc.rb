@@ -128,7 +128,7 @@ module RAID
 			Dir.entries( "/sys/block" ).select { |dev|
 				physical_read_file( dev, "device/vendor" ) =~ /^MegaRAID/
 			}.each { |dev|
-				@dev[ $1.to_i ] = dev if physical_read_file( dev, "device/model" ) =~ /^LD (\d+) RAID/
+				@dev[ $1.to_i ] = "/dev/#{dev}" if physical_read_file( dev, "device/model" ) =~ /^LD (\d+) RAID/
 			}
 
 			megarc("-ldinfo #{@args} -Lall").each { |l|
