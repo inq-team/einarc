@@ -27,7 +27,7 @@ module RAID
 		ARECA_PASSWORD = '0000'
 
 		def initialize(adapter_num = nil)
-			@adapter_num = adapter_num
+			@adapter_num = adapter_num ? adapter_num : 1
 			open_cli
 		end
 
@@ -472,6 +472,12 @@ module RAID
 		end
 		
 		# ======================================================================
+		
+		def _physical_smart(drv)
+			out = `smartctl -d areca,#{@adapter_num} -A /dev/sg#{ _physical_list.keys.sort.index( drv ) + 1 }`
+			raise Error.new(out) if $?.exitstatus != 0
+			return parse_smart_output( out )
+		end
 
 		# Runs trivial Areca command; raises an exception if it exists improperly
 		def self.run(cmd)
