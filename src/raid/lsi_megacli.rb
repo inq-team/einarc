@@ -211,6 +211,8 @@ module RAID
 				case l
 				when /^Enclosure Device ID:\s*(.+)$/
 					enclosure = $1
+				when /Device Id:\s+(\d+)$/
+					phys[:megaraid_id] = $1
 				when /^Slot Number:\s*(\d+)$/
 					slot = $1.to_i
 					pd_name = case enclosure
@@ -373,6 +375,17 @@ module RAID
 		end
 		
 		# ======================================================================
+
+		def _physical_smart(drv)
+			needed_smart_section_re = /START OF READ SMART DATA SECTION/ 
+
+			corresponding_drive = _logical_list.collect{ |ld| ld[:dev] }.last
+			raise Error.new( "You have to create at least one logical disk to get SMART info" ) unless corresponding_drive
+			smart_output = `smartctl -d megaraid,#{ _physical_list[drv][:megaraid_id] } -A #{ corresponding_drive }`
+			smart_output = `smartctl -d megaraid,#{ _physical_list[drv][:megaraid_id] } -A #{ corresponding_drive } -T permissive` unless smart_output =~ needed_smart_section_re
+
+			return parse_smart_output( smart_output )
+		end
 
 		private
 
