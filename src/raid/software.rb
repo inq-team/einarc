@@ -50,7 +50,7 @@ module RAID
 		
 		def rescan_bus
 			Dir.glob("/sys/class/scsi_host/*").each { |host|
-				File.open(host, 'w') { |f| f.write("- - -") }
+				File.open("#{host}/scan", 'w') { |f| f.write("- - -") }
 			}
 		end
 
@@ -101,7 +101,7 @@ module RAID
 				if l =~ MDSTAT_PATTERN
 					num = $1.to_i
 					parse_physical_string($3).collect { |d| scsi_to_device(d) }.each { |d|
-						run("/dev/md#{ num } --fail #{d} --remove #{d}") if ( detached?(d) and spare?(d) )
+						run("/dev/md#{ num } --fail detached --remove detached") if ( detached?(d) and spare?(d) )
 					}
 				end
 			} }
@@ -130,6 +130,9 @@ module RAID
 						end
 						phys = parse_physical_string($3)
 						raid_level = $1 if raid_level =~ /raid(\d+)/
+
+						state = 'degraded' unless phys.select { |d| failed?( scsi_to_device(d) ) }.empty?
+						state = 'degraded' if spl[1] == "(auto-read-only)"
 
 						ld = {
 							:num => num,
@@ -460,7 +463,7 @@ module RAID
 
 		def detached?(device)
 			name = device.gsub(/^\/dev\//, '')
-			return (not list_devices.include?( "/dev/#{ device }" ))
+			return (not list_devices.include?( "/dev/#{ name }" ))
 		end
 
 		def list_raids
