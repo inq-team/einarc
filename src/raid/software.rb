@@ -47,10 +47,17 @@ module RAID
 				run("--assemble --uuid=#{uuid} #{name}") unless active?(name)
 			end
 		end
+		
+		def rescan_bus
+			Dir.glob("/sys/class/scsi_host/*").each { |host|
+				File.open(host, 'w') { |f| f.write("- - -") }
+			}
+		end
 
 		def adapter_restart
-			# Stop all arrays
+			check_detached_hotspares
 			_logical_list.each { |logical| run("--stop /dev/md#{logical[:num]}") }
+			rescan_bus
 			find_all_arrays
 		end
 
@@ -88,9 +95,22 @@ module RAID
 
 		# ======================================================================
 
+		def check_detached_hotspares
+			existing_drives = list_devices
+			File.open(MDSTAT_LOCATION, 'r') { |f| f.each_line { |l|
+				if l =~ MDSTAT_PATTERN
+					num = $1.to_i
+					parse_physical_string($3).collect { |d| scsi_to_device(d) }.each { |d|
+						run("/dev/md#{ num } --fail #{d} --remove #{d}") if ( detached?(d) and spare?(d) )
+					}
+				end
+			} }
+		end
+
 		def _logical_list
 			@logical = []
 			ld = nil
+			check_detached_hotspares
 			File.open(MDSTAT_LOCATION, 'r') { |f|
 				f.each_line { |l|
 					l.chop!
@@ -98,7 +118,7 @@ module RAID
 						ld[:stripe] = $1.to_i
 					end
 					case l
-					when  MDSTAT_PATTERN
+					when MDSTAT_PATTERN
 						num = $1.to_i
 						spl = $2.split(' ')
 						if spl.first == 'inactive'
@@ -253,7 +273,8 @@ module RAID
 
 		def _logical_physical_list(ld)
 			res = []
-			File.open("/proc/mdstat", "r"){ |f| f.each_line { |l| l.chop!
+			check_detached_hotspares
+			File.open(MDSTAT_LOCATION, "r"){ |f| f.each_line { |l| l.chop!
 				next unless l =~ /^md#{ld}/
 				l.split(" ").each{ |ent|
 					state = ld
@@ -405,7 +426,6 @@ module RAID
 		end
 
 		def raid_member?(device)
-			# Delete '/dev/' before device name
 			name = device.gsub(/^\/dev\//, '')
 			
 			# Check name existence in mdstat file
@@ -413,7 +433,6 @@ module RAID
 		end
 
 		def spare?(device)
-			# Delete '/dev/' before device name
 			name = device.gsub(/^\/dev\//, '')
 
 			# Ex. sda[0](S)
@@ -421,7 +440,6 @@ module RAID
 		end
 
 		def failed?(device)
-			# Delete '/dev/' before device name
 			name = device.gsub(/^\/dev\//, '')
 
 			# Ex. sda[0](F)
@@ -434,11 +452,15 @@ module RAID
 		end
 
 		def active?(device)
-			# Delete '/dev/' before device name
 			name = device.gsub(/^\/dev\//, '')
 			
 			# Check RAID existence in mdstat file
 			return (not File.read(MDSTAT_LOCATION).grep(Regexp.new(name)).empty?)
+		end
+
+		def detached?(device)
+			name = device.gsub(/^\/dev\//, '')
+			return (not list_devices.include?( "/dev/#{ device }" ))
 		end
 
 		def list_raids
