@@ -94,9 +94,8 @@ module RAID
 		end
 
 		# ======================================================================
-
+		
 		def check_detached_hotspares
-			existing_drives = list_devices
 			File.open(MDSTAT_LOCATION, 'r') { |f| f.each_line { |l|
 				if l =~ MDSTAT_PATTERN
 					num = $1.to_i
@@ -107,52 +106,41 @@ module RAID
 			} }
 		end
 
+		def array_detail(dev)
+			info = {}
+			drives = {}
+			ld = {}
+
+			run("--detail #{dev}").each { |l|
+				if l =~ /^\s*(.*) : (.*)$/
+					info[$1] = $2
+				elsif l =~ /^\s*\d+\s+\d+\s+\d+\s+\d+\s+(.*)$/
+					$1 =~ /^(.*[^\s])\s+\/dev\/(\w+)$/
+					drives[$2] = $1
+				end
+			}
+
+			ld[:dev] = dev
+			ld[:num] = $1.to_i if dev =~ /md(\d+)/
+			ld[:capacity] = info["Array Size"].to_i / 1024
+			ld[:stripe] = info["Chunk Size"].to_i
+			ld[:raid_level] = info["Raid Level"] =~ /raid(\d+)/ ? $1 : "linear"
+			states = { "clean" => "normal",
+				   "active" => "normal",
+				   "Not Started" => "degraded",
+				   "degraded" => "degraded",
+				   "resyncing" => "initializing",
+				   "recovering" => "rebuilding" }
+			ld[:state] = states[ info["State"].split(", ").select { |s| states.has_key? s }.last ]
+			ld[:physical] = drives.keys.select { |drive| drives[drive] != "removed" }.collect { |drive| phys_to_scsi drive }
+
+			return ld
+		end
+
 		def _logical_list
 			@logical = []
-			ld = nil
 			check_detached_hotspares
-			File.open(MDSTAT_LOCATION, 'r') { |f|
-				f.each_line { |l|
-					l.chop!
-					if l =~ /(\d+)k chunk/
-						ld[:stripe] = $1.to_i
-					end
-					case l
-					when MDSTAT_PATTERN
-						num = $1.to_i
-						spl = $2.split(' ')
-						if spl.first == 'inactive'
-							state = 'inactive'
-							raid_level = ''
-						elsif spl.first == 'active'
-							state = 'normal'
-							raid_level = spl.last
-						end
-						phys = parse_physical_string($3)
-						raid_level = $1 if raid_level =~ /raid(\d+)/
-
-						state = 'degraded' unless phys.select { |d| failed?( scsi_to_device(d) ) }.empty?
-						state = 'degraded' if spl[1] == "(auto-read-only)"
-
-						ld = {
-							:num => num,
-							:dev => "/dev/md#{num}",
-							:physical => phys,
-							:state => state,
-							:raid_level => raid_level,
-						}
-						@logical << ld
-					when /^\s*(\d+) blocks/
-						ld[:capacity] = $1.to_i / 1024.0
-					when /resync=PENDING/
-						ld[:state] = "pending"
-					when /resync = ([ 0-9\.\%]+)/
-						ld[:state] = "initializing"
-					when /recovery = ([0-9\.\%]+)/
-						ld[:state] = "rebuilding"
-					end
-				}
-			}
+			raids.each { |ld| @logical << array_detail(ld) }
 			return @logical
 		end
 
@@ -298,7 +286,7 @@ module RAID
 			# Resulting hash
 			res = {}
 
-			for device in list_devices
+			for device in devices
 				# Possibility to skip USB mass storage devices
 				# next if usb_device?(device)
 				target = phys_to_scsi(device.gsub(/^\/dev\//, ''))
@@ -463,7 +451,7 @@ module RAID
 
 		def detached?(device)
 			name = device.gsub(/^\/dev\//, '')
-			return (not list_devices.include?( "/dev/#{ name }" ))
+			return (not devices.include?( "/dev/#{ name }" ))
 		end
 
 		def list_raids
