@@ -354,7 +354,15 @@ module RAID
 		# ======================================================================
 
 		def get_adapter_raidlevels(x = nil)
-			[ 'linear', 'passthrough', '0', '1', '5' ]
+			levels = {
+				'Adaptec 3805' => [ 'linear', 'passthrough', '0', '1', '1E', '5', '5EE', '6', '10', '50', '60' ],
+				'Adaptec 5805' => [ 'linear', 'passthrough', '0', '1', '1E', '5', '5EE', '6', '10', '50', '60' ],
+				'Adaptec 5405' => [ 'linear', 'passthrough', '0', '1', '1E', '5', '5EE', '6', '10', '50', '60' ],
+				'Adaptec 2230S' => [ 'linear', 'passthrough', '0', '1', '5', '10', '50' ],
+				'Adaptec 2405' => [ 'linear', 'passthrough', '0', '1', '10' ],
+			}
+			model = AdaptecArcConf.query( [] )[0][:model]
+			return (levels.has_key? model) ? levels[model] : [ 'linear', 'passthrough', '0', '1', '5' ]
 		end
 
 		def get_adapter_alarm(x = nil)
