@@ -34,14 +34,18 @@ module RAID
 		# ======================================================================
 
 		def self.query(res)
-			`#{CLI} main`.each_line { |l|
-				res << {
-					:driver => 'areca',
-					:num => $1.to_i,
-					:model => $3,
-					:version => $2,
-				} if l =~ /^Controller#(\d+)\((.*?)\):\s+(.*)/
-			}
+			begin
+				`#{CLI} main`.each_line { |l|
+					res << {
+						:driver => 'areca',
+						:num => $1.to_i,
+						:model => $3,
+						:version => $2,
+					} if l =~ /^Controller#(\d+)\((.*?)\):\s+(.*)/
+				}
+			rescue Errno::ENOENT
+				raise Error.new('areca: CLI binary not found')
+			end
 #			raise Error.new('areca: failed to query adapter list') if $?.exitstatus != 0
 		end
 
