@@ -16,7 +16,7 @@ einarc [options] <object> <command> [<operands>]
 It unifies various RAIDs and storage devices, providing a simple
 object-oriented interface for end-user. Inside, it works as a proxy,
 translating commands from that object interface to RAID-specific
-commands for it's proprietary CLI, and back, translating response from
+commands for its proprietary CLI, and back, translating response from
 proprietary CLI into unified answer.
 
 *Einarc* is most useful as a scriptable power tool, so it outputs
