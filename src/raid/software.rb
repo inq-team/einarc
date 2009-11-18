@@ -511,7 +511,7 @@ module RAID
 		end
 
 		def physical_get_serial_via_udev(device)
-			info = `udevinfo --query=env --name=#{device}`
+			info = `udevadm info --query=env --name=#{device}`
 			info =~ /ID_SERIAL_SHORT=(.*)\n/
 			return $1 if $1
 			info =~ /ID_SERIAL=(.*)\n/
