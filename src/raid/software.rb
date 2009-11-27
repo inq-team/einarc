@@ -520,15 +520,16 @@ module RAID
 
 		# Determine if device belongs to any known by Einarc controller
 		def phys_belongs_to_adapters(device)
-			sysfs_pciid = File.readlink("/sys/block/#{device.gsub(/^\/dev\//, '')}/device").split("/").select { |f|
-				f =~ /^\w{4}:\w{2}:\w{2}\.\w$/
-			}.last
-			vendor_id = File.open("/sys/bus/pci/devices/#{sysfs_pciid}/vendor").readline.chop.gsub(/^0x/, "")
-			product_id = File.open("/sys/bus/pci/devices/#{sysfs_pciid}/device").readline.chop.gsub(/^0x/, "")
-			sub_vendor_id = File.open("/sys/bus/pci/devices/#{sysfs_pciid}/subsystem_vendor").readline.chop.gsub(/^0x/, "")
-			sub_product_id = File.open("/sys/bus/pci/devices/#{sysfs_pciid}/subsystem_device").readline.chop.gsub(/^0x/, "")
-
-			return RAID::find_adapter_by_pciid(vendor_id, product_id, sub_vendor_id, sub_product_id) ? true : false
+			def get_id( section, what )
+				section.select { |l| l =~ /ATTRS.#{what}/ }.last =~ /==...(\w{4})/
+				return $1
+			end
+			info = `udevadm info --attribute-walk --name=#{device}`.split("\n")
+			section = info[ info.index( info.select { |l| l =~ /^\s+looking at parent device .\/devices\/pci.*\/\w{4}:\w{2}:\w{2}\.\w..$/ }.last ) .. -1 ]
+			return RAID::find_adapter_by_pciid( get_id(section, "vendor"),
+							    get_id(section, "device"),
+							    get_id(section, "subsystem_vendor"),
+							    get_id(section, "subsystem_device") ) ? true : false
 		end
 
 		def calculate_per_disc_requirements(discs, raid_level, requested_size, chunk_size)
