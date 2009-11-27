@@ -521,8 +521,7 @@ module RAID
 		# Determine if device belongs to any known by Einarc controller
 		def phys_belongs_to_adapters(device)
 			def get_id( section, what )
-				section.select { |l| l =~ /ATTRS.#{what}/ }.last =~ /==...(\w{4})/
-				return $1
+				return section.collect { |l| l =~ /ATTRS.#{what}.==.*(\w{4})/; $1 if $1 }.compact.last
 			end
 			info = `udevadm info --attribute-walk --name=#{device}`.split("\n")
 			section = info[ info.index( info.select { |l| l =~ /^\s+looking at parent device .\/devices\/pci.*\/\w{4}:\w{2}:\w{2}\.\w..$/ }.last ) .. -1 ]
