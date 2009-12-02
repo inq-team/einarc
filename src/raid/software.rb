@@ -523,12 +523,18 @@ module RAID
 			def get_id( section, what )
 				return section.collect { |l| l =~ /ATTRS.#{what}.==.*(\w{4})/; $1 if $1 }.compact.last
 			end
-			info = `udevadm info --attribute-walk --name=#{device}`.split("\n")
-			section = info[ info.index( info.select { |l| l =~ /^\s+looking at parent device .\/devices\/pci.*\/\w{4}:\w{2}:\w{2}\.\w..$/ }.last ) .. -1 ]
-			return RAID::find_adapter_by_pciid( get_id(section, "vendor"),
-							    get_id(section, "device"),
-							    get_id(section, "subsystem_vendor"),
-							    get_id(section, "subsystem_device") ) ? true : false
+			info = `udevadm info --attribute-walk --name=#{device}`
+			headers = info.split(/\n/).select { |l| l =~ /looking at parent/ }
+			sections = info.split(/^.*looking at parent.*$/)
+			founded = false
+			headers.select{ |h| h =~ /looking at parent.*\/devices\/pci.*\/\w{4}:\w{2}:\w{2}\.\w..$/ }.each { |h|
+				section = sections[ headers.index( h ) + 1 ].split(/\n/)
+				founded ||= RAID::find_adapter_by_pciid( get_id(section, "vendor"),
+									 get_id(section, "device"),
+									 get_id(section, "subsystem_vendor"),
+									 get_id(section, "subsystem_device") ) ? true : false
+			}
+			return founded
 		end
 
 		def calculate_per_disc_requirements(discs, raid_level, requested_size, chunk_size)
