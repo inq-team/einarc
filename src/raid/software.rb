@@ -132,7 +132,7 @@ module RAID
 				   "resyncing" => "initializing",
 				   "recovering" => "rebuilding" }
 			ld[:state] = states[ info["State"].split(", ").select { |s| states.has_key? s }.last ]
-			ld[:physical] = drives.keys.select { |drive| drives[drive] != "removed" }.collect { |drive| phys_to_scsi drive }
+			ld[:physical] = drives.keys.select { |drive| drives[drive] and drives[drive] != "removed" }.collect { |drive| phys_to_scsi drive }
 
 			return ld
 		end
