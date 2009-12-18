@@ -56,7 +56,7 @@ module RAID
 
 		def adapter_restart
 			check_detached_hotspares
-			_logical_list.each { |logical| run("--stop /dev/md#{logical[:num]}") }
+			_logical_list.each { |logical| ld_stop logical[:num] }
 			rescan_bus
 			find_all_arrays
 		end
@@ -226,7 +226,7 @@ module RAID
 				disks = devices_of("/dev/md#{id}")
 
 				# Stop RAID
-				run("--stop /dev/md#{id}")
+				ld_stop id
 				# Remove disks from RAID and zero superblocks
 				disks.each do |d|
 					run("--zero-superblock #{d}")
@@ -396,6 +396,18 @@ module RAID
 			return [] if out.select { |l| l =~ /No devices listed in/ }.size > 0
 			raise Error.new(out.join("\n")) if $?.exitstatus != 0
 			return out
+		end
+
+		def ld_stop(ld_id)
+			out = `mdadm --stop /dev/md#{ld_id} 2>&1`.split("\n").collect { |l| l.strip }
+			status = $?.exitstatus
+			unless out.select { |l| l =~ /fail to stop array.*Device or resource busy/ }.size > 0
+				raise Error.new(out.join("\n")) if status != 0
+				return
+			end
+			puts "Waiting for 5sec to repeat again try to stop logical drive because of it's business\n"
+			sleep 5
+			ld_stop ld_id
 		end
 
 		def parse_physical_string(str)
