@@ -12,6 +12,8 @@ module RAID
 		MDSTAT_PATTERN = /^md(\d+)\s:\s( (?:active|inactive) \s* (?:\([^)]*\))? \s* \S*)\s(.+)$/x
 		MDSTAT_LOCATION = '/proc/mdstat'
 
+		RETRIES_NUMBER = 5
+
 		def initialize(adapter_num = nil)
 			find_all_arrays
 		end
@@ -41,6 +43,7 @@ module RAID
 
 		def find_all_arrays
 			for l in run("--examine --scan").grep /^ARRAY.+$/
+				# TODO: replace splitting with regexping
 				vars = l.split(' ')
 				name = vars[1]
 				uuid = vars[4].gsub(/UUID=/, '')
@@ -56,7 +59,7 @@ module RAID
 
 		def adapter_restart
 			check_detached_hotspares
-			_logical_list.each { |logical| ld_stop logical[:num] }
+			_logical_list.each { |logical| run("--stop /dev/md#{logical[:num]}", retry_ = true) }
 			rescan_bus
 			find_all_arrays
 		end
@@ -226,7 +229,7 @@ module RAID
 				disks = devices_of("/dev/md#{id}")
 
 				# Stop RAID
-				ld_stop id
+				run("--stop /dev/md#{id}", retry_ = true)
 				# Remove disks from RAID and zero superblocks
 				disks.each do |d|
 					run("--zero-superblock #{d}")
@@ -391,23 +394,22 @@ module RAID
 
 		private
 
-		def run(command)
-			out = `mdadm #{command} 2>&1`.split("\n").collect { |l| l.strip }
-			return [] if out.select { |l| l =~ /No devices listed in/ }.size > 0
-			raise Error.new(out.join("\n")) if $?.exitstatus != 0
-			return out
-		end
-
-		def ld_stop(ld_id)
-			out = `mdadm --stop /dev/md#{ld_id} 2>&1`.split("\n").collect { |l| l.strip }
-			status = $?.exitstatus
-			unless out.select { |l| l =~ /fail to stop array.*Device or resource busy/ }.size > 0
-				raise Error.new(out.join("\n")) if status != 0
-				return
+		def run(command, retry_ = false)
+			tries = retry_ ? RETRIES_NUMBER : 0
+			begin
+				out = `mdadm #{command} 2>&1`.split("\n").collect { |l| l.strip }
+				out = [] if out.select { |l| l =~ /No devices listed in/ }.size > 0
+				raise Error.new(out.join("\n")) if $?.exitstatus != 0
+			rescue Error => e
+				if e.text =~ /failed to stop array.*Device or resource busy/
+					tries -= 1
+					sleep 1
+					retry if tries >= 0
+				else
+					raise Error.new( e.text )
+				end
 			end
-			puts "Waiting for 5sec to repeat again try to stop logical drive because of it's business\n"
-			sleep 5
-			ld_stop ld_id
+			return out
 		end
 
 		def parse_physical_string(str)
