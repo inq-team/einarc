@@ -42,11 +42,12 @@ module RAID
 		end
 
 		def find_all_arrays
-			for l in run("--examine --scan").grep /^ARRAY.+$/
-				# TODO: replace splitting with regexping
-				vars = l.split(' ')
-				name = vars[1]
-				uuid = vars[4].gsub(/UUID=/, '')
+			for l in run("--examine --scan").grep /^ARRAY/
+				# ARRAY /dev/md0 UUID=12345678:12345678:12345678:12345678
+				# ARRAY /dev/md1 level=raid0 num-devices=1 UUID=12345678:12345678:12345678:12345678
+
+				l =~ /.*(\/dev\/\w+).*UUID=([\w:]+).*/
+				name, uuid = $1, $2
 				run("--assemble --uuid=#{uuid} #{name}") unless active?(name)
 			end
 		end
