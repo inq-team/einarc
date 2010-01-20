@@ -148,8 +148,8 @@ endif
 
 proprietary/asm_linux_x86_v6_00_17922.rpm: proprietary/agreed
 	mkdir -p proprietary
-	$(WGET) http://download.adaptec.com/raid/storage_manager/asm_linux_x86_v6_00_17922.rpm
+	$(WGET) http://download.adaptec.com/raid/storage_manager/asm_linux_x86_v6_40_18530.rpm
 
 proprietary/asm_linux_x64_v6_00_17922.rpm: proprietary/agreed
 	mkdir -p proprietary
-	$(WGET) http://download.adaptec.com/raid/storage_manager/asm_linux_x64_v6_00_17922.rpm
+	$(WGET) http://download.adaptec.com/raid/storage_manager/asm_linux_x64_v6_40_18530.rpm
