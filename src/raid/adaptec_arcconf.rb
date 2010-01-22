@@ -457,21 +457,26 @@ module RAID
 
 		# ======================================================================
 
+#--------------------------------------------------------
+#Controller Battery Information
+#--------------------------------------------------------
+#Status                                   : Optimal
+#Over temperature                         : No
+#Capacity remaining                       : 98 percent
+#Time remaining (at current draw)         : 3 days, 0 hours, 31 minutes
 		def _bbu_info
-			for line in run("getconfig #{@adapter_num} ad")
-				if line =~ /^Status\s*:\s*(.*?)$/
-					status = $1
-					break
-				end
-			end
 			info = {}
-			if status =~ /Not Installed/				
-				info[:vendor] = info[:serial] = info[:capacity] = info[:device] = 'n/a'
-			end
-			info
+			run("getconfig #{@adapter_num} ad").grep(/^Status\s*:\s*(.*?)$/) {
+				unless $1 =~ /Not Installed/
+					info[:vendor] = 'Adaptec'
+					info[:device] = 'BBU'
+				end
+			}
+			return info
 		end
 		
 		# ======================================================================
+		
 		private
 
 		def run(command, check = true)
