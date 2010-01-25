@@ -277,31 +277,29 @@ module RAID
 			return res
 		end
 
-#Controllers found: 1
-#----------------------------------------------------------------------
-#Physical Device information
-#----------------------------------------------------------------------
-#   Channel #0:
-#      Transfer Speed                        : Ultra320
-#      Initiator at SCSI ID 7
-#      Device #2
+#      Device #5
 #         Device is a Hard drive
-#         State                              : Online
+#         State                              : Ready
 #         Supported                          : Yes
-#         Transfer Speed                     : Ultra320
-#         Reported Channel,Device            : 0,2
-#         Vendor                             : FUJITSU
-#         Model                              : MAW3073NC
-#         Firmware                           : 0104
-#         Serial number                      : DAL0P7605RJ5
-#         Size                               : 70136 MB
-#         Write Cache                        : Unknown
+#         Transfer Speed                     : SATA 1.5 Gb/s
+#         Reported Channel,Device(T:L)       : 0,5(5:0)
+#         Reported Location                  : Enclosure 1, Slot 5
+#         Reported ESD(T:L)                  : 2,1(1:0)
+#         Vendor                             : 
+#         Model                              : ST31000528AS
+#         Firmware                           : CC37
+#         Serial number                      : 9VP22859
+#         Size                               : 953869 MB
+#         Write Cache                        : Enabled (write-back)
 #         FRU                                : None
 #         S.M.A.R.T.                         : No
-#   Channel #1:
-#      Transfer Speed                        : Ultra320
-#      Initiator at SCSI ID 7
-#      No physical drives attached
+#         S.M.A.R.T. warnings                : 0
+#         Power State                        : Full rpm
+#         Supported Power States             : Full rpm,Powered off
+#         SSD                                : No
+#         MaxIQ Cache Capable                : No
+#         MaxIQ Cache Assigned               : No
+#         NCQ status                         : Disabled
 		def _physical_list
 			@physical = {}
 			dev = nil
@@ -314,7 +312,7 @@ module RAID
 					hdd = false
 				when /Device is a Hard drive/
 					hdd = true
-				when /Reported Channel,Device\s*:\s*(\d+),(\d+)/
+				when /Reported Channel,Device\(T:L\)\s*:\s*(\d+),(\d+).*/
 					@physical["#{$1}:#{$2}"] = phys if hdd
 				when /Vendor\s*:\s*(.*)$/
 					phys[:vendor] = $1
@@ -324,7 +322,7 @@ module RAID
 					phys[:size] = $1.to_i
 				when /Firmware\s*:\s*(.*)$/
 					phys[:revision] = $1
-				when /State\s*:\s*(.*)$/
+				when /^State\s*:\s*(.*)$/
 					phys[:state] = $1.downcase
 					phys[:state] = 'free' if phys[:state] == 'ready'
 					phys[:state] = 'hotspare' if phys[:state] == 'hot spare'
