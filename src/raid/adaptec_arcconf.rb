@@ -10,6 +10,7 @@ module RAID
 		PCI_IDS = {
 			'Adaptec 3805'  => ['9005', '0285', '9005', '02bc'],
 			'Adaptec 5805'  => ['9005', '0285', '9005', '02b6'],
+			'Adaptec 5805Z' => ['9005', '0285', '9005', '02da'],
 			'Adaptec 51645' => ['9005', '0285', '9005', '02cf'],
 			'Adaptec 2230S' => ['9005', '0286', '9005', '028c'],
 			'Adaptec 5405'  => ['9005', '0285', '9005', '02d1'],
@@ -356,6 +357,7 @@ module RAID
 			levels = {
 				'Adaptec 3805'	=> [ 'linear', 'passthrough', '0', '1', '1E', '5', '5EE', '6', '10', '50', '60' ],
 				'Adaptec 5805'	=> [ 'linear', 'passthrough', '0', '1', '1E', '5', '5EE', '6', '10', '50', '60' ],
+				'Adaptec 5805Z'	=> [ 'linear', 'passthrough', '0', '1', '1E', '5', '5EE', '6', '10', '50', '60' ],
 				'Adaptec 51645'	=> [ 'linear', 'passthrough', '0', '1', '1E', '5', '5EE', '6', '10', '50', '60' ],
 				'Adaptec 5405'	=> [ 'linear', 'passthrough', '0', '1', '1E', '5', '5EE', '6', '10', '50', '60' ],
 				'Adaptec 2230S'	=> [ 'linear', 'passthrough', '0', '1', '5', '10', '50' ],
