@@ -48,6 +48,7 @@ module RAID
 
 				l =~ /.*(\/dev\/\w+).*UUID=([\w:]+).*/
 				name, uuid = $1, $2
+				next unless ( name and uuid ) # mdadm 3.x can print arrays without any /dev entry
 				run("--assemble --uuid=#{uuid} #{name}") unless active?(name)
 			end
 		end
@@ -471,9 +472,11 @@ module RAID
 
 		def list_raids
 			res = []
+			id_last = nil
 			for l in File.readlines(MDSTAT_LOCATION)
 				# md0 : active raid0 sdb[1] sdc[0]
-				res[$1.to_i] = "/dev/md#{$1}" if l =~ MDSTAT_PATTERN
+				(res[$1.to_i] = "/dev/md#{$1}" and id_last = $1.to_i) if l =~ MDSTAT_PATTERN
+				res.delete_at(id_last) if l =~ /\ssuper\s/ # mdadm 3.x has unsupported "container" type
 			end
 			return res.compact
 		end
