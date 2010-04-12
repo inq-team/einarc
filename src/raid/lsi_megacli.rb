@@ -129,8 +129,10 @@ module RAID
 						:num => num,
 						:physical => [],
 					}
-				when /^Size\s*:\s*(\d+)MB$/
+				when /^Size\s*:\s*([\.\d]+).?MB$/
 					ld[:capacity] = $1.to_i
+				when /^Size\s*:\s*([\.\d]+)\sGB$/
+					ld[:capacity] = $1.to_i * 1024
 				when /^State\s*:\s*(.*?)$/
 					state = $1.downcase
 					state = 'normal' if state == 'optimal'
@@ -151,8 +153,10 @@ module RAID
 			devices = Dir.entries("/sys/block").select { |dev| physical_read_file( dev, "device/model" ) =~ /^MegaRAID/ }
 			devs = {}
 			devices.each { |dev|
-				devs[ Dir.entries("/sys/block/#{dev}/device").collect { |ent|
-					"#{$1}:#{$2}" if ent =~ /scsi_disk:\d+:(\d+):(\d+):\d/}.compact.last ] = dev
+#				devs[ Dir.entries("/sys/block/#{dev}/device").collect { |ent|
+#					"#{$1}:#{$2}" if ent =~ /scsi_disk:\d+:(\d+):(\d+):\d/}.compact.last ] = dev
+				devs[ Dir.entries("/sys/block/#{dev}/device/scsi_disk").collect { |ent| 
+					"#{$1}:#{$2}" if ent =~ /\d+:(\d+):(\d+):\d/}.compact.last ] = dev
 			}
 			devs_ordered = devs.keys.sort.collect { |k| "/dev/#{devs[k]}" }
 			@logical.each { |ld| ld[:dev] = devs_ordered.shift }
@@ -201,12 +205,90 @@ module RAID
 			run("-CfgForeign -Clear #{@args}")
 		end
 
+
+#Adapter #0
+
+#Enclosure Device ID: 252
+#Slot Number: 4
+#Device Id: 12
+#Sequence Number: 4
+#Media Error Count: 0
+#Other Error Count: 0
+#Predictive Failure Count: 0
+#Last Predictive Failure Event Seq Number: 0
+#PD Type: SATA
+#Raw Size: 232.885 GB [0x1d1c5970 Sectors]
+#Non Coerced Size: 232.385 GB [0x1d0c5970 Sectors]
+#Coerced Size: 231.898 GB [0x1cfcc000 Sectors]
+#Firmware state: Online
+#SAS Address(0): 0x7a78a43dc6d5f6ab
+#Connected Port Number: 4(path0) 
+#Inquiry Data:       GEK230RBSEVNRAHitachi HDP725025GLA380                 GM2OA52A
+#FDE Capable: Not Capable
+#FDE Enable: Disable
+#Secured: Unsecured
+#Locked: Unlocked
+#Foreign State: None 
+#Device Speed: Unknown 
+#Link Speed: Unknown 
+#Media Type: Hard Disk Device
+
+#Enclosure Device ID: 252
+#Slot Number: 5
+#Device Id: 13
+#Sequence Number: 1
+#Media Error Count: 0
+#Other Error Count: 0
+#Predictive Failure Count: 0
+#Last Predictive Failure Event Seq Number: 0
+#PD Type: SAS
+#Raw Size: 68.492 GB [0x88fc1d0 Sectors]
+#Non Coerced Size: 67.992 GB [0x87fc1d0 Sectors]
+#Coerced Size: 67.986 GB [0x87f9000 Sectors]
+#Firmware state: Unconfigured(good), Spun Up
+#SAS Address(0): 0x500000e0147a3462
+#SAS Address(1): 0x0
+#Connected Port Number: 5(path0) 
+#Inquiry Data: FUJITSU MAX3073RC       0104DQA0P7200RAB        
+#FDE Capable: Not Capable
+#FDE Enable: Disable
+#Secured: Unsecured
+#Locked: Unlocked
+#Foreign State: None 
+#Device Speed: Unknown 
+#Link Speed: Unknown 
+#Media Type: Hard Disk Device
+
+#Enclosure Device ID: 252
+#Slot Number: 6
+#Device Id: 14
+#Sequence Number: 1
+#Media Error Count: 0
+#Other Error Count: 0
+#Predictive Failure Count: 0
+#Last Predictive Failure Event Seq Number: 0
+#PD Type: SATA
+#Raw Size: 149.049 GB [0x12a19eb0 Sectors]
+#Non Coerced Size: 148.549 GB [0x12919eb0 Sectors]
+#Coerced Size: 148.080 GB [0x12829000 Sectors]
+#Firmware state: Unconfigured(good), Spun Up
+#SAS Address(0): 0xf2314077a8e7136
+#Connected Port Number: 6(path0) 
+#Inquiry Data:             9RA5RXJDST3160215AS                             3.AAD   
+#FDE Capable: Not Capable
+#FDE Enable: Disable
+#Secured: Unsecured
+#Locked: Unlocked
+#Foreign State: None 
+#Device Speed: Unknown 
+#Link Speed: Unknown 
+#Media Type: Hard Disk Device
+
 		def _physical_list
 			@physical = {}
 			enclosure = nil
 			slot = nil
 			phys = nil
-
 			run("-pdlist #{@args}").each { |l|
 				case l
 				when /^Enclosure Device ID:\s*(.+)$/
@@ -224,19 +306,35 @@ module RAID
 						raise Error.new("Unable to parse enclosure: #{enclosure}")
 					end
 					phys = @physical[pd_name] = {}
-				when /^Coerced Size:\s*(\d+)MB/
+				when /^Coerced Size:\s*([\d\.]+).?MB/
 					phys[:size] = $1.to_i
-				when /^Inquiry Data: ATA/
-					phys[:model] = l[22..37].strip
-					phys[:serial] = l[42..61].strip
+#				       Coerced Size: 148.080 GB [0x12829000 Sectors]
+				when /^Coerced Size:\s*([\d\.]+)\sGB.+/
+					phys[:size] = $1.to_i * 1024
+				when /^Coerced Size:\s*([\d\.]+)\sTB.+/
+					phys[:size] = $1.to_i * 1024 * 1024
+				when /^PD Type: (.*)/
+					phys[:interface] = $1.strip
 				when /^Inquiry Data:/
-					#phys[:vendor] = l[14..21].strip
-					phys[:model] = l[14..21].strip+' '+l[22..37].strip
-					phys[:revision] = l[38..41].strip
-					phys[:serial] = l[42..61].strip				
+					case phys[:interface]
+					when "SATA"
+						#Inquiry Data:             9RA5RXJDST3160215AS                             3.AAD
+						#Inquiry Data:       GEK230RBSEVNRAHitachi HDP725025GLA380                 GM2OA52A
+						phys[:revision] = l[74..84]
+						phys[:model] = l[34..73].strip
+						phys[:serial] = l[14..33].strip
+					when "SAS"
+						#Inquiry Data: FUJITSU MAX3073RC       0104DQA0P7200RAB        
+						phys[:model] = l[14..21].strip + ' ' + l[22..37].strip
+						phys[:revision] = l[38..41].strip
+						phys[:serial] = l[42..61].strip				
+					else
+						raise Error.new("Unknown disc type encountered: #{phys[:interface].inspect}")
+					end
 				when /^Firmware state: (.*?)$/
 					phys[:state] = $1.downcase
 					phys[:state] = 'free' if phys[:state] == 'unconfigured(good)'
+					phys[:state] = 'free' if phys[:state] == 'unconfigured(good), spun up'
 				end
 			}
 
@@ -360,18 +458,18 @@ module RAID
 		def _bbu_info
 			info = {}
 			run("-AdpBbuCmd -GetBbuDesignInfo #{@args}").each do |l|
-			    case l
-			    when /^Manufacture Name:\s*(.+)$/
-				info[:vendor] = $1
-			    when /^Serial Number:\s*(.+)$/
-				info[:serial] = $1
-			    when/^Design Capacity:\s*(.+)$/
-				info[:capacity] = $1
-			    when/^Device Name:\s*(.+)$/
-				info[:device] = $1
-			    end
+				case l
+				when /^Manufacture Name:\s*(.+)$/
+					info[:vendor] = $1
+				when /^Serial Number:\s*(.+)$/
+					info[:serial] = $1
+				when/^Design Capacity:\s*(.+)$/
+					info[:capacity] = $1
+				when/^Device Name:\s*(.+)$/
+					info[:device] = $1
+				end
 			end
-			info		    
+			info
 		end
 		
 		# ======================================================================
