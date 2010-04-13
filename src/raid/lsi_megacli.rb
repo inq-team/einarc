@@ -208,6 +208,13 @@ module RAID
 			run("-CfgForeign -Clear #{@args}")
 		end
 
+		def logical_hotspare_add(ld, drv)
+			run("-PDHSP -Set -Dedicated -Array#{ld} -PhysDrv [#{drv}] #{@args}")
+		end
+
+		def logical_hotspare_delete(ld, drv)
+			set_physical_hotspare_0(drv)
+		end
 
 #Adapter #0
 
