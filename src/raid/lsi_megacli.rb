@@ -153,10 +153,13 @@ module RAID
 			devices = Dir.entries("/sys/block").select { |dev| physical_read_file( dev, "device/model" ) =~ /^MegaRAID/ }
 			devs = {}
 			devices.each { |dev|
-#				devs[ Dir.entries("/sys/block/#{dev}/device").collect { |ent|
-#					"#{$1}:#{$2}" if ent =~ /scsi_disk:\d+:(\d+):(\d+):\d/}.compact.last ] = dev
-				devs[ Dir.entries("/sys/block/#{dev}/device/scsi_disk").collect { |ent| 
-					"#{$1}:#{$2}" if ent =~ /\d+:(\d+):(\d+):\d/}.compact.last ] = dev
+				if File.exist?("/sys/block/#{dev}/device/scsi_disk") then
+					devs[ Dir.entries("/sys/block/#{dev}/device/scsi_disk").collect { |ent| 
+						"#{$1}:#{$2}" if ent =~ /\d+:(\d+):(\d+):\d/}.compact.last ] = dev
+				else
+					devs[ Dir.entries("/sys/block/#{dev}/device").collect { |ent|
+						"#{$1}:#{$2}" if ent =~ /scsi_disk:\d+:(\d+):(\d+):\d/}.compact.last ] = dev
+				end
 			}
 			devs_ordered = devs.keys.sort.collect { |k| "/dev/#{devs[k]}" }
 			@logical.each { |ld| ld[:dev] = devs_ordered.shift }
@@ -333,8 +336,14 @@ module RAID
 					end
 				when /^Firmware state: (.*?)$/
 					phys[:state] = $1.downcase
-					phys[:state] = 'free' if phys[:state] == 'unconfigured(good)'
-					phys[:state] = 'free' if phys[:state] == 'unconfigured(good), spun up'
+					case phys[:state]
+					when "unconfigured(good)"
+						phys[:state] = "free"
+					when "unconfigured(good), spun up"
+						phys[:state] = "free"
+					when "hotspare"
+						phys[:state] = "hotspare"
+					end
 				end
 			}
 
@@ -398,6 +407,10 @@ module RAID
 
 		def set_adapter_coercion_1(x)
 			MEGACLI("-CoercionOn #{@args}")
+		end
+
+		def get_physical_hotspare(drv)
+			(_physical_list[drv][:state] == 'hotspare') ? 1 : 0
 		end
 
 		def set_physical_hotspare_0(drv)
