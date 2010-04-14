@@ -208,6 +208,17 @@ module RAID
 			run("-CfgForeign -Clear #{@args}")
 		end
 
+		def _logical_physical_list(ld)
+			res = []
+			_logical_list.select { |l| l[:num] == ld.to_i }[0][:physical].each { |d|
+				res.push( { :num => d, :state => ld } )
+			}
+			_physical_list.each_pair{ |num, drv|
+				res.push( { :num => num, :state => "hotspare" } ) if drv[:dedicated_to] == ld.to_i
+			}
+			return res
+		end
+
 		def logical_hotspare_add(ld, drv)
 			run("-PDHSP -Set -Dedicated -Array#{ld} -PhysDrv [#{drv}] #{@args}")
 		end
@@ -351,6 +362,8 @@ module RAID
 					when "hotspare"
 						phys[:state] = "hotspare"
 					end
+				when /^Array \#: (\d+)/
+					phys[:dedicated_to] = $1.to_i
 				end
 			}
 
