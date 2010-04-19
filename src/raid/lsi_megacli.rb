@@ -87,6 +87,18 @@ module RAID
 			run("-AdpEventLog -Clear #{@args}")
 		end
 
+		def _log_discover
+			[]
+		end
+
+		def _log_dump( subsys = nil )
+			run("-AdpEventLog -GetEvents -f /dev/stdout #{@args}") + run("-AdpAlILog #{@args}")
+		end
+
+		def log_dump( subsys = nil )
+			puts _log_dump().join("\n")
+		end
+
 		def _log_list
 			seq = where = event_time = nil
 			res = []
