@@ -400,7 +400,11 @@ module RAID
 			tries = retry_ ? RETRIES_NUMBER : 0
 			begin
 				out = `mdadm #{command} 2>&1`.split("\n").collect { |l| l.strip }
-				out = [] if out.select { |l| l =~ /No devices listed in/ }.size > 0
+
+				# Return an empty array at once, as there is no need to repeat
+				# the whole process because of positive return code
+				return [] if out.select { |l| l =~ /No devices listed in/ }.size > 0
+
 				raise Error.new(out.join("\n")) if $?.exitstatus != 0
 			rescue Error => e
 				if e.text =~ /failed to stop array.*Device or resource busy/
