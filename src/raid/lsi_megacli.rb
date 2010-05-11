@@ -144,7 +144,9 @@ module RAID
 				when /^Size\s*:\s*([\.\d]+).?MB$/
 					ld[:capacity] = $1.to_i
 				when /^Size\s*:\s*([\.\d]+)\sGB$/
-					ld[:capacity] = $1.to_i * 1024
+					ld[:capacity] = ($1.to_f * 1024).to_i
+				when /^Size\s*:\s*([\.\d]+)\sTB$/
+					ld[:capacity] = ($1.to_f * 1024**2).to_i
 				when /^State\s*:\s*(.*?)$/
 					state = $1.downcase
 					state = 'normal' if state == 'optimal'
