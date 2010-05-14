@@ -53,22 +53,25 @@ proprietary/ut_linux_megarc_1.11.zip: proprietary/agreed
 # Module: lsi_megacli
 #===============================================================================
 
-tools/lsi_megacli/cli: proprietary/4.00.11_Linux_MegaCLI.zip
+tools/lsi_megacli/cli: proprietary/8.00.16_Linux_MegaCLI.zip
 	mkdir -p tools/lsi_megacli
-	unzip -j proprietary/4.00.11_Linux_MegaCLI.zip -d tools/lsi_megacli
+	unzip -j proprietary/8.00.16_Linux_MegaCLI.zip -d tools/lsi_megacli
 	unzip -j tools/lsi_megacli/MegaCliLin.zip -d tools/lsi_megacli
-	rpm2cpio tools/lsi_megacli/MegaCli-4.00.11-1.i386.rpm | cpio -idv
+	rpm2cpio tools/lsi_megacli/MegaCli-8.00.16-1.i386.rpm | cpio -idv
 	if [ "$(TARGET)" == x86_64 ]; then \
 		mv opt/MegaRAID/MegaCli/MegaCli64 tools/lsi_megacli/cli; \
 	else \
 		mv opt/MegaRAID/MegaCli/MegaCli tools/lsi_megacli/cli; \
 	fi
-	rm -Rf opt tools/lsi_megacli/MegaCli-4.00.11-1.i386.rpm tools/lsi_megacli/MegaCliLin.zip
-	touch tools/lsi_megacli/cli proprietary/4.00.11_Linux_MegaCLI.zip
+	rm -Rf opt tools/lsi_megacli/MegaCli-8.00.16-1.i386.rpm \
+		   tools/lsi_megacli/MegaCliLin.zip \
+		   tools/lsi_megacli/Lib_Utils-1.00-07.noarch.rpm \
+		   tools/lsi_megacli/Lib_Utils2-1.00-01.noarch.rpm
+	touch tools/lsi_megacli/cli proprietary/8.00.16_Linux_MegaCLI.zip
 
-proprietary/4.00.11_Linux_MegaCLI.zip: proprietary/agreed
+proprietary/8.00.16_Linux_MegaCLI.zip: proprietary/agreed
 	mkdir -p proprietary
-	$(WGET) http://www.lsi.com/DistributionSystem/AssetDocument/4.00.11_Linux_MegaCLI.zip
+	$(WGET) http://www.lsi.com/DistributionSystem/AssetDocument/8.00.16_Linux_MegaCLI.zip
 
 #===============================================================================
 # Module: amcc
