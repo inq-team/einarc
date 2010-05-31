@@ -21,7 +21,7 @@ tools/areca/cli: proprietary/v1.82_81103.zip
 	mkdir -p tools/areca
 	unzip -j proprietary/v1.82_81103.zip -d tools/areca
 	chmod a+rx tools/areca/*
-	if [ "$(TARGET)" == x86_64 ]; then \
+	if [ "$(TARGET)" = x86_64 ]; then \
 		mv tools/areca/cli64 tools/areca/cli; \
 		rm -f tools/areca/cli32; \
 	else \
@@ -58,7 +58,7 @@ tools/lsi_megacli/cli: proprietary/8.00.16_Linux_MegaCLI.zip
 	unzip -j proprietary/8.00.16_Linux_MegaCLI.zip -d tools/lsi_megacli
 	unzip -j tools/lsi_megacli/MegaCliLin.zip -d tools/lsi_megacli
 	rpm2cpio tools/lsi_megacli/MegaCli-8.00.16-1.i386.rpm | cpio -idv
-	if [ "$(TARGET)" == x86_64 ]; then \
+	if [ "$(TARGET)" = x86_64 ]; then \
 		mv opt/MegaRAID/MegaCli/MegaCli64 tools/lsi_megacli/cli; \
 	else \
 		mv opt/MegaRAID/MegaCli/MegaCli tools/lsi_megacli/cli; \
