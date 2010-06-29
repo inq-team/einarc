@@ -428,7 +428,7 @@ module RAID
 
 		def list_devices
 			return File.open("/proc/partitions", "r").collect { |l|
-				"/dev/" + $2 if l =~ /^\s+(3|8|22)\s+\d+\s+\d+\s+([a-z]+)$/ }.compact.select { |d|
+				"/dev/" + $2 if l =~ /^\s+(3|8|22|65|66|67|68|69|70|71)\s+\d+\s+\d+\s+([a-z]+)$/ }.compact.select { |d|
 					not phys_belongs_to_adapters(d) }
 		end
 
