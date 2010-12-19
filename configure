@@ -4,6 +4,8 @@ require 'rbconfig'
 RbConfig = Config unless defined?(RbConfig)
 
 require 'optparse'
+
+$LOAD_PATH.unshift('.')
 require 'src/raid/meta'
 
 #===============================================================================
