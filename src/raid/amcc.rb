@@ -17,7 +17,7 @@ module RAID
 		SG3INQ = "/usr/bin/sg_inq"
 
 		def initialize(adapter_num = nil)
-			@adapter_num = adapter_num
+			@adapter_num = adapter_num ? adapter_num : 0
 		end
 
 		# ======================================================================

@@ -19,11 +19,7 @@ module RAID
 		}
 
 		def initialize(adapter_num = nil)
-			if adapter_num
-				@adapter_num = adapter_num
-			else
-				@adapter_num = 1
-			end
+			@adapter_num = adapter_num ? adapter_num : 1
 		end
 
 		# ======================================================================
