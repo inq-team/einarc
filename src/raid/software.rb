@@ -42,7 +42,7 @@ module RAID
 		end
 
 		def find_all_arrays
-			for l in run("--examine --scan").grep /^ARRAY/
+			for l in [run("--examine --scan")].grep /^ARRAY/
 				# ARRAY /dev/md0 UUID=12345678:12345678:12345678:12345678
 				# ARRAY /dev/md1 level=raid0 num-devices=1 UUID=12345678:12345678:12345678:12345678
 
@@ -440,33 +440,33 @@ module RAID
 			name = device.gsub(/^\/dev\//, '')
 			
 			# Check name existence in mdstat file
-			return (not File.read(MDSTAT_LOCATION).grep(Regexp.new(name)).empty?)
+			return (not [File.read(MDSTAT_LOCATION)].grep(Regexp.new(name)).empty?)
 		end
 
 		def spare?(device)
 			name = device.gsub(/^\/dev\//, '')
 
 			# Ex. sda[0](S)
-			return (not File.read(MDSTAT_LOCATION).grep(/#{name}\[[^\[]*\]\(S\)/).empty?)
+			return (not [File.read(MDSTAT_LOCATION)].grep(/#{name}\[[^\[]*\]\(S\)/).empty?)
 		end
 
 		def failed?(device)
 			name = device.gsub(/^\/dev\//, '')
 
 			# Ex. sda[0](F)
-			return (not File.read(MDSTAT_LOCATION).grep(/#{name}\[[^\[]*\]\(F\)/).empty?)
+			return (not [File.read(MDSTAT_LOCATION)].grep(/#{name}\[[^\[]*\]\(F\)/).empty?)
 		end
 
 		def usb_device?(device)
 			name = device.gsub(/^\/dev\//, '')
-			return (not File.read("/sys/block/#{name}/uevent").grep(/usb/).empty?)
+			return (not [File.read("/sys/block/#{name}/uevent")].grep(/usb/).empty?)
 		end
 
 		def active?(device)
 			name = device.gsub(/^\/dev\//, '')
 			
 			# Check RAID existence in mdstat file
-			return (not File.read(MDSTAT_LOCATION).grep(Regexp.new(name)).empty?)
+			return (not [File.read(MDSTAT_LOCATION)].grep(Regexp.new(name)).empty?)
 		end
 
 		def detached?(device)
@@ -491,13 +491,13 @@ module RAID
 
 		def devices_of(device)
 			#md0 : active linear sdc[0]
-			File.read(MDSTAT_LOCATION).grep(%r[^#{device.gsub(/\/dev\//, '') }]).grep(MDSTAT_PATTERN) do
+			[[File.read(MDSTAT_LOCATION)].grep(%r[^#{device.gsub(/\/dev\//, '') }])].grep(MDSTAT_PATTERN) do
 				return $3.split(/\[\d+\](?:\(S\))? ?/).map{|d| d.gsub('(S)','') }.map{|d| "/dev/#{d}" }
 			end
 		end
 
 		def level_of(device)
-			File.read(MDSTAT_LOCATION).grep(%r[^#{device.gsub(/\/dev\//, '') }]).grep(MDSTAT_PATTERN) do
+			[[File.read(MDSTAT_LOCATION)].grep(%r[^#{device.gsub(/\/dev\//, '') }])].grep(MDSTAT_PATTERN) do
 				return $2.split.last.gsub('raid','')
 			end			
 		end
@@ -512,10 +512,10 @@ module RAID
 		def phys_to_scsi(name)
 			case name
 			when /^hd(.)(\d*)$/
-				res = "1:#{$1[0] - 'a'[0]}"
+				res = "1:#{$1.ord - 'a'.ord}"
 				res += ":#{$2}" unless $2.empty?
 			when /^sd(.)(\d*)$/
-				res = "0:#{$1[0] - 'a'[0]}"
+				res = "0:#{$1.ord - 'a'.ord}"
 				res += ":#{$2}" unless $2.empty?
 			else
 				res = name
@@ -527,7 +527,7 @@ module RAID
 		def scsi_to_device(id)
 			raise Error.new("Invalid physical disc specification \"#{id}\": \"a:b\" or \"a:b:c\" expected") unless id =~ /^([01]):(\d+)(:(\d+))?$/
 			res = ($1 == '1') ? '/dev/hd' : '/dev/sd'
-			res += ('a'[0] + $2.to_i).chr
+			res += ('a'.ord + $2.to_i).chr
 			res += $4 if $4
 			return res
 		end
