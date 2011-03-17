@@ -266,26 +266,28 @@ module RAID
 		def handle_property(obj_name, command, obj_num, prop_name, value = nil)
 #			p obj_name, obj_num, command, prop_name, value
 
-			avail = public_methods.grep(/^#{command}_#{obj_name}_/).collect { |x|
+			public_methods_serialized = public_methods.collect{ |m| m.to_s }
+			avail_props = public_methods_serialized.grep(/^#{command}_#{obj_name}_/).collect { |x|
 				x.gsub!(/^#{command}_#{obj_name}_/, '')
 				x.gsub!(/_.*?$/, '') if x =~ /_/
 				x
-			}.uniq.join(', ')
+			}.uniq
+			avail = avail_props.join(', ')
 
 			raise Error.new("Property not specified; available properties: #{avail}") unless prop_name
 
 			case command
 			when 'get'
 				method_name = "get_#{obj_name}_#{prop_name}"
-				raise Error.new("Unknown property '#{prop_name}'; available properties: #{avail}") if public_methods.grep(method_name).empty?
+				raise Error.new("Unknown property '#{prop_name}'; available properties: #{avail}") unless avail_props.include?(prop_name)
 				puts send(method_name, obj_num)
 			when 'set'
-				if not public_methods.grep("set_#{obj_name}_#{prop_name}_#{value}").empty?
+				if not public_methods_serialized.grep("set_#{obj_name}_#{prop_name}_#{value}").empty?
 					send("set_#{obj_name}_#{prop_name}_#{value}", obj_num)
-				elsif not public_methods.grep("set_#{obj_name}_#{prop_name}").empty?
+				elsif not public_methods_serialized.grep("set_#{obj_name}_#{prop_name}").empty?
 					send("set_#{obj_name}_#{prop_name}", obj_num, value)
 				else
-					possible = public_methods.grep(/^set_#{obj_name}_#{prop_name}_/).collect { |x|
+					possible = public_methods_serialized.grep(/^set_#{obj_name}_#{prop_name}_/).collect { |x|
 						x.gsub!(/^set_#{obj_name}_#{prop_name}_/, '')
 					}
 					raise Error.new(
