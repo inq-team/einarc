@@ -116,7 +116,7 @@ module RAID
 			drives = {}
 			ld = {}
 
-			run("--detail #{dev}").each { |l|
+			run("--detail #{dev}", retry_ = true).each { |l|
 				if l =~ /^\s*(.*) : (.*)$/
 					info[$1] = $2
 				elsif l =~ /^\s*\d+\s+\d+\s+\d+\s+\d+\s+(.*)$/
@@ -407,6 +407,16 @@ module RAID
 
 				raise Error.new(out.join("\n")) if $?.exitstatus != 0
 			rescue Error => e
+				if command =~ /detail/ and
+				   e.text =~ /does not appear to be active/
+					begin
+						run("--run #{ command.split.last }")
+					rescue
+						true
+					end
+					tries -= 1
+					retry if tries >= 0
+				end
 				if e.text =~ /failed to stop array.*Device or resource busy/
 					tries -= 1
 					sleep 1
