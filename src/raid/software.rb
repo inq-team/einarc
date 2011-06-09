@@ -502,13 +502,13 @@ module RAID
 
 		def devices_of(device)
 			#md0 : active linear sdc[0]
-			[File.read(MDSTAT_LOCATION)].grep(%r[^#{device.gsub(/\/dev\//, '') }]).grep(MDSTAT_PATTERN) do
+			File.readlines(MDSTAT_LOCATION).grep(%r[^#{device.gsub(/\/dev\//, '') }]).grep(MDSTAT_PATTERN) do
 				return $3.split(/\[\d+\](?:\(S\))? ?/).map{|d| d.gsub('(S)','') }.map{|d| "/dev/#{d}" }
 			end
 		end
 
 		def level_of(device)
-			[File.read(MDSTAT_LOCATION)].grep(%r[^#{device.gsub(/\/dev\//, '') }]).grep(MDSTAT_PATTERN) do
+			File.readlines(MDSTAT_LOCATION).grep(%r[^#{device.gsub(/\/dev\//, '') }]).grep(MDSTAT_PATTERN) do
 				return $2.split.last.gsub('raid','')
 			end			
 		end
