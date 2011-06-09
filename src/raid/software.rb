@@ -469,7 +469,8 @@ module RAID
 
 		def usb_device?(device)
 			name = device.gsub(/^\/dev\//, '')
-			return (not [File.read("/sys/block/#{name}/uevent")].grep(/usb/).empty?)
+			return ((not [File.read("/sys/block/#{name}/uevent")].grep(/usb/).empty?) or 
+			       (File.readlink( "/sys/block/#{name}" ) =~ /usb/))
 		end
 
 		def active?(device)
