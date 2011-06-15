@@ -403,7 +403,8 @@ module RAID
 
 				# Return an empty array at once, as there is no need to repeat
 				# the whole process because of positive return code
-				return [] if out.select { |l| l =~ /No devices listed in/ }.size > 0
+				return [] if out.select { |l| l =~ /No devices listed in/ or
+				                              l =~ /No suitable drives found for/ }.size > 0
 
 				raise Error.new(out.join("\n")) if $?.exitstatus != 0
 			rescue Error => e
