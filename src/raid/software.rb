@@ -229,18 +229,18 @@ module RAID
 		# ======================================================================
 
 		def logical_delete(id)
-				# Get list of disks
-				disks = devices_of("/dev/md#{id}")
+			# Get list of disks
+			disks = devices_of("/dev/md#{id}")
 
-				# Stop RAID
-				run("--stop /dev/md#{id}", retry_ = true)
-				# Remove disks from RAID and zero superblocks
-				disks.each do |d|
-					run("--zero-superblock #{d}")
-				end
+			# Stop RAID
+			run("--stop /dev/md#{id}", retry_ = true)
+			# Remove disks from RAID and zero superblocks
+			disks.each do |d|
+				run("--zero-superblock #{d}")
+			end
 
-				# Refresh lists
-				@raids = @devices = nil
+			# Refresh lists
+			@raids = @devices = nil
 		end
 
 		# ======================================================================
