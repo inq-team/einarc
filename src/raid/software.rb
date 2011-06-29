@@ -45,9 +45,11 @@ module RAID
 			for l in run("--examine --scan").grep /^ARRAY/
 				# ARRAY /dev/md0 UUID=12345678:12345678:12345678:12345678
 				# ARRAY /dev/md1 level=raid0 num-devices=1 UUID=12345678:12345678:12345678:12345678
+				# ARRAY /dev/md/0 metadata=1.2 UUID=9f9e9857:a13a2d99:4cf5a707:8f0059e9 name=OpenSAN:0
 
-				l =~ /.*(\/dev\/\w+).*UUID=([\w:]+).*/
+				l =~ /.*(\/dev\/\w+\/?\d+).*UUID=([\w:]+).*/
 				name, uuid = $1, $2
+				name.gsub!( "md/", "md" )
 				next unless ( name and uuid ) # mdadm 3.x can print arrays without any /dev entry
 				run("--assemble --uuid=#{uuid} #{name}") unless active?(name)
 			end
