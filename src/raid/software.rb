@@ -299,6 +299,7 @@ module RAID
 				target = phys_to_scsi(device.gsub(/^\/dev\//, ''))
 				d = { :state => 'unknown' }
 				d[:vendor] = physical_read_file(device, "device/vendor") or ""
+				d[:vendor] = nil if d[:vendor] =~ /^ATA\s*$/
 				d[:model] = physical_read_file(device, "device/model") or ""
 				d[:model] = "#{d[:vendor]} #{d[:model]}" if d[:vendor]
 				d[:revision] = physical_read_file(device, "device/rev") or ""
