@@ -304,7 +304,8 @@ module RAID
 				d[:revision] = physical_read_file(device, "device/rev") or ""
 				d[:size] = physical_read_file(device, "size") or 0
 				d[:size] = d[:size].to_f * 512 / 1048576
-				d[:serial] = physical_read_file(device, "device/serial")
+				d[:serial] = physical_get_serial_via_smart(device)
+				d[:serial] = physical_read_file(device, "device/serial") unless d[:serial]
 				d[:serial] = physical_get_serial_via_udev(device) unless d[:serial]
 
 				if raid_member?(device)
@@ -552,6 +553,10 @@ module RAID
 			return $1 if $1
 			info =~ /ID_SERIAL=(.*)\n/
 			return $1 ? $1 : ""
+		end
+
+		def physical_get_serial_via_smart(device)
+			return `smartctl --all #{ device }` =~ /^serial number:\s*(\w+)$/i ? $1 : nil
 		end
 
 		# Determine if device belongs to any known by Einarc controller
