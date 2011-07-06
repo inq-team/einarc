@@ -513,7 +513,7 @@ module RAID
 			for l in File.readlines(MDSTAT_LOCATION)
 				# md0 : active raid0 sdb[1] sdc[0]
 				(res[$1.to_i] = "/dev/md#{$1}" and id_last = $1.to_i) if l =~ MDSTAT_PATTERN
-				#res.delete_at(id_last) if l =~ /\ssuper\s/ # mdadm 3.x has unsupported "container" type
+				res.delete_at(id_last) if l =~ /\ssuper\s/ # mdadm 3.x has unsupported "container" type
 			end
 			return res.compact
 		end
