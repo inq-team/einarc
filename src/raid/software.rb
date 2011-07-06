@@ -392,6 +392,23 @@ module RAID
 
 		# ======================================================================
 
+		def sgmaps
+			@sgmaps ||= list_sgmaps
+		end
+
+		def list_sgmaps()
+			Hash[ `sg_map`.split("\n").map{ |m| m.split(/\s+/).reverse }.select{ |p| p.size > 1 } ]
+		end 
+
+		def get_physical_wwn( drv )
+			page = "0x19" # SAS SSP port control mode page
+			subpage = "0x1" # SAS Phy Control and Discover mode subpage
+
+			`sginfo -t #{page},#{subpage} #{ sgmaps[ scsi_to_device drv ] }`.split("\n").grep(/^SAS address/).map{ |l| l.split(/\s+/).last }
+		end
+
+		# ======================================================================
+
 		def _bbu_info
 			raise NotImplementedError
 		end
@@ -496,7 +513,7 @@ module RAID
 			for l in File.readlines(MDSTAT_LOCATION)
 				# md0 : active raid0 sdb[1] sdc[0]
 				(res[$1.to_i] = "/dev/md#{$1}" and id_last = $1.to_i) if l =~ MDSTAT_PATTERN
-				res.delete_at(id_last) if l =~ /\ssuper\s/ # mdadm 3.x has unsupported "container" type
+				#res.delete_at(id_last) if l =~ /\ssuper\s/ # mdadm 3.x has unsupported "container" type
 			end
 			return res.compact
 		end
