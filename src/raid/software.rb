@@ -404,7 +404,15 @@ module RAID
 			page = "0x19" # SAS SSP port control mode page
 			subpage = "0x1" # SAS Phy Control and Discover mode subpage
 
-			`sginfo -t #{page},#{subpage} #{ sgmaps[ scsi_to_device drv ] }`.split("\n").grep(/^SAS address/).map{ |l| l.split(/\s+/).last }
+			drv = scsi_to_device drv
+			wwns = `sginfo -t #{page},#{subpage} #{ sgmaps[ drv ] }`.split("\n").grep(/^SAS address/).map{ |l| l.split(/\s+/).last }
+			return wwns if wwns.size > 0
+			# Otherwise we are dealing with the SATA
+			# They can contain also two WWNs: the real one and
+			# that is visible to system
+			wwns = `sdparm -i #{ drv }`.split("\n").collect{ |l| $1 if l =~ /^\s+(0x................)$/ }.compact
+			return wwns
+
 		end
 
 		# ======================================================================
