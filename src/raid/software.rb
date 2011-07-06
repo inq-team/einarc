@@ -412,7 +412,39 @@ module RAID
 			# that is visible to system
 			wwns = `sdparm -i #{ drv }`.split("\n").collect{ |l| $1 if l =~ /^\s+(0x................)$/ }.compact
 			return wwns
+		end
 
+		# ======================================================================
+
+		def enclosures()
+			enclosure_scsi_id = 13
+
+			`sg_map`.split("\n").map{ |m|
+				m.split(/\s+/)
+			}.select{ |p|
+				p.size == 1
+			}.flatten.select{ |sg|
+				`sginfo #{sg}`.split("\n").collect{ |l|
+					l =~ /^Device Type\s+(\d+)$/ and $1
+				}.compact[0].to_i == enclosure_scsi_id
+			}
+		end
+
+		def get_physical_enclosure( drv )
+			ses_page = "0xa" # Additional element status (SES-2)
+
+			wwns = get_physical_wwn drv
+			enclosures.each{ |enc|
+				info = []
+				`sg_ses --page #{ses_page} #{enc}`.split("\n").each{ |l|
+					info << $1 if l =~ /bay number: (\d+)$/
+					info << $1 if l =~ /^\s+SAS address: (\w+)$/
+				}
+				info.each_slice(2){ |p|
+					return p[0].to_i + 1 if wwns.include?( p[1] )
+				}
+			}
+			return nil
 		end
 
 		# ======================================================================
