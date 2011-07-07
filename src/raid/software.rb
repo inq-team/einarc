@@ -359,7 +359,7 @@ module RAID
 		# ======================================================================
 
 		def get_adapter_raidlevels(x = nil)
-			return %w{linear passthrough 0 1 5 6 10}
+			return %w{linear passthrough 0 1 4 5 6 10}
 		end
 
 		# ======================================================================
