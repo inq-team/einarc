@@ -213,7 +213,7 @@ module RAID
 			when '6'
 				raise Error.new('RAID 6 requires 4 or more discs') unless discs.size >= 4
 			when '10' 
-				raise Error.new('RAID 10 requires an even number of discs, but at least 4') if dics.size % 2 != 0 or discs.size < 4
+				raise Error.new('RAID 10 requires an even number of discs, but at least 4') if discs.size % 2 != 0 or discs.size < 4
 			end
 
 			calculated_size = calculate_per_disc_requirements(discs, raid_level, sizes.first, chunk_size)
