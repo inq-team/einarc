@@ -234,10 +234,9 @@ module RAID
 
 			# Stop RAID
 			run("--stop /dev/md#{id}", retry_ = true)
+
 			# Remove disks from RAID and zero superblocks
-			disks.each do |d|
-				run("--zero-superblock #{d}")
-			end
+			disks.each{ |d| zero_superblock d }
 
 			# Refresh lists
 			@raids = @devices = nil
@@ -258,7 +257,9 @@ module RAID
 		def logical_hotspare_add(ld, drv)
 			raise Error.new("Device #{drv} is already in RAID") if raid_member?(scsi_to_device(drv))
 			raise Error.new("Can not add hotspare to level 0 RAID") if level_of("/dev/md#{ld}") == '0'
-			run("/dev/md#{ld} --add #{scsi_to_device(drv)}")
+			drv = scsi_to_device drv
+			zero_superblock drv
+			run("/dev/md#{ld} --add #{drv}")
 		end
 
 		def logical_hotspare_delete(ld, drv)
@@ -615,6 +616,10 @@ module RAID
 
 		def physical_get_serial_via_smart(device)
 			return `smartctl --all #{ device }` =~ /^serial number:\s*(\w+)$/i ? $1 : nil
+		end
+
+		def zero_superblock( device )
+			run("--zero-superblock #{device}")
 		end
 
 		# Determine if device belongs to any known by Einarc controller
