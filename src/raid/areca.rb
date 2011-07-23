@@ -216,8 +216,8 @@ module RAID
 				next unless vs
 				raid_level = vs[:raid_level]
 				if raid_level == '0+1' then
-					raid_level = if raidsets[vs[:raidset] + 1][:channels].size % 2 == 0
-						(raidsets[vs[:raidset] + 1][:channels].size == 2) ? '1' : '10'
+					raid_level = if raidsets[vs[:raidset]][:channels].size % 2 == 0
+						(raidsets[vs[:raidset]][:channels].size == 2) ? '1' : '10'
 					else
 						'1E'
 					end
@@ -225,7 +225,7 @@ module RAID
 				{
 					:num => vs[:num],
 					:raid_level => raid_level,
-					:physical => raidsets[vs[:raidset] + 1][:channels].collect { |c| "0:#{c}" },
+					:physical => raidsets[vs[:raidset]][:channels].collect { |c| "0:#{c}" },
 					:capacity => areca2mb(vs[:capacity]),
 					:state => vs[:state],
 					:dev => @dev ? @dev[vs[:num] - 1] : find_dev_by_name(vs[:name]),
@@ -303,7 +303,7 @@ module RAID
 				enter_password
 				run_cli(
 					if vs[:raid_level] == 'passthrough'
-						"disk delete drv=#{raidsets[vs[:raidset] + 1][:channels][0]}"
+						"disk delete drv=#{raidsets[vs[:raidset]][:channels][0]}"
 					else
 						"vsf delete vol=1"
 					end,
