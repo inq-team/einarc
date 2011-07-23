@@ -34,6 +34,7 @@ module RAID
 		# ======================================================================
 
 		def self.query(res)
+			return unless RAID::autodetect.include? "areca"
 			begin
 				`#{CLI} main`.each_line { |l|
 					res << {
