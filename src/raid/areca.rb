@@ -234,9 +234,9 @@ module RAID
 						name_read = File.open(mpath) do |f|
 							f.readline.chomp.strip
 						end
-						found[ dev ] = name_read
+						found[dev] = name_read
 					end
-					@dev = found.keys.sort if found.keys.select{ |dev| found[dev] == vs[:name] }.count > 1
+					@dev = found.keys.sort if found.keys.select { |dev| found[dev] == vs[:name] }.count > 1
 				end
 
 				{
