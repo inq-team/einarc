@@ -222,6 +222,22 @@ module RAID
 						'1E'
 					end
 				end
+
+				# If we are not using API, then try to collect devnodes that way
+				unless @dev
+					found = {}
+					for dir in Dir["/sys/block/*/device/"]
+						dev = dir.gsub(/^\/sys\/block/, '/dev').gsub(/\/device\/$/, '')
+						mpath = dir + 'model'
+						next unless File.readable?(mpath)
+						name_read = File.open(mpath) do |f|
+							f.readline.chomp.strip
+						end
+						found[ dev ] = name_read
+					end
+					@dev = found.keys.sort if found.keys.select{ |dev| found[dev] == vs[:name] }.count > 1
+				end
+
 				{
 					:num => vs[:num],
 					:raid_level => raid_level,
