@@ -388,7 +388,7 @@ module RAID
 					:state => m[7],
 				}
 			}
-			return @raidsets;
+			return @raidsets
 		end
 
 		# # Name             Raid Name       Level   Capacity Ch/Id/Lun  State
@@ -411,11 +411,11 @@ module RAID
 				}
 				vs[:raid_level] = 'passthrough' if vs[:raid_level] == 'PassThr'
 				if (vs[:state] =~ /^(.*?)\((.*?)\)$/)
-					vs[:progress] = $2;
-					vs[:state] = $1;
+					vs[:progress] = $2
+					vs[:state] = $1
 				end
 			}
-			return @volumesets;
+			return @volumesets
 		end
 
 		def cleanup_raidsets
@@ -436,7 +436,7 @@ module RAID
 				next unless rs
 				res = rs[:num] if rs[:channels] == discs
 			}
-			return res;
+			return res
 		end
 
 		# Converts Areca size (GB) into our standard MB
