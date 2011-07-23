@@ -392,8 +392,10 @@ module RAID
 			run_cli('rsf info').each { |l|
 				next unless m = /^\s*(\d+)\s+(.................)\s*(\d+)\s+(.*?)\s+(.*?)\s+(.*?)\s+(.*?)$/.match(l)
 				num = m[1].to_i
-				@raidsets[num] = {
+				index = /.*#\s+(\d+)$/.match( m[2].strip )[1].to_i
+				@raidsets[index] = {
 					:num => num,
+					:index => index,
 					:name => m[2].strip,
 					:disks => m[3],
 					:totalcap => m[4].gsub(/GB$/, '').to_f,
