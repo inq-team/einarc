@@ -221,6 +221,7 @@ module RAID
 		def logical_clear
 			run("-CfgClr #{@args}")
 			run("-CfgForeign -Clear #{@args}")
+			run("-AdpSetProp -EnableJBOD -0 #{@args}")
 		end
 
 		def _logical_physical_list(ld)
