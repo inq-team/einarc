@@ -30,7 +30,6 @@ RAID::BaseRaid::query_adapters.each { |ad|
 	now_testing.compact!
 	puts "Testing #{now_testing.join(',')}"
 
-	a.logical_clear
 	now_testing.each { |disc|
 		a.logical_add('passthrough', disc, nil)
 	}
