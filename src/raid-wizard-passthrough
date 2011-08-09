@@ -6,6 +6,7 @@ require 'raid/baseraid'
 DISK_GROUP_SIZE=ARGV[0].to_i
 GROUP_NUMBER=ARGV[1].to_i
 
+exit 1 if DISK_GROUP_SIZE == 0 and GROUP_NUMBER > 0
 exit 1 if RAID::BaseRaid::query_adapters.length == 0
 
 succeeded = 0
