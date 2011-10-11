@@ -411,7 +411,7 @@ module RAID
 			# Otherwise we are dealing with the SATA
 			# They can contain also two WWNs: the real one and
 			# that is visible to system
-			wwns = `sdparm -i #{ drv }`.split("\n").collect{ |l| $1 if l =~ /^\s+(0x................)$/ }.compact
+			wwns = `sdparm --inquiry #{ drv }`.split("\n").collect{ |l| $1 if l =~ /^\s+(0x................)$/ }.compact
 			return wwns
 		end
 
