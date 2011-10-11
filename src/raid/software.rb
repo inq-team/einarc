@@ -450,6 +450,20 @@ module RAID
 
 		# ======================================================================
 
+		def get_physical_writecache( drv )
+			return `sdparm --quiet --get WCE #{ scsi_to_device drv }`.split[1]
+		end
+
+		def set_physical_writecache_0( drv )
+			`sdparm --set WCE=0 #{ scsi_to_device drv }`
+		end
+
+		def set_physical_writecache_1( drv )
+			`sdparm --set WCE=1 #{ scsi_to_device drv }`
+		end
+
+		# ======================================================================
+
 		def _bbu_info
 			raise NotImplementedError
 		end
