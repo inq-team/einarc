@@ -270,6 +270,7 @@ module RAID
 			avail_props = public_methods_serialized.grep(/^#{command}_#{obj_name}_/).collect { |x|
 				s = x.gsub(/^#{command}_#{obj_name}_/, '')
 				s = s.gsub(/_.*?$/, '') if s =~ /_/
+				s
 			}.uniq
 			avail = avail_props.join(', ')
 
