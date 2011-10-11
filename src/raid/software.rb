@@ -396,7 +396,7 @@ module RAID
 		def get_logical_writecache(num)
 			ld = _logical_list.reject { |logical| logical[:num] != num.to_i }[0]
 			raise Error.new("Unknown logical disc \"#{num}\"") unless ld
-			ld[:physical].collect { |pd| get_physical_writecache pd }.count(0) == ld[:physical].length ? 0 : 1
+			ld[:physical].collect { |pd| get_physical_writecache pd }.count("0") == ld[:physical].length ? 0 : 1
 		end
 
 		def set_logical_writecache_0(num)
