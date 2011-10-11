@@ -268,9 +268,8 @@ module RAID
 
 			public_methods_serialized = public_methods.collect{ |m| m.to_s }
 			avail_props = public_methods_serialized.grep(/^#{command}_#{obj_name}_/).collect { |x|
-				x.gsub!(/^#{command}_#{obj_name}_/, '')
-				x.gsub!(/_.*?$/, '') if x =~ /_/
-				x
+				s = x.gsub(/^#{command}_#{obj_name}_/, '')
+				s = s.gsub(/_.*?$/, '') if s =~ /_/
 			}.uniq
 			avail = avail_props.join(', ')
 
