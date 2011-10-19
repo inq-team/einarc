@@ -547,34 +547,34 @@ module RAID
 			name = device.gsub(/^\/dev\//, '')
 			
 			# Check name existence in mdstat file
-			return (not [File.read(MDSTAT_LOCATION)].grep(Regexp.new(name)).empty?)
+			return (not File.readlines(MDSTAT_LOCATION).grep(Regexp.new(name)).empty?)
 		end
 
 		def spare?(device)
 			name = device.gsub(/^\/dev\//, '')
 
 			# Ex. sda[0](S)
-			return (not [File.read(MDSTAT_LOCATION)].grep(/#{name}\[[^\[]*\]\(S\)/).empty?)
+			return (not File.readlines(MDSTAT_LOCATION).grep(/#{name}\[[^\[]*\]\(S\)/).empty?)
 		end
 
 		def failed?(device)
 			name = device.gsub(/^\/dev\//, '')
 
 			# Ex. sda[0](F)
-			return (not [File.read(MDSTAT_LOCATION)].grep(/#{name}\[[^\[]*\]\(F\)/).empty?)
+			return (not File.readlines(MDSTAT_LOCATION).grep(/#{name}\[[^\[]*\]\(F\)/).empty?)
 		end
 
 		def usb_device?(device)
 			name = device.gsub(/^\/dev\//, '')
-			return ((not [File.read("/sys/block/#{name}/uevent")].grep(/usb/).empty?) or
-			       (File.readlink( "/sys/block/#{name}" ) =~ /usb/))
+			return ((not File.readlines("/sys/block/#{name}/uevent").grep(/usb/).empty?) or
+			       (File.readlink("/sys/block/#{name}" ) =~ /usb/))
 		end
 
 		def active?(device)
 			name = device.gsub(/^\/dev\//, '')
 			
 			# Check RAID existence in mdstat file
-			return (not [File.read(MDSTAT_LOCATION)].grep(Regexp.new(name)).empty?)
+			return (not File.readlines(MDSTAT_LOCATION).grep(Regexp.new(name)).empty?)
 		end
 
 		def detached?(device)
@@ -620,10 +620,10 @@ module RAID
 		def phys_to_scsi(name)
 			case name
 			when /^hd(.)(\d*)$/
-				res = "1:#{$1.ord - 'a'.ord}"
+				res = "1:#{$1[0].ord - 'a'[0].ord}"
 				res += ":#{$2}" unless $2.empty?
 			when /^sd(.)(\d*)$/
-				res = "0:#{$1.ord - 'a'.ord}"
+				res = "0:#{$1[0].ord - 'a'[0].ord}"
 				res += ":#{$2}" unless $2.empty?
 			else
 				res = name
@@ -635,7 +635,7 @@ module RAID
 		def scsi_to_device(id)
 			raise Error.new("Invalid physical disc specification \"#{id}\": \"a:b\" or \"a:b:c\" expected") unless id =~ /^([01]):(\d+)(:(\d+))?$/
 			res = ($1 == '1') ? '/dev/hd' : '/dev/sd'
-			res += ('a'.ord + $2.to_i).chr
+			res += ('a'[0].ord + $2.to_i).chr
 			res += $4 if $4
 			return res
 		end
