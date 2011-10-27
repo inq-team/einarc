@@ -49,8 +49,8 @@ module RAID
 
 				l =~ /.*(\/dev\/\w+\/?\d+).*UUID=([\w:]+).*/
 				name, uuid = $1, $2
-				name.gsub!( "md/", "md" )
 				next unless ( name and uuid ) # mdadm 3.x can print arrays without any /dev entry
+				name.gsub!( "md/", "md" )
 				run("--assemble --uuid=#{uuid} #{name}") unless active?(name)
 			end
 		end
