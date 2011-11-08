@@ -484,6 +484,28 @@ module RAID
 
 		# ======================================================================
 
+		def set_physical_powersaving_0( drv )
+			dev = scsi_to_device drv
+
+			# All commands below may fail, but there is no need to check it
+			# ATA/SATA: Try setting maximum performance mode of power management
+			`hdparm -B 254 #{ dev } 2>/dev/null`
+
+			# ATA/SATA: Try power management turning off at all
+			# If it fail -- at least 254 value will stay
+			`hdparm -B 255 #{ dev } 2>/dev/null`
+
+			# ATA/SATA: Try setting suspend time to zero (disable)
+			`hdparm -S 0 #{ dev } 2>/dev/null`
+
+			# SAS: Turn off power-management, idle and standby timers
+			[ "PM_BG", "IDLE", "STANDBY" ].map{ |v|
+				`sdparm --set #{v}=0 #{ dev } 2>/dev/null`
+			}
+		end
+
+		# ======================================================================
+
 		def _bbu_info
 			raise NotImplementedError
 		end
