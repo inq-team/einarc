@@ -413,6 +413,14 @@ module RAID
 
 		# ======================================================================
 
+		def set_logical_powersaving_0(num)
+			ld = _logical_list.reject { |logical| logical[:num] != num.to_i }[0]
+			raise Error.new("Unknown logical disc \"#{num}\"") unless ld
+			ld[:physical].each{ |pd| set_physical_powersaving_0 pd }
+		end
+
+		# ======================================================================
+
 		def sgmaps
 			@sgmaps ||= list_sgmaps
 		end
