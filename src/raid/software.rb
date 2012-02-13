@@ -445,32 +445,36 @@ module RAID
 
 		# ======================================================================
 
-		def enclosures()
+		def _adapter_expanders
 			enclosure_scsi_id = 13
 
 			`sg_map`.split("\n").map{ |m|
 				m.split(/\s+/)
 			}.select{ |p|
 				p.size == 1
-			}.flatten.select{ |sg|
-				`sginfo #{sg}`.split("\n").collect{ |l|
-					l =~ /^Device Type\s+(\d+)$/ and $1
-				}.compact[0].to_i == enclosure_scsi_id
-			}
+			}.flatten.collect{ |sg|
+				product = nil
+				device_type = nil
+				`sginfo #{sg}`.split("\n").each { |l|
+					device_type = $1 if l =~ /^Device Type\s+(\d+)$/
+					product = $1 if l =~ /^Product:\s+(.+)$/
+				}
+				[ sg.gsub( "/dev/sg", ""), product ] if device_type.to_i == enclosure_scsi_id
+			}.compact
 		end
 
 		def get_physical_enclosure( drv )
 			ses_page = "0xa" # Additional element status (SES-2)
 
 			wwns = get_physical_wwn drv
-			enclosures.each{ |enc|
+			_adapter_expanders.each{ |enc, product|
 				info = []
-				`sg_ses --page #{ses_page} #{enc}`.split("\n").each{ |l|
+				`sg_ses --page #{ses_page} /dev/sg#{enc}`.split("\n").each{ |l|
 					info << $1 if l =~ /bay number: (\d+)$/
 					info << $1 if l =~ /^\s+SAS address: (\w+)$/
 				}
 				info.each_slice(2){ |p|
-					return p[0].to_i + 1 if wwns.include?( p[1] )
+					return "#{ enc }:#{ p[0].to_i }" if wwns.include?( p[1] )
 				}
 			}
 			return nil

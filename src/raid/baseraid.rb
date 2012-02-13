@@ -30,7 +30,7 @@ module RAID
 		}
 
 		METHODS = {
-			'adapter' => %w(info restart get set),
+			'adapter' => %w(info restart get set expanders),
 			'log' => %w(clear list test discover dump),
 			'physical' => %w(list smart get set),
 			'logical' => %w(list add delete clear get set hotspare_add hotspare_delete physical_list),
@@ -114,6 +114,12 @@ module RAID
 				else
 					puts "#{k}\t#{v}"
 				end
+			}
+		end
+
+		def adapter_expanders
+			_adapter_expanders.each { |enc|
+				puts "#{enc[0]}\t#{enc[1]}\n"
 			}
 		end
 
