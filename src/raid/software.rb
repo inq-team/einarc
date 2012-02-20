@@ -459,7 +459,7 @@ module RAID
 					device_type = $1 if l =~ /^Device Type\s+(\d+)$/
 					product = $1 if l =~ /^Product:\s+(.+)$/
 				}
-				[ sg.gsub( "/dev/sg", ""), product ] if device_type.to_i == enclosure_scsi_id
+				[ sg.gsub( "/dev/sg", ""), product.strip ] if device_type.to_i == enclosure_scsi_id
 			}.compact
 		end
 
