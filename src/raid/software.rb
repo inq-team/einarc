@@ -700,6 +700,7 @@ module RAID
 
 		# Determine if device belongs to any known by Einarc controller
 		def phys_belongs_to_adapters(device)
+			# Try to determine via udev attribute walking
 			def get_id( section, what )
 				return section.collect { |l| l =~ /ATTRS.#{what}.==.*(\w{4})/; $1 if $1 }.compact.last
 			end
@@ -713,6 +714,22 @@ module RAID
 									 get_id(section, "device"),
 									 get_id(section, "subsystem_vendor"),
 									 get_id(section, "subsystem_device") ) ? true : false
+			}
+			return founded if founded
+
+			# Try to fallback to manual sysfs path walking
+			device.gsub!(/^\/dev\//, '')
+			path = File.readlink( "/sys/block/#{ device.gsub(/^\/dev\//, '') }/device" )
+			path.split("/").reduce("/sys/block/sda"){ |path, value|
+				path += "/#{value}"
+				founded ||= RAID::find_adapter_by_pciid(
+					*[ "vendor", "device", "subsystem_vendor", "subsystem_device" ].collect { |f|
+						data = sysfs_read_file( "#{path}/#{f}" )
+						data.gsub!(/^0x/, "") if data
+						data
+					}
+				)
+				path
 			}
 			return founded
 		end
