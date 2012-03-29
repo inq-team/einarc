@@ -61,10 +61,10 @@ module RAID
 			out.join("\n").split(/\n/).each { |x|
 				key, value = x.split(/\t/)
 				key = case key
-		                when 'Board SN' then 'Serial number'
-		                when 'Firmware Version' then 'Firmware version'
-		                else key
-		                end
+				when 'Board SN' then 'Serial number'
+				when 'Firmware Version' then 'Firmware version'
+				else key
+				end
 				res[key] = value
 			}
 			return res

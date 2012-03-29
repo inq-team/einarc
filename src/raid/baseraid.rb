@@ -259,14 +259,14 @@ module RAID
 		end
 
 		def bbu_info
-		    info = _bbu_info
-		    if $humanize then
-			puts "Manufacturer   Model    Serial  Capacity"
-			printf("%-15s%-9s%-8s%-15s\n",
-			info[:vendor], info[:device], info[:serial], info[:capacity])
-		    else
-			puts "#{info[:vendor]}\t#{info[:device]}\t#{info[:serial]}\t#{info[:capacity]}"				
-		    end
+			info = _bbu_info
+			if $humanize then
+				puts "Manufacturer   Model    Serial  Capacity"
+				printf("%-15s%-9s%-8s%-15s\n",
+				info[:vendor], info[:device], info[:serial], info[:capacity])
+			else
+				puts "#{info[:vendor]}\t#{info[:device]}\t#{info[:serial]}\t#{info[:capacity]}"				
+			end
 		end
 
 		def handle_property(obj_name, command, obj_num, prop_name, value = nil)
@@ -383,28 +383,31 @@ module RAID
 				got_smart = true if line =~ needed_smart_section_re
 				next unless got_smart
 				if line =~ /^\s*(\d+)\s+(.+?)\s+([0-9a-fx]+?)\s+(\d+)\s+(\d+)\s+(\d+)\s+([^ ]+?)\s+(\w+?)\s+([^ ]+?)\s+(.*)$/
-					res.push({ :id => $1.to_i,
-						   :attribute => $2,
-						   :flag => $3.to_i(16),
-						   :value => $4.to_i,
-						   :worst => $5.to_i,
-						   :thres => $6.to_i,
-						   :type => $7,
-						   :updated => $8,
-						   :when_failed => $9,
-						   :raw_value => $10 })
+					res.push({
+						:id => $1.to_i,
+						:attribute => $2,
+						:flag => $3.to_i(16),
+						:value => $4.to_i,
+						:worst => $5.to_i,
+						:thres => $6.to_i,
+						:type => $7,
+						:updated => $8,
+						:when_failed => $9,
+						:raw_value => $10,
+					})
 				elsif line =~ /^\s*(.*)(:| = )\s*(\d+).*$/
-					res.push({ :id => nil,
-						   :attribute => $1,
-						   :flag => nil,
-						   :value => $3.to_i,
-						   :worst => nil,
-						   :thres => nil,
-						   :type => nil,
-						   :updated => nil,
-						   :when_failed => nil,
-						   :raw_value => nil })
-
+					res.push({
+						:id => nil,
+						:attribute => $1,
+						:flag => nil,
+						:value => $3.to_i,
+						:worst => nil,
+						:thres => nil,
+						:type => nil,
+						:updated => nil,
+						:when_failed => nil,
+						:raw_value => nil
+					})
 				else
 					next
 				end

@@ -132,12 +132,14 @@ module RAID
 			ld[:capacity] = info["Array Size"].to_i / 1024
 			ld[:stripe] = info["Chunk Size"].to_i
 			ld[:raid_level] = info["Raid Level"] =~ /raid(\d+)/ ? $1 : "linear"
-			states = { "clean" => "normal",
-				   "active" => "normal",
-				   "Not Started" => "degraded",
-				   "degraded" => "degraded",
-				   "resyncing" => "initializing",
-				   "recovering" => "rebuilding" }
+			states = {
+				"clean" => "normal",
+				"active" => "normal",
+				"Not Started" => "degraded",
+				"degraded" => "degraded",
+				"resyncing" => "initializing",
+				"recovering" => "rebuilding",
+			}
 			ld[:state] = states[ info["State"].split(", ").select { |s| states.has_key? s }.last ]
 			ld[:physical] = drives.keys.select { |drive| drives[drive] and drives[drive] != "removed" }.collect { |drive| phys_to_scsi drive }
 
@@ -533,13 +535,13 @@ module RAID
 
 				# Return an empty array at once, as there is no need to repeat
 				# the whole process because of positive return code
-				return [] if out.select { |l| l =~ /No devices listed in/ or
-				                              l =~ /No suitable drives found for/ }.size > 0
+				return [] if out.select { |l|
+					l =~ /No devices listed in/ or l =~ /No suitable drives found for/
+				}.size > 0
 
 				raise Error.new(out.join("\n")) if $?.exitstatus != 0
 			rescue Error => e
-				if command =~ /detail/ and
-				   e.text =~ /does not appear to be active/
+				if command =~ /detail/ and e.text =~ /does not appear to be active/
 					begin
 						run("--run #{ command.split.last }")
 					rescue
@@ -601,7 +603,7 @@ module RAID
 		def usb_device?(device)
 			name = device.gsub(/^\/dev\//, '')
 			return ((not File.readlines("/sys/block/#{name}/uevent").grep(/usb/).empty?) or
-			       (File.readlink("/sys/block/#{name}" ) =~ /usb/))
+				(File.readlink("/sys/block/#{name}" ) =~ /usb/))
 		end
 
 		def active?(device)
@@ -710,10 +712,12 @@ module RAID
 			founded = false
 			headers.select{ |h| h =~ /looking at parent.*\/devices\/pci.*\/\w{4}:\w{2}:\w{2}\.\w..$/ }.each { |h|
 				section = sections[ headers.index( h ) + 1 ].split(/\n/)
-				founded ||= RAID::find_adapter_by_pciid( get_id(section, "vendor"),
-									 get_id(section, "device"),
-									 get_id(section, "subsystem_vendor"),
-									 get_id(section, "subsystem_device") ) ? true : false
+				founded ||= RAID::find_adapter_by_pciid(
+					get_id(section, "vendor"),
+					get_id(section, "device"),
+					get_id(section, "subsystem_vendor"),
+					get_id(section, "subsystem_device")
+				) ? true : false
 			}
 			return founded if founded
 
