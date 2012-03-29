@@ -17,6 +17,7 @@ module RAID
 		SG3INQ = "/usr/bin/sg_inq"
 
 		def initialize(adapter_num = nil)
+			super()
 			@adapter_num = adapter_num ? adapter_num : 0
 		end
 
@@ -350,7 +351,7 @@ module RAID
 		# run one command, instance method
 		private
 		def run(command)
-			puts("DEBUG: #{TWCLI} /c#{@adapter_num}#{command}")
+#			@out.puts("DEBUG: #{TWCLI} /c#{@adapter_num}#{command}")
 			out = `#{TWCLI} /c#{@adapter_num}#{command}`.split("\n").collect { |l| l.strip }
 			raise Error.new(out.join("\n")) if $?.exitstatus != 0
 			return out

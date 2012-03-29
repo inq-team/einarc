@@ -27,6 +27,7 @@ module RAID
 		ARECA_PASSWORD = '0000'
 
 		def initialize(adapter_num = nil)
+			super()
 			@adapter_num = adapter_num ? adapter_num : 1
 			open_cli
 		end

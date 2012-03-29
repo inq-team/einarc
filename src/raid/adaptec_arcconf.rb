@@ -20,6 +20,7 @@ module RAID
 		}
 
 		def initialize(adapter_num = nil)
+			super()
 			@adapter_num = adapter_num ? adapter_num : 1
 		end
 

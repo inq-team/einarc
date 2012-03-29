@@ -15,6 +15,7 @@ module RAID
 		MEGACLI = "#{$EINARC_LIB}/lsi_megacli/cli"
 
 		def initialize(adapter_num = nil)
+			super()
 			adapter_num = 0 if !adapter_num
 			@args = "-a#{adapter_num}"
 			@dev = []
@@ -98,7 +99,7 @@ module RAID
 		end
 
 		def log_dump( subsys = nil )
-			puts _log_dump().join("\n")
+			@outstream.puts _log_dump().join("\n")
 		end
 
 		def _log_list

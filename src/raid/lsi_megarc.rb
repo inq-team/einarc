@@ -20,6 +20,7 @@ module RAID
 		MEGARC = "#{$EINARC_LIB}/lsi_megarc/cli"
 
 		def initialize(adapter_num = nil)
+			super()
 			adapter_num = 0 if !adapter_num
 			@args = "-a#{adapter_num}"
 			@dev = {}

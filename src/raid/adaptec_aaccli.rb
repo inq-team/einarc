@@ -3,6 +3,7 @@ module RAID
 		AACCLI = "#{$EINARC_LIB}/adaptec_aaccli/cli"
 
 		def initialize(adapter_num = nil)
+			super()
 			@adapter_num = adapter_num ? adapter_num : 0
 		end
 

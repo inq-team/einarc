@@ -15,6 +15,7 @@ module RAID
 		RETRIES_NUMBER = 5
 
 		def initialize(adapter_num = nil)
+			super()
 			find_all_arrays
 		end
 

@@ -16,6 +16,7 @@ module RAID
 	class BaseRaid
 		attr_accessor :logical
 		attr_accessor :physical
+		attr_accessor :outstream
 
 		SHORTCUTS = {
 			'adapter' => %w( ad ),
@@ -39,9 +40,13 @@ module RAID
 			'bbu' => %w(info)
 		}
 
+		def initialize
+			@outstream = $stdout
+		end
+
 		def method_names
 			self.class::METHODS
-		end	
+		end
 
 		def shortcuts
 			self.class::SHORTCUTS
@@ -95,43 +100,43 @@ module RAID
 		def self.list_adapters
 			res = query_adapters
 			if $humanize
-				puts "Type           Adapter #  Model                         Version"
+				@outstream.puts "Type           Adapter #  Model                         Version"
 				res.each { |a|
-					printf(
+					@outstream.printf(
 						"%-15s%-11d%-30s%s\n",
 						a[:driver], a[:num], a[:model], a[:version]
 					)
 				}
 			else
-				res.each { |a| puts "#{a[:driver]}\t#{a[:num]}\t#{a[:model]}\t#{a[:version]}" }
+				res.each { |a| @outstream.puts "#{a[:driver]}\t#{a[:num]}\t#{a[:model]}\t#{a[:version]}" }
 			end
 		end
 
 		def adapter_info
 			_adapter_info.each_pair { |k, v|
 				if $humanize
-					printf "%-30s%s\n", k, v
+					@outstream.printf "%-30s%s\n", k, v
 				else
-					puts "#{k}\t#{v}"
+					@outstream.puts "#{k}\t#{v}"
 				end
 			}
 		end
 
 		def adapter_expanders
 			_adapter_expanders.each { |enc|
-				puts "#{enc[0]}\t#{enc[1]}\n"
+				@outstream.puts "#{enc[0]}\t#{enc[1]}\n"
 			}
 		end
 
 		def log_list
 			if $humanize then
-				printf "%-4s%-32s%-20s%s\n", '#', 'Time', 'Where', 'What'
+				@outstream.printf "%-4s%-32s%-20s%s\n", '#', 'Time', 'Where', 'What'
 				_log_list.each { |l|
-					printf "%-4s%-32s%-20s%s\n", l[:id], l[:time], l[:where], l[:what]
+					@outstream.printf "%-4s%-32s%-20s%s\n", l[:id], l[:time], l[:where], l[:what]
 				}
 			else
 				_log_list.each { |l|
-					puts "#{l[:id]}\t#{l[:time].strftime('%Y-%m-%d %H:%M:%S')}\t#{l[:where]}\t#{l[:what]}"
+					@outstream.puts "#{l[:id]}\t#{l[:time].strftime('%Y-%m-%d %H:%M:%S')}\t#{l[:where]}\t#{l[:what]}"
 				}
 			end
 		end
@@ -139,12 +144,12 @@ module RAID
 		def log_discover
 			if $humanize then
 				if _log_discover.size > 0 then
-					puts "Available log subsystems: " + _log_discover.join(", ")
+					@outstream.puts "Available log subsystems: " + _log_discover.join(", ")
 				else
-					puts "Adapter does not support log subsystems selection"
+					@outstream.puts "Adapter does not support log subsystems selection"
 				end
 			else
-				puts _log_discover
+				@outstream.puts _log_discover
 			end
 		end
 
@@ -157,7 +162,7 @@ module RAID
 				concatenated_logs = _log_dump(subsys)
 			end
 
-			puts concatenated_logs
+			@outstream.puts concatenated_logs
 		end
 
 		def log_clear(subsys = nil)
@@ -171,13 +176,13 @@ module RAID
 
 		def task_list
 			if $humanize then
-				printf "%-5s%-12s%-20s%s\n", '#', 'Where', 'What', 'Progress'
+				@outstream.printf "%-5s%-12s%-20s%s\n", '#', 'Where', 'What', 'Progress'
 				_task_list.each { |l|
-					printf "%-5s%-12s%-20s%s\n", l[:id], l[:where], l[:what], l[:progress]
+					@outstream.printf "%-5s%-12s%-20s%s\n", l[:id], l[:where], l[:what], l[:progress]
 				}
 			else
 				_task_list.each { |l|
-					puts "#{l[:id]}\t#{l[:where]}\t#{l[:what]}\t#{l[:progress]}"
+					@outstream.puts "#{l[:id]}\t#{l[:where]}\t#{l[:what]}\t#{l[:progress]}"
 				}
 			end
 		end
@@ -193,10 +198,10 @@ module RAID
 
 		def logical_list
 			if $humanize then
-				puts "#  RAID level   Physical drives                 Capacity     Device  State"
+				@outstream.puts "#  RAID level   Physical drives                 Capacity     Device  State"
 				_logical_list.each { |d|
 					next unless d
-					printf(
+					@outstream.printf(
 						"%-3d%-13s%-30s%10.2f MB  %-9s%s\n",
 						d[:num], d[:raid_level], d[:physical].join(','), d[:capacity], d[:dev], d[:state]
 					)
@@ -204,29 +209,29 @@ module RAID
 			else
 				_logical_list.each { |d|
 					next unless d
-					puts [d[:num], d[:raid_level], d[:physical].join(','), d[:capacity], d[:dev], d[:state]].join("\t")
+					@outstream.puts [d[:num], d[:raid_level], d[:physical].join(','), d[:capacity], d[:dev], d[:state]].join("\t")
 				}
 			end
 		end
 
 		def logical_physical_list(ld)
 			if $humanize then
-				puts "ID      State"
+				@outstream.puts "ID      State"
 				_logical_physical_list(ld).each{ |d|
-					printf("%-8s%s\n", d[:num], d[:state])
+					@outstream.printf("%-8s%s\n", d[:num], d[:state])
 				}
 			else
 				_logical_physical_list(ld).each{ |d|
-					puts [d[:num], d[:state]].join("\t")
+					@outstream.puts [d[:num], d[:state]].join("\t")
 				}
 			end
 		end
 
 		def physical_list
 			if $humanize then
-				puts "ID      Model                    Revision       Serial                     Size     State"
+				@outstream.puts "ID      Model                    Revision       Serial                     Size     State"
 				_physical_list.each_pair { |num, d|
-					printf(
+					@outstream.printf(
 						"%-8s%-25s%-15s%-20s%11.2f MB  %s\n",
 						num, d[:model], d[:revision], d[:serial], d[:size], 
 							d[:state].is_a?(Array) ? d[:state].join(",") : d[:state]
@@ -234,7 +239,7 @@ module RAID
 				}
 			else
 				_physical_list.each_pair { |num, d|
-					puts "#{num}\t#{d[:model]}\t#{d[:revision]}\t#{d[:serial]}\t#{d[:size]}\t#{d[:state].is_a?(Array) ? d[:state].join(",") : d[:state]}"
+					@outstream.puts "#{num}\t#{d[:model]}\t#{d[:revision]}\t#{d[:serial]}\t#{d[:size]}\t#{d[:state].is_a?(Array) ? d[:state].join(",") : d[:state]}"
 				}
 			end
 		end
@@ -243,29 +248,31 @@ module RAID
 			format_human = "%-4s%-24s%-5s%-6s%-6s%-11s%-9s%-8s%-12s%s"
 			format_raw = ("%s\t" * 10).chop
 			info = _physical_smart(drv)
-			puts "Id  Attribute               Flag Value Worst Threshold  Type     Updated When failed Raw value" if $humanize
-			info.each{ |l|
-				printf( ($humanize ? format_human : format_raw) + "\n", l[:id],
-											l[:attribute],
-											l[:flag],
-											l[:value],
-											l[:worst],
-											l[:thres],
-											l[:type],
-											l[:updated],
-											l[:when_failed],
-											l[:raw_value])
+			@outstream.puts "Id  Attribute               Flag Value Worst Threshold  Type     Updated When failed Raw value" if $humanize
+			info.each { |l|
+				@outstream.printf(($humanize ? format_human : format_raw) + "\n",
+					l[:id],
+					l[:attribute],
+					l[:flag],
+					l[:value],
+					l[:worst],
+					l[:thres],
+					l[:type],
+					l[:updated],
+					l[:when_failed],
+					l[:raw_value]
+				)
 			}
 		end
 
 		def bbu_info
 			info = _bbu_info
 			if $humanize then
-				puts "Manufacturer   Model    Serial  Capacity"
-				printf("%-15s%-9s%-8s%-15s\n",
-				info[:vendor], info[:device], info[:serial], info[:capacity])
+				@outstream.puts "Manufacturer   Model    Serial  Capacity"
+				@outstream.printf "%-15s%-9s%-8s%-15s\n",
+					info[:vendor], info[:device], info[:serial], info[:capacity]
 			else
-				puts "#{info[:vendor]}\t#{info[:device]}\t#{info[:serial]}\t#{info[:capacity]}"				
+				@outstream.puts "#{info[:vendor]}\t#{info[:device]}\t#{info[:serial]}\t#{info[:capacity]}"				
 			end
 		end
 
@@ -286,7 +293,7 @@ module RAID
 			when 'get'
 				method_name = "get_#{obj_name}_#{prop_name}"
 				raise Error.new("Unknown property '#{prop_name}'; available properties: #{avail}") unless avail_props.include?(prop_name)
-				puts send(method_name, obj_num)
+				@outstream.puts send(method_name, obj_num)
 			when 'set'
 				if not public_methods_serialized.grep("set_#{obj_name}_#{prop_name}_#{value}").empty?
 					send("set_#{obj_name}_#{prop_name}_#{value}", obj_num)
