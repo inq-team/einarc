@@ -53,25 +53,39 @@ proprietary/ut_linux_megarc_1.11.zip: proprietary/agreed
 # Module: lsi_megacli
 #===============================================================================
 
-tools/lsi_megacli/cli: proprietary/8.00.16_Linux_MegaCLI.zip
-	mkdir -p tools/lsi_megacli
-	unzip -j proprietary/8.00.16_Linux_MegaCLI.zip -d tools/lsi_megacli
-	unzip -j tools/lsi_megacli/MegaCliLin.zip -d tools/lsi_megacli
-	rpm2cpio tools/lsi_megacli/MegaCli-8.00.16-1.i386.rpm | cpio -idv
-	if [ "$(TARGET)" = x86_64 ]; then \
-		mv opt/MegaRAID/MegaCli/MegaCli64 tools/lsi_megacli/cli; \
-	else \
-		mv opt/MegaRAID/MegaCli/MegaCli tools/lsi_megacli/cli; \
-	fi
-	rm -Rf opt tools/lsi_megacli/MegaCli-8.00.16-1.i386.rpm \
-		   tools/lsi_megacli/MegaCliLin.zip \
-		   tools/lsi_megacli/Lib_Utils-1.00-07.noarch.rpm \
-		   tools/lsi_megacli/Lib_Utils2-1.00-01.noarch.rpm
-	touch tools/lsi_megacli/cli proprietary/8.00.16_Linux_MegaCLI.zip
+LSI_MEGACLI_VERSION=8.02.21
 
-proprietary/8.00.16_Linux_MegaCLI.zip: proprietary/agreed
+tools/lsi_megacli/cli: proprietary/$(LSI_MEGACLI_VERSION)_MegaCLI.zip
+	rm -rf tools/lsi_megacli
+	mkdir -p tools/lsi_megacli
+	unzip -j proprietary/$(LSI_MEGACLI_VERSION)_MegaCLI.zip -d tools/lsi_megacli $(LSI_MEGACLI_VERSION)_Linux_MegaCLI/MegaCliLin.zip
+	unzip -j tools/lsi_megacli/MegaCliLin.zip -d tools/lsi_megacli
+	rpm2cpio tools/lsi_megacli/MegaCli-$(LSI_MEGACLI_VERSION)-1.noarch.rpm | cpio -idv
+	rpm2cpio tools/lsi_megacli/Lib_Utils-1.00-09.noarch.rpm | cpio -idv
+	if [ "$(TARGET)" = x86_64 ]; then \
+		mv opt/lsi/3rdpartylibs/x86_64/libsysfs.so.2.0.2 tools/lsi_megacli; \
+		mv opt/MegaRAID/MegaCli/MegaCli64 tools/lsi_megacli/cli.bin; \
+	else \
+		mv opt/lsi/3rdpartylibs/libsysfs.so.2.0.2 tools/lsi_megacli; \
+		mv opt/MegaRAID/MegaCli/MegaCli tools/lsi_megacli/cli.bin; \
+	fi
+	rm -Rf \
+		opt \
+		tools/lsi_megacli/*.rpm \
+		tools/lsi_megacli/MegaCliLin.zip
+	printf '#!/bin/sh\nCLI_DIR=$$(dirname "$$0")\nLD_LIBRARY_PATH="$$CLI_DIR" "$$CLI_DIR/cli.bin" $$@\nexit $$?\n' >tools/lsi_megacli/cli
+	chmod a+x tools/lsi_megacli/cli
+
+# LSI seems to use a fairly complex and intricate scheme on a
+# site. You can be in 2 states: "agreed" or "not (yet) agreed" with
+# licensing info. State is tracked by IP and retained for some time,
+# thus it's usually enough to visit "agreement" URL and then we can
+# fetch the file itself.
+proprietary/$(LSI_MEGACLI_VERSION)_MegaCLI.zip: proprietary/agreed
 	mkdir -p proprietary
-	$(WGET) http://www.lsi.com/DistributionSystem/AssetDocument/8.00.16_Linux_MegaCLI.zip
+	$(WGET) 'http://www.lsi.com/magic.axd?x=e&file=http%3A//www.lsi.com/downloads/Public/MegaRAID%2520Common%2520Files/$(LSI_MEGACLI_VERSION)_MegaCLI.zip'
+	$(WGET) 'http://www.lsi.com/downloads/Public/MegaRAID%20Common%20Files/$(LSI_MEGACLI_VERSION)_MegaCLI.zip'
+	touch proprietary/$(LSI_MEGACLI_VERSION)_MegaCLI.zip
 
 #===============================================================================
 # Module: amcc
