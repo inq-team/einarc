@@ -181,8 +181,8 @@ module RAID
 					end
 
 					d[:size] = areca2mb(d[:size].strip.gsub(/GB$/, '').to_i)
-                                        
-					#Retrieving SN and firmware version for each disk
+
+					# Retrieving SN and firmware version for each disk
 #Drive Information 
 #===============================================================
 #IDE Channel                        : 1
@@ -308,7 +308,7 @@ module RAID
 					run_cli("disk delete drv=#{id}")
 				else
 					raise e
-				end				
+				end
 			end
 			@raidsets = @volumesets = nil
 			cleanup_raidsets
@@ -325,7 +325,7 @@ module RAID
 						"vsf delete vol=1"
 					end,
 					'while deleting volumesets',
-					false					
+					false
 				)
 			}
 			@raidsets = @volumesets = nil
@@ -493,9 +493,9 @@ module RAID
 		def _bbu_info
 			raise NotImplementedError
 		end
-		
+
 		# ======================================================================
-		
+
 		def _physical_smart(drv)
 			out = `smartctl -d areca,#{@adapter_num} -A /dev/sg#{ _physical_list.keys.sort.index( drv ) + 1 }`
 			raise Error.new(out) if $?.exitstatus != 0

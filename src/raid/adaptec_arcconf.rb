@@ -35,7 +35,7 @@ module RAID
 						if cl =~ /Controller Model\s*:\s*(.*)$/
 							model = $1
 						end
- 						version = $1 if cl =~ /Firmware\s*:\s*(.*)$/
+						version = $1 if cl =~ /Firmware\s*:\s*(.*)$/
 					}
 					res << {
 						:driver => 'adaptec_arcconf',
@@ -334,7 +334,7 @@ module RAID
 
 			# Determine related LDs
 			_logical_list.each_with_index { |l, i|
-                                next unless l
+				next unless l
 				l[:physical].each { |pd|
 					next if %w{ failed }.include?(@physical[pd][:state])
 					next if @physical[pd][:state] == "hotspare"
@@ -343,7 +343,7 @@ module RAID
 					else
 						@physical[pd][:state] = [ i ]
 					end
-				} 
+				}
 			}
 
 			return @physical

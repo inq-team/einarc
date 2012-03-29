@@ -2,14 +2,14 @@ module RAID
 	module Extensions
 		module Hotspare
 			def self.included(another)
-				if another.ancestors.include? RAID::BaseRaid  
-  					another.class_eval do
+				if another.ancestors.include? RAID::BaseRaid
+					another.class_eval do
 						alias_method :original_method_names, :method_names
 						alias_method :original_shortcuts, :shortcuts
 
 						def method_names
 							unless @method_names_with_hotspare
-  								@method_names_with_hotspare = original_method_names
+								@method_names_with_hotspare = original_method_names
 								@method_names_with_hotspare['adapter'] += %w(hotspare_add hotspare_delete)
 							end
 							@method_names_with_hotspare

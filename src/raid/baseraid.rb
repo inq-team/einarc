@@ -47,7 +47,7 @@ module RAID
 			self.class::SHORTCUTS
 		end
 
-  		def lookup_shortcut(str)
+		def lookup_shortcut(str)
 			@reverse_shortcuts ||= SHORTCUTS.inject({}) do |hash, kv|
 				key, value = kv
 				hash.update(Hash[ *value.zip([ key ] * value.size).flatten ])
@@ -310,7 +310,7 @@ module RAID
 		def handle_method(arg)
 			obj_name = translate_parameter(arg.shift)
 			avail_objs = method_names.keys.collect { |key| append_shortcuts(key) }.join(', ')
- 			raise Error.new("Object not specified; available objects: #{ avail_objs }") unless obj_name
+			raise Error.new("Object not specified; available objects: #{ avail_objs }") unless obj_name
 			obj = method_names[obj_name]
 			raise Error.new("Unknown object '#{obj_name}'; available objects: #{ avail_objs }") unless obj
 
