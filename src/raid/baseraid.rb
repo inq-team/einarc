@@ -100,15 +100,15 @@ module RAID
 		def self.list_adapters
 			res = query_adapters
 			if $humanize
-				@outstream.puts "Type           Adapter #  Model                         Version"
+				puts "Type           Adapter #  Model                         Version"
 				res.each { |a|
-					@outstream.printf(
+					printf(
 						"%-15s%-11d%-30s%s\n",
 						a[:driver], a[:num], a[:model], a[:version]
 					)
 				}
 			else
-				res.each { |a| @outstream.puts "#{a[:driver]}\t#{a[:num]}\t#{a[:model]}\t#{a[:version]}" }
+				res.each { |a| puts "#{a[:driver]}\t#{a[:num]}\t#{a[:model]}\t#{a[:version]}" }
 			end
 		end
 
