@@ -1,0 +1,19 @@
+                                     
+
+BBU Design Info for Adapter: 0
+
+Date of Manufacture: 04/12, 2008
+Design Capacity: 880 mAh
+Design Voltage: 4800 mV
+Specification Info: 33
+Serial Number: 1234
+Pack Stat Configuration: 0x6890
+Manufacture Name: LSIC11000A
+Device Name: *5810-2
+Device Chemistry: NiMH
+Battery FRU: N/A
+
+Transparent Learn = 0
+App Data = 0
+
+Exit Code: 0x00

@@ -1,0 +1,4 @@
+{:capacity=>"880 mAh",
+ :vendor=>"LSIC11000A",
+ :serial=>"1234",
+ :device=>"*5810-2"}

@@ -1,0 +1,1 @@
+-AdpBbuCmd -GetBbuDesignInfo -a0
