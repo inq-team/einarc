@@ -35,7 +35,6 @@ class LSIMegaRc
 	def megarc(command)
 		out = $test_runner.simulate_cli(command)
 		out.slice!(0..9)
-		out.collect! { |l| l.strip! }
 		out.delete_if { |l| l =~ /^Finding Devices On / or l =~ /Scanning Ha / or l =~ /^\*\*\*\*\*\*/ or l.nil? }
 		return out
 	end
