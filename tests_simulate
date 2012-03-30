@@ -1,0 +1,108 @@
+#!/usr/bin/env ruby
+
+require 'stringio'
+
+$LOAD_PATH.unshift('src')
+
+require 'raid/baseraid'
+require 'raid/lsi_megacli'
+
+include RAID
+
+class AssertionError < Exception
+end
+
+class TestRunner
+	attr_reader :current_test
+	attr_reader :adapter
+
+	def initialize(test_dir)
+		@test_dir = test_dir
+		@count = {
+			:test_run => 0,
+			:test_fail => 0,
+			:test_err => 0,
+			:test_success => 0,
+		}
+	end
+
+	def run
+		Dir.new(@test_dir).each { |adapter_name|
+			next if adapter_name[0..0] == '.'
+			puts "Adapter #{adapter_name}"
+			@adapter = LSIMegaCli.new(0)
+			@adapter.outstream = StringIO.new
+			begin
+				Dir.new("#{@test_dir}/#{adapter_name}").each { |test_name|
+					next if test_name[0..0] == '.'
+					@cli_query = 0
+					@count[:test_run] += 1
+					@current_test = "#{@test_dir}/#{adapter_name}/#{test_name}"
+					run_test
+					@count[:test_success] += 1
+					print '.'
+					$stdout.flush
+				}
+				puts
+			rescue AssertionError => e
+				puts 'F'
+				$stderr.puts "Assertion failed for test \"#{@current_test}\""
+				$stderr.puts e
+				$stderr.puts e.backtrace
+				@count[:test_fail] += 1
+			rescue => e
+				puts 'E'
+				$stderr.puts "Test error for test \"#{@current_test}\""
+				$stderr.puts e
+				$stderr.puts e.backtrace
+				@count[:test_err] += 1
+			end
+		}
+
+		p @count
+	end
+
+	def run_test
+		cmd = File.open("#{current_test}/command.txt").read.strip
+		result = File.open("#{current_test}/result.txt").read
+
+		if cmd == 'query'
+			r = []
+			LSIMegaCli::query(r)
+			assert_equal(r, eval(result))
+		else
+			assert_equal(@adapter.handle_method(cmd.split(/\s+/)), eval(result))
+		end
+	end
+
+	def simulate_cli(cmd)
+		@cli_query += 1
+		cli_input = File.open("#{$test_runner.current_test}/cli_input_#{@cli_query}.txt").read.strip
+		$test_runner.assert_equal(cmd, cli_input)
+		cli_output = File.open("#{$test_runner.current_test}/cli_output_#{@cli_query}.txt").readlines.map { |x| x.strip }
+		return cli_output
+	end
+
+	def assert_equal(real, expected)
+		raise AssertionError.new("got #{real.inspect}, but #{expected.inspect} was expected") unless real === expected
+	end
+
+	def failed?
+		@count[:test_err] > 0 or @count[:test_fail] > 0
+	end
+end
+
+class LSIMegaCli
+	def self.run(x)
+		$test_runner.simulate_cli(x)
+	end
+
+	def run(x)
+		$test_runner.simulate_cli(x)
+	end
+end
+
+$test_runner = TestRunner.new('test')
+$test_runner.run
+
+exit $test_runner.failed? ? 1 : 0

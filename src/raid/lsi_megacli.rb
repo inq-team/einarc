@@ -138,7 +138,7 @@ module RAID
 			slot = nil
 			run("-LdPdInfo #{@args}").each { |l|
 				case l
-				when /^Virtual Disk\s*:\s(\d+)/
+				when /^Virtual (?:Disk|Drive)\s*:\s(\d+)/
 					num = $1.to_i
 					ld = @logical[num] = {
 						:num => num,
