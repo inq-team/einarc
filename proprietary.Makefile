@@ -51,9 +51,16 @@ tools/lsi_megarc/cli: proprietary/ut_linux_megarc_1.11.zip
 	mv tools/lsi_megarc/megarc.bin tools/lsi_megarc/cli
 	touch tools/lsi_megarc/cli proprietary/ut_linux_megarc_1.11.zip
 
+# LSI seems to use a fairly complex and intricate scheme on a
+# site. You can be in 2 states: "agreed" or "not (yet) agreed" with
+# licensing info. State is tracked by IP and retained for some time,
+# thus it's usually enough to visit "agreement" URL and then we can
+# fetch the file itself.
 proprietary/ut_linux_megarc_1.11.zip: proprietary/agreed
 	mkdir -p proprietary
-	$(WGET) http://www.lsi.com/DistributionSystem/AssetDocument/files/support/rsa/utilities/megaconf/ut_linux_megarc_1.11.zip
+	$(WGET) 'http://www.lsi.com/magic.axd?x=e&file=http%3A//www.lsi.com/downloads/Public/MegaRAID%2520Common%2520Files/ut_linux_megarc_1.11.zip'
+	$(WGET) 'http://www.lsi.com/downloads/Public/MegaRAID%20Common%20Files/ut_linux_megarc_1.11.zip'
+	touch proprietary/ut_linux_megarc_1.11.zip
 
 #===============================================================================
 # Module: lsi_megacli
