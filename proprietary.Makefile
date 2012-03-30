@@ -11,7 +11,13 @@ proprietary/agreed:
 	@echo 'licenses or reconfigure einarc disabling propriatery modules.'
 	@echo
 	@echo -n 'Do you agree? '
-	@read agree && if [ "$$agree" != yes ]; then echo "Einarc can't continue unless you'll agree"; false; else mkdir -p proprietary && echo "User $$USER has agreed to all the licenses on `date`" >proprietary/agreed; fi
+	@read agree && if [ "$$agree" != yes ]; then \
+		echo "Einarc can't continue unless you'll agree"; \
+		false; \
+	else \
+		mkdir -p proprietary && \
+		echo "User $$USER has agreed to all the licenses on `date`" >proprietary/agreed; \
+	fi
 
 #===============================================================================
 # Module: areca
