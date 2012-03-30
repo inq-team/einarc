@@ -1,0 +1,26 @@
+
+
+	**********************************************************************
+	      MEGARC MegaRAID Configuration Utility(LINUX)-1.11(12-07-2004)     
+	      By LSI Logic Corp.,USA
+	**********************************************************************
+	  [Note: For SATA-2, 4 and 6 channel controllers, please specify
+	  Ch=0 Id=0..15 for specifying physical drive(Ch=channel, Id=Target)]
+
+	Type ? as command line arg for help
+
+	**********************************************************************
+	Information of Adapter-0 (#Adapter(s) on system: 1)
+	**********************************************************************
+
+	Firmware Version : 1L37		BIOS Version : G119
+	Logical Drives : 01 		DRAM : 64MB
+	Rebuild Rate : 30%
+	Flush Interval : 4 secs
+	Number Of Chnls : 1		Bios Status : Enabled 
+	Alarm State : Enabled 		Auto Rebuild : Enabled 
+	FW : SPAN-8, 40-LD		BIOS Config AutoSelection : USER
+	BIOS Echos Mesg : ON		BIOS Stops On Error : ON
+	Initiator Id : 7(Clustered Firmware)
+	Board SN: 12345678
+	**********************************************************************
