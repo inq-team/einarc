@@ -33,7 +33,7 @@ class TestRunner
 			@adapter = LSIMegaCli.new(0)
 			@adapter.outstream = StringIO.new
 			begin
-				Dir.new("#{@test_dir}/#{adapter_name}").each { |test_name|
+				Dir.new("#{@test_dir}/#{adapter_name}").sort.each { |test_name|
 					next if test_name[0..0] == '.'
 					@cli_query = 0
 					@count[:test_run] += 1
@@ -46,13 +46,13 @@ class TestRunner
 				puts
 			rescue AssertionError => e
 				puts 'F'
-				$stderr.puts "Assertion failed for test \"#{@current_test}\""
+				$stderr.puts "Assertion failed for test \"#{@current_test}\", CLI query = #{@cli_query}"
 				$stderr.puts e
 				$stderr.puts e.backtrace
 				@count[:test_fail] += 1
 			rescue => e
 				puts 'E'
-				$stderr.puts "Test error for test \"#{@current_test}\""
+				$stderr.puts "Test error for test \"#{@current_test}\", CLI query = #{@cli_query}"
 				$stderr.puts e
 				$stderr.puts e.backtrace
 				@count[:test_err] += 1
