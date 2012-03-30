@@ -1,0 +1,44 @@
+
+
+	**********************************************************************
+	      MEGARC MegaRAID Configuration Utility(LINUX)-1.11(12-07-2004)     
+	      By LSI Logic Corp.,USA
+	**********************************************************************
+	  [Note: For SATA-2, 4 and 6 channel controllers, please specify
+	  Ch=0 Id=0..15 for specifying physical drive(Ch=channel, Id=Target)]
+
+	Type ? as command line arg for help
+
+
+	Finding Devices On Each MegaRAID Adapter...
+	Scanning Ha 0, Chnl 0 Target 00  
+[A	Scanning Ha 0, Chnl 0 Target 01  
+[A	Scanning Ha 0, Chnl 0 Target 02  
+[A	Scanning Ha 0, Chnl 0 Target 03  
+[A	Scanning Ha 0, Chnl 0 Target 04  
+[A	Scanning Ha 0, Chnl 0 Target 05  
+[A	Scanning Ha 0, Chnl 0 Target 06  
+[A	Scanning Ha 0, Chnl 0 Target 07  
+[A	Scanning Ha 0, Chnl 0 Target 08  
+[A	Scanning Ha 0, Chnl 0 Target 09  
+[A	Scanning Ha 0, Chnl 0 Target 10  
+[A	Scanning Ha 0, Chnl 0 Target 11  
+[A	Scanning Ha 0, Chnl 0 Target 12  
+[A	Scanning Ha 0, Chnl 0 Target 13  
+[A	Scanning Ha 0, Chnl 0 Target 14  
+[A	Scanning Ha 0, Chnl 0 Target 15  
+[A
+
+
+	Adapter No 0 : Total Logical Drive(s)- 1
+
+	Logical drive 0: RaidLevel 5
+
+	Physical Drive Information
+	Channel 0
+		70006MB drive scsi ID 0
+	CoerSZ: 143372288(Sectors) 70006(MB)  RawSZ: 143374743(Sectors)
+		70006MB drive scsi ID 2
+	CoerSZ: 143372288(Sectors) 70006(MB)  RawSZ: 143374743(Sectors)
+		70006MB drive scsi ID 4
+	CoerSZ: 143372288(Sectors) 70006(MB)  RawSZ: 143374743(Sectors)

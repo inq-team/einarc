@@ -1,0 +1,1 @@
+-logphysinfo -a0

@@ -1,0 +1,1 @@
+-phys -a0 -chAll -idAll
