@@ -272,8 +272,9 @@ module RAID
 				@outstream.printf "%-15s%-9s%-8s%-15s\n",
 					info[:vendor], info[:device], info[:serial], info[:capacity]
 			else
-				@outstream.puts "#{info[:vendor]}\t#{info[:device]}\t#{info[:serial]}\t#{info[:capacity]}"				
+				@outstream.puts "#{info[:vendor]}\t#{info[:device]}\t#{info[:serial]}\t#{info[:capacity]}"
 			end
+			return info
 		end
 
 		def handle_property(obj_name, command, obj_num, prop_name, value = nil)
