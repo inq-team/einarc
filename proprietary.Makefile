@@ -79,7 +79,7 @@ tools/lsi_megacli/cli: proprietary/$(LSI_MEGACLI_VERSION)_MegaCLI.zip
 		opt \
 		tools/lsi_megacli/*.rpm \
 		tools/lsi_megacli/MegaCliLin.zip
-	printf '#!/bin/sh\nCLI_DIR=$$(dirname "$$0")\nLD_LIBRARY_PATH="$$CLI_DIR" "$$CLI_DIR/cli.bin" $$@\nexit $$?\n' >tools/lsi_megacli/cli
+	printf '#!/bin/sh\nCLI_DIR=$$(dirname "$$0")\nLD_LIBRARY_PATH="$$CLI_DIR" "$$CLI_DIR/cli.bin" $$@ -NoLog\nexit $$?\n' >tools/lsi_megacli/cli
 	chmod a+x tools/lsi_megacli/cli
 
 # LSI seems to use a fairly complex and intricate scheme on a
