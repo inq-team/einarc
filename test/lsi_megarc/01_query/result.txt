@@ -1,0 +1,4 @@
+[{:driver=>"lsi_megarc",
+  :num=>0,
+  :version=>"40LD/8SPAN",
+  :model=>"MegaRAID SCSI 320-1"}]

@@ -5,9 +5,41 @@ require 'stringio'
 $LOAD_PATH.unshift('src')
 
 require 'raid/baseraid'
-require 'raid/lsi_megacli'
+require 'raid/meta'
 
 include RAID
+
+# Load all available RAID adapters
+MODULES.each_pair { |k, v|
+	require "raid/#{k}"
+	v[:class] = Kernel.const_get(v[:classname])
+}
+
+class LSIMegaCli
+	def self.run(x)
+		$test_runner.simulate_cli(x)
+	end
+
+	def run(x)
+		$test_runner.simulate_cli(x)
+	end
+end
+
+class LSIMegaRc
+	def self.megarc(command)
+		out = $test_runner.simulate_cli(command)
+		out.slice!(0..10)
+		return out
+	end
+
+	def megarc(command)
+		out = $test_runner.simulate_cli(command)
+		out.slice!(0..9)
+		out.collect! { |l| l.strip! }
+		out.delete_if { |l| l =~ /^Finding Devices On / or l =~ /Scanning Ha / or l =~ /^\*\*\*\*\*\*/ or l.nil? }
+		return out
+	end
+end
 
 class AssertionError < Exception
 end
@@ -29,8 +61,10 @@ class TestRunner
 	def run
 		Dir.new(@test_dir).each { |adapter_name|
 			next if adapter_name[0..0] == '.'
+			raise "Test for unsupported adapter encountered: #{adapter_name}" unless MODULES[adapter_name]
 			puts "Adapter #{adapter_name}"
-			@adapter = LSIMegaCli.new(0)
+			@adapter_class = MODULES[adapter_name][:class]
+			@adapter = @adapter_class.new(0)
 			@adapter.outstream = StringIO.new
 			begin
 				Dir.new("#{@test_dir}/#{adapter_name}").sort.each { |test_name|
@@ -68,7 +102,7 @@ class TestRunner
 
 		if cmd == 'query'
 			r = []
-			LSIMegaCli::query(r)
+			@adapter_class::query(r)
 			assert_equal(r, eval(result))
 		else
 			assert_equal(@adapter.handle_method(cmd.split(/\s+/)), eval(result))
@@ -92,15 +126,6 @@ class TestRunner
 	end
 end
 
-class LSIMegaCli
-	def self.run(x)
-		$test_runner.simulate_cli(x)
-	end
-
-	def run(x)
-		$test_runner.simulate_cli(x)
-	end
-end
 
 $test_runner = TestRunner.new('test')
 $test_runner.run

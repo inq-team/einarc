@@ -1,1 +1,5 @@
-[{:driver=>"lsi_megacli", :num=>0, :model=>"MegaRAID SAS PCI Express(TM) ROMB", :version=>"8.0.1-0038"}]
+[{:driver=>"lsi_megacli",
+  :num=>0,
+  :version=>"8.0.1-0038",
+  :model=>"MegaRAID SAS PCI Express(TM) ROMB"}]
+
