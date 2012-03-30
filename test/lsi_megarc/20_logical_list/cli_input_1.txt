@@ -1,0 +1,1 @@
+-ldinfo -a0 -Lall

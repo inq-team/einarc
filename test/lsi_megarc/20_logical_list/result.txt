@@ -1,0 +1,7 @@
+[{:dev=>nil,
+  :physical_sizes=>[70006, 70006, 70006],
+  :state=>"normal",
+  :raid_level=>"5",
+  :num=>0,
+  :capacity=>140012,
+  :physical=>["0:0", "0:4", "0:2"]}]
