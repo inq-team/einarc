@@ -71,7 +71,7 @@ such as Adaptec RAID 5405, Adaptec RAID 5445, Adaptec RAID 5805, Adaptec
 RAID 5085, Adaptec RAID 51245, Adaptec RAID 51645, Adaptec RAID 52445,
 Adaptec RAID 3405, Adaptec RAID 3085, Adaptec RAID 3805, Adaptec RAID
 31205, Adaptec RAID 31605, Adaptec RAID 2405, Adaptec RAID 2045, Adaptec
-RAID 4000, Adaptec RAID 4800SAS, Adaptec RAID 4805SAS.
+RAID 4000, Adaptec RAID 4800SAS, Adaptec RAID 4805SAS, Adaptec RAID 6405.
 * *amcc* -- supports all AMCC/3ware controllers, such as 3ware 7000
 series, 3ware 8000 series, 3ware 9690SA, 3ware 9650SE, 3ware 9550SX,
 3ware 9500S, 3ware 8506.
@@ -79,14 +79,15 @@ series, 3ware 8000 series, 3ware 9690SA, 3ware 9650SE, 3ware 9550SX,
 ARC-1120, ARC-1130, ARC-1160, ARC-1130ML, ARC-1160ML, ARC-1170,
 ARC-1200, ARC-1210, ARC-1220, ARC-1230, ARC-1260, ARC-1231ML,
 ARC-1261ML, ARC-1280ML, ARC-1280.
-* *lsi_megacli* -- supports newer LSI MegaRAID SAS/SATA RAID controllers, such
-as LSI MegaRAID SAS 8208ELP, LSI MegaRAID SAS 8208XLP, LSI MegaRAID SAS
-8204ELP, LSI MegaRAID SAS 8204XLP, LSI MegaRAID SAS 84016E, LSI MegaRAID
-SAS 8704ELP, LSI MegaRAID SAS 8708ELP, LSI MegaRAID SAS 8300XLP, LSI
-MegaRAID SAS 8708EM2, LSI MegaRAID SAS 8888ELP, LSI MegaRAID SAS
-8880EM2, as well as rebranded copies of these controllers from Dell, HP
-and Intel, as well as all on-board or daughterboard products based on
-LSI SAS 1078 chipset.
+* *lsi_megacli* -- supports newer LSI MegaRAID SAS/SATA RAID controllers,
+such as LSI MegaRAID SAS 8208ELP, LSI MegaRAID SAS 8208XLP, LSI MegaRAID
+SAS 8204ELP, LSI MegaRAID SAS 8204XLP, LSI MegaRAID SAS 84016E, LSI
+MegaRAID SAS 8704ELP, LSI MegaRAID SAS 8708ELP, LSI MegaRAID SAS
+8300XLP, LSI MegaRAID SAS 8708EM2, LSI MegaRAID SAS 8888ELP, LSI
+MegaRAID SAS 8880EM2, LSI MegaRAID SAS 2208, LSI MegaRAID SAS 9240, LSI
+MegaRAID SAS 9260 as well as rebranded copies of these controllers from
+Dell, HP and Intel, as well as all on-board or daughterboard products
+based on LSI SAS 1078 chipset.
 * *lsi_megarc* -- support older LSI MegaRAID SCSI/SATA RAID controllers,
 such as  LSI MegaRAID SATA 150-4 (523), LSI MegaRAID SATA 150-6 (523),
 LSI MegaRAID SATA 300-8X, LSI MegaRAID SATA 300-8XLP, LSI MegaRAID SATA
