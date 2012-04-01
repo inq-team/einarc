@@ -108,6 +108,20 @@ run `./configure` or `einarc-install` without options to select all
 available modules. There's a good chance that your adapter would be
 supported too.
 
+=== S.M.A.R.T.
+
+Currently only a few modules support S.M.A.R.T. technology and are capable
+of retrieving its information.
+
+|===================================================================================================
+| adaptec_aaccli | adaptec_arcconf | amcc | areca^[1]^ | lsi_megacli^[1][2]^ | lsi_megarc | software
+| No             | No              | No   | Yes        | Yes                 | No         | Yes
+|===================================================================================================
+[1]::
+  smartmontools >= 5.39
+[2]::
+  requires at least one logical drive
+
 == Installation
 
 Currently, Einarc is a sub-project of
