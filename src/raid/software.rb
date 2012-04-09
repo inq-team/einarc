@@ -670,7 +670,7 @@ module RAID
 
 		# Converts SCSI enumeration (1:0) to physical device name (hda)
 		def scsi_to_device(id)
-			raise Error.new("Invalid physical disc specification \"#{id}\": \"a:b\" or \"a:b:c\" expected") unless id =~ /^([01]):(\d+)(:(\d+))?$/
+			raise Error.new("Invalid physical disc specification \"#{id}\": \"a:b\" or \"a:b:c\" expected") unless id =~ /^([01]):(\d+):?(\d+)?$/
 			res = ($1 == '1') ? '/dev/hd' : '/dev/sd'
 
 			i = $2.to_i
@@ -681,7 +681,7 @@ module RAID
 			}
 			res += cs.map{ |c| ('a'[0].ord + c -1).chr }.join("")
 
-			res += $4 if $4
+			res += $3 if $3
 			return res
 		end
 
