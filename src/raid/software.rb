@@ -36,7 +36,7 @@ module RAID
 		def _adapter_info
 			res = {}
 			res['Controller Name'] = 'Linux software RAID (md)'
-			res['RAID Level Supported'] = '0, 1, 5, 6, 10'
+			res['RAID Level Supported'] = '0, 1, 4, 5, 6, 10'
 			res['Kernel Version'] = `uname -r`.chomp
 			res['mdadm Version'] = `mdadm -V 2>&1`.chomp
 			return res
