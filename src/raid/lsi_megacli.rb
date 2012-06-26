@@ -167,7 +167,7 @@ module RAID
 			}
 
 			# Try to find corresponding /dev-entries
-			devices = Dir.entries("/sys/block").select { |dev| physical_read_file( dev, "device/model" ) =~ /^(MegaRAID|MR|RS2BL080|RS2BL040|SMC2108|MR9260)/ }
+			devices = Dir.entries("/sys/block").select { |dev| physical_read_file( dev, "device/model" ) =~ /^(MegaRAID|MR|RS2BL080|RS2BL040|SMC2108|MR9260|SRCSASLS4I)/ }
 			devs = {}
 			devices.each { |dev|
 				if File.exist?("/sys/block/#{dev}/device/scsi_disk") then
