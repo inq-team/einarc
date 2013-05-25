@@ -162,25 +162,21 @@ proprietary/Adaptec_Storage_Manager-Linux_v2.10.00.tgz: proprietary/agreed
 #===============================================================================
 
 ifeq ($(TARGET), x86_64)
-tools/adaptec_arcconf/cli: proprietary/asm_linux_x64_v6_40_18530.rpm
+tools/adaptec_arcconf/cli: proprietary/arcconf_v1_1_20324.zip
 	mkdir -p tools/adaptec_arcconf
-	rpm2cpio proprietary/asm_linux_x64_v6_40_18530.rpm | cpio -idv
-	mv usr/StorMan/arcconf tools/adaptec_arcconf/cli
-	chmod a+x tools/adaptec_arcconf/cli
-	rm -rf usr
+	unzip -j proprietary/arcconf_v1_1_20324.zip linux_x64/arcconf -d tools/adaptec_arcconf
+	chmod a+rx tools/adaptec_arcconf/arcconf
+	mv tools/adaptec_arcconf/arcconf tools/adaptec_arcconf/cli
+	touch tools/adaptec_arcconf/cli proprietary/arcconf_v1_1_20324.zip
 else
-tools/adaptec_arcconf/cli: proprietary/asm_linux_x86_v6_40_18530.rpm
+tools/adaptec_arcconf/cli: proprietary/arcconf_v1_1_20324.zip
 	mkdir -p tools/adaptec_arcconf
-	rpm2cpio proprietary/asm_linux_x86_v6_40_18530.rpm | cpio -idv
-	mv usr/StorMan/arcconf tools/adaptec_arcconf/cli
-	chmod a+x tools/adaptec_arcconf/cli
-	rm -rf usr
+	unzip -j proprietary/arcconf_v1_1_20324.zip linux_x86/arcconf -d tools/adaptec_arcconf
+	chmod a+rx tools/adaptec_arcconf/arcconf
+	mv tools/adaptec_arcconf/arcconf tools/adaptec_arcconf/cli
+	touch tools/adaptec_arcconf/cli proprietary/arcconf_v1_1_20324.zip
 endif
 
-proprietary/asm_linux_x86_v6_40_18530.rpm: proprietary/agreed
+proprietary/:arcconf_v1_1_20324.zip proprietary/agreed
 	mkdir -p proprietary
-	$(WGET) http://download.adaptec.com/raid/storage_manager/asm_linux_x86_v6_40_18530.rpm
-
-proprietary/asm_linux_x64_v6_40_18530.rpm: proprietary/agreed
-	mkdir -p proprietary
-	$(WGET) http://download.adaptec.com/raid/storage_manager/asm_linux_x64_v6_40_18530.rpm
+	$(WGET) http://download.adaptec.com/raid/storage_manager/arcconf_v1_1_20324.zip
