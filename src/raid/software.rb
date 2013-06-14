@@ -694,7 +694,7 @@ module RAID
 		end
 
 		def physical_get_serial_via_smart(device)
-			return `smartctl --all #{ device }` =~ /^serial number:\s*(\w+)$/i ? $1 : nil
+			return `smartctl --all #{ device }` =~ /^[Ss]erial number:\s*(\w+)$/i ? $1 : nil
 		end
 
 		def zero_superblock( device )
