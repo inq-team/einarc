@@ -2,43 +2,43 @@ Einarc - Einarc is not a RAID CLI
 =================================
 
 Requirements
-============
+------------
 
 Build requirements:
-	wget
-	gzip / gunzip
-	tar
-	unzip
-	ruby
-	make
+* wget
+* gzip / gunzip
+* tar
+* unzip
+* ruby
+* make
 
 Runtime requirements:
-	ruby
+* ruby
 
 Recommended:
-	asciidoc / a2x (to build documentation)
+* asciidoc / a2x (to build documentation)
 
 Licensing
-=========
+---------
 
 Unfortunately, Einarc uses some proprietary command-line utilities to
-control storages. Using it means that you agree with respective licenses
-and download agreements. For your convenience, they are available in
-agreements/ directory. Please read them and agree before issuing "make
-download" command and using this software.
+control storages. Using it means that you agree with respective
+licenses and download agreements. For your convenience, they are
+available in `agreements/` directory. Please read them and agree
+before issuing `make download` command and using this software.
 
 Standalone installation
-=======================
+-----------------------
 
 Installation of Einarc involves following things:
 
-* "./configure" (generates Makefile.config and src/raid/config.rb)
-* "make download" to download all the proprietary tools; doing so means
+* `./configure` (generates Makefile.config and src/raid/config.rb)
+* `make download` to download all the proprietary tools; doing so means
 you've read and agreed to the agreements & licenses listed above.
-* "make" to build Einarc's files
-* "make install" to install everything
+* `make` to build Einarc's files
+* `make install` to install everything
 
 Documentation
-=============
+-------------
 
 See reference manual for general usage recommendations.
