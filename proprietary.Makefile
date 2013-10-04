@@ -71,21 +71,16 @@ LSI_MEGACLI_VERSION=8.07.07
 tools/lsi_megacli/cli: proprietary/$(LSI_MEGACLI_VERSION)_MegaCLI.zip
 	rm -rf tools/lsi_megacli
 	mkdir -p tools/lsi_megacli
-	unzip -j proprietary/$(LSI_MEGACLI_VERSION)_MegaCLI.zip -d tools/lsi_megacli $(LSI_MEGACLI_VERSION)_Linux_MegaCLI/MegaCliLin.zip
-	unzip -j tools/lsi_megacli/MegaCliLin.zip -d tools/lsi_megacli
+	unzip -j proprietary/$(LSI_MEGACLI_VERSION)_MegaCLI.zip -d tools/lsi_megacli linux/MegaCli-$(LSI_MEGACLI_VERSION)-1.noarch.rpm
 	rpm2cpio tools/lsi_megacli/MegaCli-$(LSI_MEGACLI_VERSION)-1.noarch.rpm | cpio -idv
-	rpm2cpio tools/lsi_megacli/Lib_Utils-1.00-09.noarch.rpm | cpio -idv
 	if [ "$(TARGET)" = x86_64 ]; then \
-		mv opt/lsi/3rdpartylibs/x86_64/libsysfs.so.2.0.2 tools/lsi_megacli; \
 		mv opt/MegaRAID/MegaCli/MegaCli64 tools/lsi_megacli/cli.bin; \
 	else \
-		mv opt/lsi/3rdpartylibs/libsysfs.so.2.0.2 tools/lsi_megacli; \
 		mv opt/MegaRAID/MegaCli/MegaCli tools/lsi_megacli/cli.bin; \
 	fi
 	rm -Rf \
 		opt \
-		tools/lsi_megacli/*.rpm \
-		tools/lsi_megacli/MegaCliLin.zip
+		tools/lsi_megacli/*.rpm
 	printf '#!/bin/sh\nCLI_DIR=$$(dirname "$$0")\nLD_LIBRARY_PATH="$$CLI_DIR" "$$CLI_DIR/cli.bin" $$@ -NoLog\nexit $$?\n' >tools/lsi_megacli/cli
 	chmod a+x tools/lsi_megacli/cli
 
