@@ -106,11 +106,11 @@ proprietary/$(LSI_MEGACLI_VERSION)_MegaCLI.zip: proprietary/agreed
 
 proprietary/tw_cli-linux-x86_64-9.5.0.1.tgz: proprietary/agreed
 	mkdir -p proprietary
-	$(WGET) http://3ware.com/download/Escalade9690SA-Series/9.5.0.1/tw_cli-linux-x86_64-9.5.0.1.tgz 
+	$(WGET) http://3ware.com/download/Escalade9690SA-Series/9.5.0.1/tw_cli-linux-x86_64-9.5.0.1.tgz
 
 proprietary/tw_cli-linux-x86-9.5.0.1.tgz: proprietary/agreed
 	mkdir -p proprietary
-	$(WGET) http://3ware.com/download/Escalade9690SA-Series/9.5.0.1/tw_cli-linux-x86-9.5.0.1.tgz 
+	$(WGET) http://3ware.com/download/Escalade9690SA-Series/9.5.0.1/tw_cli-linux-x86-9.5.0.1.tgz
 
 ifeq ($(TARGET), x86_64)
 tools/amcc/cli: proprietary/tw_cli-linux-x86_64-9.5.0.1.tgz
