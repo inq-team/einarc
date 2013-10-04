@@ -177,6 +177,6 @@ tools/adaptec_arcconf/cli: proprietary/arcconf_v1_1_20324.zip
 	touch tools/adaptec_arcconf/cli proprietary/arcconf_v1_1_20324.zip
 endif
 
-proprietary/:arcconf_v1_1_20324.zip proprietary/agreed
+proprietary/arcconf_v1_1_20324.zip: proprietary/agreed
 	mkdir -p proprietary
 	$(WGET) http://download.adaptec.com/raid/storage_manager/arcconf_v1_1_20324.zip
