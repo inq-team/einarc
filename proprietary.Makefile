@@ -23,9 +23,9 @@ proprietary/agreed:
 # Module: areca
 #===============================================================================
 
-tools/areca/cli: proprietary/v1.82_81103.zip
+tools/areca/cli: proprietary/v1.9.0_120503.zip
 	mkdir -p tools/areca
-	unzip -j proprietary/v1.82_81103.zip -d tools/areca
+	unzip -j proprietary/v1.9.0_120503.zip -d tools/areca
 	chmod a+rx tools/areca/*
 	if [ "$(TARGET)" = x86_64 ]; then \
 		mv tools/areca/cli64 tools/areca/cli; \
@@ -34,11 +34,11 @@ tools/areca/cli: proprietary/v1.82_81103.zip
 		mv tools/areca/cli32 tools/areca/cli; \
 		rm -f tools/areca/cli64; \
 	fi
-	touch tools/areca/cli proprietary/v1.82_81103.zip
+	touch tools/areca/cli proprietary/v1.9.0_120503.zip
 
-proprietary/v1.82_81103.zip: proprietary/agreed
+proprietary/v1.9.0_120503.zip: proprietary/agreed
 	mkdir -p proprietary
-	$(WGET) ftp://ftp.areca.com.tw/RaidCards/AP_Drivers/Linux/CLI/v1.82_81103.zip
+	$(WGET) ftp://ftp.areca.com.tw/RaidCards/AP_Drivers/Linux/CLI/v1.9.0_120503.zip
 
 #===============================================================================
 # Module: lsi_megarc
