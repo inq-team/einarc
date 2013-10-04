@@ -66,7 +66,7 @@ proprietary/ut_linux_megarc_1.11.zip: proprietary/agreed
 # Module: lsi_megacli
 #===============================================================================
 
-LSI_MEGACLI_VERSION=8.02.21
+LSI_MEGACLI_VERSION=8.07.07
 
 tools/lsi_megacli/cli: proprietary/$(LSI_MEGACLI_VERSION)_MegaCLI.zip
 	rm -rf tools/lsi_megacli
