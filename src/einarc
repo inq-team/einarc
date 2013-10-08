@@ -3,7 +3,7 @@
 $LOAD_PATH.unshift('.')
 
 require 'getoptlong'
-require 'raid/baseraid'
+require 'raid/einarc'
 
 opts = GetoptLong.new(
 	[ '--help', GetoptLong::NO_ARGUMENT ],

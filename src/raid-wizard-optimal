@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-require 'raid/baseraid'
+require 'raid/einarc'
 
 FLASH_THRESHOLD = 32 * 1024.0 
 

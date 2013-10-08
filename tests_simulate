@@ -4,7 +4,7 @@ require 'stringio'
 
 $LOAD_PATH.unshift('src')
 
-require 'raid/baseraid'
+require 'raid/einarc'
 require 'raid/meta'
 
 include RAID

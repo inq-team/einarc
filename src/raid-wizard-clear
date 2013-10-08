@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-require 'raid/baseraid'
+require 'raid/einarc'
 
 adapters = []
 RAID::BaseRaid::query_adapters.each { |ad|

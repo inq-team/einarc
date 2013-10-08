@@ -1,9 +1,4 @@
 module RAID
-
-	VERSION = '2.0'
-
-	# We have no modules loaded by default
-
 	class Error < RuntimeError
 		attr_reader :text
 
@@ -426,11 +421,4 @@ module RAID
 			return non_nil_ids.size > 0 ? non_nil_ids : res
 		end
 	end
-end
-
-require 'raid/build-config'
-begin
-	require "#{$EINARC_VAR}/config"
-rescue LoadError
-	RAID::RAIDS = {}
 end

@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 
 $LOAD_PATH.unshift('.')
-require 'raid/baseraid'
+require 'raid/einarc'
 
 DISK_GROUP_SIZE=ARGV[0].to_i
 GROUP_NUMBER=ARGV[1].to_i
