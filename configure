@@ -15,8 +15,8 @@ require 'einarc/meta'
 options = {
 	'DEST_DIR' => '',
 	'BIN_DIR' => ENV['BIN_DIR'] || '/usr/local/bin',
-	'RUBY_SHARE_DIR' => (ENV['RUBY_SHARE_DIR'] || RbConfig::CONFIG['sitelibdir']) + '/raid',
-	'RUBY_LIB_DIR' => (ENV['RUBY_LIB_DIR'] || (RbConfig::CONFIG['vendorarchdir'] ? RbConfig::CONFIG['vendorarchdir'] : RbConfig::CONFIG['archdir'])) + '/raid',
+	'RUBY_SHARE_DIR' => (ENV['RUBY_SHARE_DIR'] || RbConfig::CONFIG['sitelibdir']) + '/einarc',
+	'RUBY_LIB_DIR' => (ENV['RUBY_LIB_DIR'] || (RbConfig::CONFIG['vendorarchdir'] ? RbConfig::CONFIG['vendorarchdir'] : RbConfig::CONFIG['archdir'])) + '/einarc',
 	'TARGET' => ENV['TARGET'] || `uname -m`.chomp,
 	'EINARC_VAR_DIR' => ENV['EINARC_VAR_DIR'] || '/var/lib/einarc',
 	'modules' => [],
@@ -35,7 +35,7 @@ begin
 		padding = "\n" + opts.summary_indent + ' ' * (opts.summary_width + 3)
 		module_help = padding + 'all - SPECIAL: build all available modules'
 		module_help += padding + 'auto - SPECIAL: autodetect which modules are required'
-		RAID::MODULES.each_pair { |k, v| module_help += "#{padding}#{k} - #{v[:desc]}" }
+		Einarc::MODULES.each_pair { |k, v| module_help += "#{padding}#{k} - #{v[:desc]}" }
 
 		opts.on('--target=TARGET', "target to build for [#{options['TARGET']}]") { |t| options['TARGET'] = t }
 		opts.on('--destdir=DIR', "destination root [#{options['DEST_DIR']}]") { |d| options['DEST_DIR'] = d }
@@ -46,15 +46,14 @@ begin
 		opts.on('--einarclibdir=DIR', "proprietary extensions directory [#{options['EINARC_LIB_DIR']}]") { |d| options['EINARC_LIB_DIR'] = d }
 		opts.on('--modules=LIST', "a comma-separated list of storage support modules to build [none]:#{module_help}") { |d|
 			options['modules'] = case d
-			when 'all' then RAID::MODULES.keys
+			when 'all' then Einarc::MODULES.keys
 			when 'none' then []
 			when 'auto'
-				$LOAD_PATH.unshift('src')
-				require 'raid/autodetect'
-				RAID::autodetect
+				require 'einarc/autodetect'
+				Einarc::autodetect
 			else d.split(/, */)
 			end
-			options['modules'].each { |m| raise OptionParser::InvalidArgument unless RAID::MODULES[m] }
+			options['modules'].each { |m| raise OptionParser::InvalidArgument unless Einarc::MODULES[m] }
 		}
 		opts.on_tail('-h', '--help', 'Show this message') { puts opts; exit }
 	}.parse!
@@ -83,24 +82,24 @@ TARGET=#{options['TARGET']}
 # Modules to build: #{options['modules'].join(', ')}
 
 tools: \\
-#{options['modules'].collect { |m| "\ttools/#{m}/cli" if RAID::MODULES[m][:proprietary] }.compact.join(" \\\n")}
+#{options['modules'].collect { |m| "\ttools/#{m}/cli" if Einarc::MODULES[m][:proprietary] }.compact.join(" \\\n")}
 __EOF__
 }
 
-File.open('src/raid/build-config.rb', 'w') { |f|
+File.open('lib/einarc/build-config.rb', 'w') { |f|
 	f.puts <<__EOF__
 # DO NOT EDIT: IT'S A GENERATED FILE! USE ./configure to REGENERATE!
 
 module Einarc
-	$EINARC_LIB = '#{options['EINARC_LIB_DIR']}'
-	$EINARC_VAR = '#{options['EINARC_VAR_DIR']}'
-	$TARGET = '#{options['TARGET']}'
-	$RUBY_SHARE_DIR = '#{options['RUBY_SHARE_DIR']}'
+	EINARC_LIB = '#{options['EINARC_LIB_DIR']}'
+	EINARC_VAR = '#{options['EINARC_VAR_DIR']}'
+	TARGET = '#{options['TARGET']}'
+	RUBY_SHARE_DIR = '#{options['RUBY_SHARE_DIR']}'
 end
 __EOF__
 }
 
-RAID.generate_ruby_config(options['modules'], 'config.rb')
+Einarc.generate_ruby_config(options['modules'], 'config.rb')
 
 #===============================================================================
 # Report success
