@@ -1,7 +1,7 @@
 require 'pty'
 require 'expect'
 
-module RAID
+module Einarc
 	class Areca < BaseRaid
 		PCI_IDS = {
 			'ARC-1110' => ["17d3", "1110"],

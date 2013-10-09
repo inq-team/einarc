@@ -1,8 +1,8 @@
-require 'raid/baseraid'
-require 'raid/meta'
-RAID::MODULES.each_key { |k| require "raid/#{k}" }
+require 'einarc/baseraid'
+require 'einarc/meta'
+Einarc::MODULES.each_key { |k| require "einarc/#{k}" }
 
-module RAID
+module Einarc
 
 	@@pcimap = nil
 
@@ -10,7 +10,7 @@ module RAID
 		return @@pcimap if @@pcimap
 		@@pcimap = {}
 		MODULES.each_pair { |filename, m|
-			klass = RAID.const_get(m[:classname])
+			klass = Einarc.const_get(m[:classname])
 			if klass.constants.include?('PCI_IDS')
 				klass::PCI_IDS.each_value { |ids| @@pcimap[ids] = filename }
 			end

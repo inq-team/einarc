@@ -1,8 +1,8 @@
-module RAID
+module Einarc
 	module Extensions
 		module Hotspare
 			def self.included(another)
-				if another.ancestors.include? RAID::BaseRaid
+				if another.ancestors.include? Einarc::BaseRaid
 					another.class_eval do
 						alias_method :original_method_names, :method_names
 						alias_method :original_shortcuts, :shortcuts

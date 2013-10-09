@@ -1,4 +1,4 @@
-module RAID
+module Einarc
 	class LSIMegaCli < BaseRaid
 		PCI_IDS = {
 			'1000-0411' => ["1000", "0411"],

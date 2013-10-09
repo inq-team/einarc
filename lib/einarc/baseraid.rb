@@ -1,4 +1,4 @@
-module RAID
+module Einarc
 	class Error < RuntimeError
 		attr_reader :text
 

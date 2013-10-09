@@ -5,8 +5,8 @@ RbConfig = Config unless defined?(RbConfig)
 
 require 'optparse'
 
-$LOAD_PATH.unshift('.')
-require 'src/raid/meta'
+$LOAD_PATH.unshift('lib')
+require 'einarc/meta'
 
 #===============================================================================
 # Initialize options from environment and with detected defaults
@@ -91,7 +91,7 @@ File.open('src/raid/build-config.rb', 'w') { |f|
 	f.puts <<__EOF__
 # DO NOT EDIT: IT'S A GENERATED FILE! USE ./configure to REGENERATE!
 
-module RAID
+module Einarc
 	$EINARC_LIB = '#{options['EINARC_LIB_DIR']}'
 	$EINARC_VAR = '#{options['EINARC_VAR_DIR']}'
 	$TARGET = '#{options['TARGET']}'

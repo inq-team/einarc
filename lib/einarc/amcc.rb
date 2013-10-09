@@ -1,6 +1,6 @@
 # vim: ai noexpandtab
 
-module RAID
+module Einarc
 	class Amcc < BaseRaid
 		PCI_IDS = {
 			'5xxx/6xxx-series PATA-RAID' => ["13c1", "1000"],

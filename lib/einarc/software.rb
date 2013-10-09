@@ -1,10 +1,10 @@
 # Software RAID module needs autodetect to distinguish standalone
 # physical HDDs from logical HDDs made by hardware RAID controllers
-require 'raid/autodetect'
+require 'einarc/autodetect'
 
-require 'raid/extensions/hotspare.rb'
+require 'einarc/extensions/hotspare'
 
-module RAID
+module Einarc
 	class Software < BaseRaid
 
 		include Extensions::Hotspare

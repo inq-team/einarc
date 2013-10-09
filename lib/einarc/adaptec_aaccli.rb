@@ -1,4 +1,4 @@
-module RAID
+module Einarc
 	class AdaptecAacCli < BaseRaid
 		AACCLI = "#{$EINARC_LIB}/adaptec_aaccli/cli"
 

@@ -2,16 +2,16 @@
 
 require 'stringio'
 
-$LOAD_PATH.unshift('src')
+$LOAD_PATH.unshift('lib')
 
-require 'raid/einarc'
-require 'raid/meta'
+require 'einarc/baseraid'
+require 'einarc/meta'
 
-include RAID
+include Einarc
 
 # Load all available RAID adapters
 MODULES.each_pair { |k, v|
-	require "raid/#{k}"
+	require "einarc/#{k}"
 	v[:class] = Kernel.const_get(v[:classname])
 }
 

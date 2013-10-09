@@ -2,7 +2,7 @@
 # supported in this version of Einarc and some methods to aid its
 # configuration and installation.
 
-module RAID
+module Einarc
 
 	MODULES = {
 		'areca' => {
@@ -53,8 +53,8 @@ module RAID
 			f.puts <<__EOF__
 # DO NOT EDIT: IT'S A GENERATED FILE! USE ./einarc-install TO REGENERATE!
 
-module RAID
-#{modules.collect { |m| "\trequire 'raid/#{m}'" }.join("\n")}
+module Einarc
+#{modules.collect { |m| "\trequire 'einarc/#{m}'" }.join("\n")}
 
 	RAIDS = {
 #{modules.collect { |m| "\t\t'#{m}' => #{MODULES[m][:classname]}," }.join("\n")}

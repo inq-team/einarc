@@ -1,6 +1,6 @@
-require 'raid/extensions/hotspare'
+require 'einarc/extensions/hotspare'
 
-module RAID
+module Einarc
 	class AdaptecArcConf < BaseRaid
 
 		include Extensions::Hotspare
