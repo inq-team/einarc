@@ -2,7 +2,7 @@ proprietary
 tools
 config.Makefile
 config.rb
-src/raid/build-config.rb
+lib/einarc/build-config.rb
 doc/NEWS
 doc/VERSION
 doc/man
