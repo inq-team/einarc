@@ -17,7 +17,7 @@ module Einarc
 			'1000-0409' => ["1000", "0409"],
 		}
 
-		MEGARC = "#{$EINARC_LIB}/lsi_megarc/cli"
+		MEGARC = "#{Einarc::EINARC_LIB}/lsi_megarc/cli"
 
 		def initialize(adapter_num = nil)
 			super()

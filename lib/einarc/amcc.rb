@@ -11,7 +11,7 @@ module Einarc
 			'9690SA SAS/SATA-II RAID PCIe' => ["13c1", "1005"],
 		}
 
-		TWCLI = "#{$EINARC_LIB}/amcc/cli"
+		TWCLI = "#{Einarc::EINARC_LIB}/amcc/cli"
 
 		# FIXME get this from configure?
 		SG3INQ = "/usr/bin/sg_inq"

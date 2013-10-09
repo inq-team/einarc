@@ -5,7 +5,7 @@ module Einarc
 
 		include Extensions::Hotspare
 
-		CLI = "#{$EINARC_LIB}/adaptec_arcconf/cli"
+		CLI = "#{Einarc::EINARC_LIB}/adaptec_arcconf/cli"
 
 		PCI_IDS = {
 			'Adaptec 3805'  => ['9005', '0285', '9005', '02bc'],

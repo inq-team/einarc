@@ -23,7 +23,7 @@ module Einarc
 			'ARC-1680' => ["17d3", "1680"],
 			'ARC-1681' => ["17d3", "1681"],
 		}
-		CLI = "#{$EINARC_LIB}/areca/cli"
+		CLI = "#{Einarc::EINARC_LIB}/areca/cli"
 		ARECA_PASSWORD = '0000'
 
 		def initialize(adapter_num = nil)
@@ -553,7 +553,7 @@ module Einarc
 		end
 
 		def open_cli
-			@cli_r, @cli_w, @cli_pid = PTY.spawn("#{$EINARC_LIB}/areca/cli")
+			@cli_r, @cli_w, @cli_pid = PTY.spawn("#{Einarc::EINARC_LIB}/areca/cli")
 			@cli_w.sync = true
 
 			# Turn on for debugging

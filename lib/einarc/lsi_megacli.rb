@@ -12,7 +12,7 @@ module Einarc
 			'1028-0015' => ["1028", "0015"],
 		}
 
-		MEGACLI = "#{$EINARC_LIB}/lsi_megacli/cli"
+		MEGACLI = "#{Einarc::EINARC_LIB}/lsi_megacli/cli"
 
 		def initialize(adapter_num = nil)
 			super()

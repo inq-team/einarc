@@ -1,6 +1,6 @@
 module Einarc
 	class AdaptecAacCli < BaseRaid
-		AACCLI = "#{$EINARC_LIB}/adaptec_aaccli/cli"
+		AACCLI = "#{Einarc::EINARC_LIB}/adaptec_aaccli/cli"
 
 		def initialize(adapter_num = nil)
 			super()
