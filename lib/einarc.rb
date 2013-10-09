@@ -6,7 +6,7 @@ require 'einarc/baseraid'
 
 require 'einarc/build-config'
 begin
-	require "#{$EINARC_VAR}/config"
+	require "#{Einarc::EINARC_VAR}/config"
 rescue LoadError
 	Einarc::RAIDS = {}
 end
