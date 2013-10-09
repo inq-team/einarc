@@ -1,17 +1,17 @@
 #!/usr/bin/env ruby
 
-$LOAD_PATH.unshift('.')
-require 'raid/einarc'
+$LOAD_PATH.unshift('../lib')
+require 'einarc'
 
-DISK_GROUP_SIZE=ARGV[0].to_i
-GROUP_NUMBER=ARGV[1].to_i
+DISK_GROUP_SIZE = ARGV[0].to_i
+GROUP_NUMBER = ARGV[1].to_i
 
 exit 1 if DISK_GROUP_SIZE == 0 and GROUP_NUMBER > 0
-exit 1 if RAID::BaseRaid::query_adapters.length == 0
+exit 1 if Einarc::BaseRaid::query_adapters.length == 0
 
 succeeded = 0
 
-RAID::BaseRaid::query_adapters.each { |ad|
+Einarc::BaseRaid::query_adapters.each { |ad|
 	a = RAID::RAIDS[ad[:driver]].new(ad[:num])
 	a.logical_clear
 	pl = a._physical_list.keys.sort
@@ -23,7 +23,7 @@ RAID::BaseRaid::query_adapters.each { |ad|
 	succeeded += 1
 
 	if (DISK_GROUP_SIZE != 0) then
-		now_testing = pl[ (DISK_GROUP_SIZE * GROUP_NUMBER) .. (DISK_GROUP_SIZE * (GROUP_NUMBER+1)-1) ]
+		now_testing = pl[(DISK_GROUP_SIZE * GROUP_NUMBER) .. (DISK_GROUP_SIZE * (GROUP_NUMBER + 1) - 1)]
 	else
 		now_testing = pl
 	end
