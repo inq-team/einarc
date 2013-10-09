@@ -1,9 +1,9 @@
 #!/usr/bin/env ruby
 
-$LOAD_PATH.unshift('.')
+$LOAD_PATH.unshift('../lib')
 
 require 'getoptlong'
-require 'raid/einarc'
+require 'einarc'
 
 opts = GetoptLong.new(
 	[ '--help', GetoptLong::NO_ARGUMENT ],
@@ -37,7 +37,7 @@ EOF
 		need_list = true
 	when '--version'
 		print <<EOF;
-Einarc v#{RAID::VERSION}: unified storage/RAID controller command line interface
+Einarc v#{Einarc::VERSION}: unified storage/RAID controller command line interface
 
 License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
 This is free software: you are free to change and redistribute it.
@@ -46,7 +46,7 @@ There is NO WARRANTY, to the extent permitted by law.
 Installed modules
 -----------------
 EOF
-		RAID::RAIDS.each_key { |k| puts k }
+		Einarc::RAIDS.each_key { |k| puts k }
 		exit
 	when '--adapter'
 		adapter_num = arg.to_i
@@ -59,25 +59,25 @@ EOF
 
 begin
 	if need_list
-		RAID::BaseRaid.list_adapters
+		Einarc::BaseRaid.list_adapters
 		exit
 	end
 	if adapter_type
-		raise RAID::Error.new("Unknown adapter type specified: \"#{adapter_type}\"") unless RAID::RAIDS[adapter_type]
-		a = RAID::RAIDS[adapter_type].new(adapter_num)
+		raise Einarc::Error.new("Unknown adapter type specified: \"#{adapter_type}\"") unless RAID::RAIDS[adapter_type]
+		a = Einarc::RAIDS[adapter_type].new(adapter_num)
 	else
 		# No adapter specified, try to guess one if it's obvious
-		ads = RAID::BaseRaid.query_adapters
+		ads = Einarc::BaseRaid.query_adapters
 		if ads.length == 0
-			raise RAID::Error.new('No supported adapters found')
+			raise Einarc::Error.new('No supported adapters found')
 		elsif ads.length == 1
-			a = RAID::RAIDS[ads[0][:driver]].new(ads[0][:num])
+			a = Einarc::RAIDS[ads[0][:driver]].new(ads[0][:num])
 		else
-			raise RAID::Error.new('Multiple adapters exist: use --list to list all adapters, choose one and specify it with --type and --adapter')
+			raise Einarc::Error.new('Multiple adapters exist: use --list to list all adapters, choose one and specify it with --type and --adapter')
 		end
 	end
 	a.handle_method(ARGV)
-rescue RAID::Error => e
+rescue Einarc::Error => e
 	puts e.to_s
 	exit 1
 end
