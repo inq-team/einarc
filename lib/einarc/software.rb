@@ -780,19 +780,20 @@ module Einarc
 		# walking, when udevadm utility is not available.
 		def phys_belongs_to_adapters_manual(device)
 			bare_dev = device.gsub(/^\/dev\//, '')
-			path = File.readlink("/sys/block/#{bare_dev}/device")
-			path.split("/").reduce("/sys/block/sda"){ |path, value|
-				path += "/#{value}"
-				founded ||= Einarc::find_adapter_by_pciid(
-					*[ "vendor", "device", "subsystem_vendor", "subsystem_device" ].collect { |f|
-						data = sysfs_read_file( "#{path}/#{f}" )
+			full_path = File.readlink("/sys/block/#{bare_dev}/device")
+
+			path = "/sys/block/#{bare_dev}"
+			full_path.split('/').each { |dir|
+				path += "/#{dir}"
+				return true if Einarc::find_adapter_by_pciid(
+					*['vendor', 'device', 'subsystem_vendor', 'subsystem_device'].collect { |f|
+						data = sysfs_read_file("#{path}/#{f}")
 						data.gsub!(/^0x/, "") if data
 						data
 					}
 				)
-				path
 			}
-			return founded
+			return false
 		end
 
 		def calculate_per_disc_requirements(discs, raid_level, requested_size, chunk_size)
