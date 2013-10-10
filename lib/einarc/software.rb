@@ -691,17 +691,20 @@ module Einarc
 		end
 
 		# Converts SCSI enumeration (1:0) to physical device name (hda)
+		# Official Linux kernel algorithm is available in sd_format_disk_name(...) at
+		# http://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/drivers/scsi/sd.c#n2763
 		def self.scsi_to_device(id)
 			raise Error.new("Invalid physical disc specification \"#{id}\": \"a:b\" or \"a:b:c\" expected") unless id =~ /^([01]):(\d+):?(\d+)?$/
 			res = ($1 == '1') ? '/dev/hd' : '/dev/sd'
 
-			i = $2.to_i
+			i = $2.to_i - 1
 			cs = []
-			(0..(Math.log(i) / Math.log(26)).floor).collect { |x| x }.reverse.each { |n|
-				cs << i / 26 ** n
-				i %= 26 ** n
-			}
-			res += cs.map { |c| ('a'[0].ord + c - 1).chr }.join("")
+			while i >= 0
+				cs.unshift(i % 26)
+				i = (i / 26) - 1
+			end
+
+			res += cs.map { |c| number_to_char(c + 1) }.join
 
 			res += $3 if $3
 			return res
