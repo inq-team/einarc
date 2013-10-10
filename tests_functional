@@ -1,0 +1,50 @@
+#!/usr/bin/env ruby
+
+$LOAD_PATH.unshift('lib')
+
+require 'einarc/baseraid'
+
+# Throw in fake EINARC_LIB, it's for testing purposes anyway
+Einarc::EINARC_LIB = ''
+
+require 'einarc/software'
+
+include Einarc
+
+require 'test/unit'
+
+class SoftwareTest < Test::Unit::TestCase
+	PHYS_SCSI_TESTS = [
+		['0:1', 'sda'],
+		['1:1', 'hda'],
+		['0:2', 'sdb'],
+		['0:2:5', 'sdb5'],
+		['0:3:23', 'sdc23'],
+		['0:26', 'sdz'],
+		['0:27', 'sdaa'],
+		['0:28', 'sdab'],
+		['0:28:245', 'sdab245'],
+		['0:52', 'sdaz'],
+		['0:53', 'sdba'],
+		['0:78', 'sdbz'],
+		['0:79', 'sdca'],
+		['0:676', 'sdyz'],
+		['0:677', 'sdza'],
+		['0:702', 'sdzz'],
+		['0:703', 'sdaaa'],
+	]
+
+	def test_phys_to_scsi
+		PHYS_SCSI_TESTS.each { |t|
+			scsi, phys = t
+			assert_equal(scsi, Software.phys_to_scsi(phys))
+		}
+	end
+
+	def test_scsi_to_device
+		PHYS_SCSI_TESTS.each { |t|
+			scsi, phys = t
+			assert_equal("/dev/#{phys}", Software.scsi_to_device(scsi))
+		}
+	end
+end
