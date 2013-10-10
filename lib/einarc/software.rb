@@ -678,11 +678,11 @@ module Einarc
 			pre, root, post = $1, $2, $3
 			return name unless pre and root
 			res = $1 == 's' ? "0" : "1"
-			res += ":" + root.split(//).map{
+			res += ":" + root.split(//).map {
 				|c| c[0].ord - 'a'[0].ord
-			}.reverse.each_with_index.collect{ |c, index|
+			}.reverse.each_with_index.collect { |c, index|
 				(c+1) * 26**index
-			}.inject{ |sum, x| sum + x }.to_s
+			}.inject { |sum, x| sum + x }.to_s
 			res += ":#{post}" unless post.empty?
 			return res
 		end
@@ -694,11 +694,11 @@ module Einarc
 
 			i = $2.to_i
 			cs = []
-			( 0 .. (Math.log(i) / Math.log(26)).floor ).collect{|x| x}.reverse.each{ |n|
-				cs << i / 26**n
-				i %= 26**n
+			(0..(Math.log(i) / Math.log(26)).floor).collect { |x| x }.reverse.each { |n|
+				cs << i / 26 ** n
+				i %= 26 ** n
 			}
-			res += cs.map{ |c| ('a'[0].ord + c -1).chr }.join("")
+			res += cs.map { |c| ('a'[0].ord + c - 1).chr }.join("")
 
 			res += $3 if $3
 			return res
