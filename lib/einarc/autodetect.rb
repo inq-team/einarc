@@ -24,7 +24,7 @@ module Einarc
 
 		res = []
 		pci.split("\n").each { |l|
-			next unless l =~ /^(.*?) "(.*?)" "(.*?)" "(.*?)"(.*?)"(.*?)" "(.*?)"$/
+			raise "Unable to parse lspci line #{l.inspect}: autodetection is not possible" unless l =~ /^(.*?) "(.*?)" "(.*?)" "(.*?)"(.*?)"(.*?)" "(.*?)"$/
 			vendor_id = $3
 			product_id = $4
 #			p [vendor_id, product_id]
