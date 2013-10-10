@@ -35,7 +35,7 @@ module Einarc
 		# ======================================================================
 
 		def self.query(res)
-			return unless RAID::autodetect.include? "areca"
+			return unless Einarc::autodetect.include? "areca"
 			begin
 				`#{CLI} main`.each_line { |l|
 					res << {

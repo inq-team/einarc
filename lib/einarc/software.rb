@@ -713,7 +713,7 @@ module Einarc
 			founded = false
 			headers.select{ |h| h =~ /looking at parent.*\/devices\/pci.*\/\w{4}:\w{2}:\w{2}\.\w..$/ }.each { |h|
 				section = sections[ headers.index( h ) + 1 ].split(/\n/)
-				founded ||= RAID::find_adapter_by_pciid(
+				founded ||= Einarc::find_adapter_by_pciid(
 					get_id(section, "vendor"),
 					get_id(section, "device"),
 					get_id(section, "subsystem_vendor"),
@@ -727,7 +727,7 @@ module Einarc
 			path = File.readlink( "/sys/block/#{ device.gsub(/^\/dev\//, '') }/device" )
 			path.split("/").reduce("/sys/block/sda"){ |path, value|
 				path += "/#{value}"
-				founded ||= RAID::find_adapter_by_pciid(
+				founded ||= Einarc::find_adapter_by_pciid(
 					*[ "vendor", "device", "subsystem_vendor", "subsystem_device" ].collect { |f|
 						data = sysfs_read_file( "#{path}/#{f}" )
 						data.gsub!(/^0x/, "") if data
