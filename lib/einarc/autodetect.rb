@@ -11,7 +11,11 @@ module Einarc
 		@@pcimap = {}
 		MODULES.each_pair { |filename, m|
 			klass = Einarc.const_get(m[:classname])
-			if klass.constants.include?('PCI_IDS')
+			cnst = klass.constants
+			# Ruby 1.8 vs 1.9 compatibility: klass.constants is a collection
+			# that contains Strings in Ruby 1.8 and Symbols in Ruby 1.9, so
+			# we'll check both
+			if cnst.include?('PCI_IDS') or cnst.include?(:PCI_IDS)
 				klass::PCI_IDS.each_value { |ids| @@pcimap[ids] = filename }
 			end
 		}
