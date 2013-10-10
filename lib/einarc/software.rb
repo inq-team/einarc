@@ -107,7 +107,7 @@ module Einarc
 			File.open(MDSTAT_LOCATION, 'r') { |f| f.each_line { |l|
 				if l =~ MDSTAT_PATTERN
 					num = $1.to_i
-					parse_physical_string($3).collect { |d| scsi_to_device(d) }.each { |d|
+					self.class.parse_physical_string($3).collect { |d| self.class.scsi_to_device(d) }.each { |d|
 						run("/dev/md#{ num } --fail detached --remove detached") if ( detached?(d) and spare?(d) )
 					}
 				end
@@ -142,7 +142,7 @@ module Einarc
 				"recovering" => "rebuilding",
 			}
 			ld[:state] = states[ info["State"].split(", ").select { |s| states.has_key? s }.last ]
-			ld[:physical] = drives.keys.select { |drive| drives[drive] and drives[drive] != "removed" }.collect { |drive| phys_to_scsi drive }
+			ld[:physical] = drives.keys.select { |drive| drives[drive] and drives[drive] != "removed" }.collect { |drive| self.class.phys_to_scsi drive }
 
 			return ld
 		end
@@ -173,7 +173,7 @@ module Einarc
 				raise Error.new("Physical drive #{ address } is not available; see state") if ls[:state] != "free"
 				ary << {
 					:address => address,
-					:devnode => scsi_to_device(address),
+					:devnode => self.class.scsi_to_device(address),
 					:info => ls
 				}
 			end
@@ -258,9 +258,9 @@ module Einarc
 		# ======================================================================
 
 		def logical_hotspare_add(ld, drv)
-			raise Error.new("Device #{drv} is already in RAID") if raid_member?(scsi_to_device(drv))
+			raise Error.new("Device #{drv} is already in RAID") if raid_member?(self.class.scsi_to_device(drv))
 			raise Error.new("Can not add hotspare to level 0 RAID") if level_of("/dev/md#{ld}") == '0'
-			drv = scsi_to_device drv
+			drv = self.class.scsi_to_device drv
 			zero_superblock drv
 			run("/dev/md#{ld} --add #{drv}")
 		end
@@ -268,7 +268,7 @@ module Einarc
 		def logical_hotspare_delete(ld, drv)
 			raise Error.new("This drive is not hotspare") unless get_physical_hotspare(drv)
 			raise Error.new("Hotspare is dedicated not to that array") if _logical_physical_list(ld).select { |d| d[:num] == drv }.empty?
-			run("/dev/md#{ld} --remove #{scsi_to_device(drv)}")
+			run("/dev/md#{ld} --remove #{self.class.scsi_to_device(drv)}")
 		end
 
 		# ======================================================================
@@ -283,7 +283,7 @@ module Einarc
 					next unless ent =~ /(\w+)\[\d+\]/
 					state = "hotspare" if spare?($1)
 					state = "failed" if failed?($1)
-					drv = phys_to_scsi($1)
+					drv = self.class.phys_to_scsi($1)
 
 					res.push( { :num => drv, :state => state } )
 				}
@@ -300,7 +300,7 @@ module Einarc
 			for device in devices
 				# Possibility to skip USB mass storage devices
 				# next if usb_device?(device)
-				target = phys_to_scsi(device.gsub(/^\/dev\//, ''))
+				target = self.class.phys_to_scsi(device.gsub(/^\/dev\//, ''))
 				d = { :state => 'unknown' }
 				d[:vendor] = physical_read_file(device, "device/vendor") or ""
 				d[:vendor] = nil if d[:vendor] =~ /^ATA\s*$/
@@ -325,7 +325,7 @@ module Einarc
 			_logical_list.each do |logical|
 				logical[:physical].each do |target|
 					# Skip failed or non-existent drives
-					next if failed?( scsi_to_device(target) ) or not res[target]
+					next if failed?(self.class.scsi_to_device(target)) or not res[target]
 
 					next if res[target][:state] == 'hotspare'
 					if res[target][:state].is_a? Array
@@ -343,8 +343,8 @@ module Einarc
 			needed_smart_section_re = /START OF READ SMART DATA SECTION/ 
 
 			# Determine do we need to use "-d ata" option
-			smart_output = `smartctl -A #{ scsi_to_device drv }`
-			smart_output = `smartctl -d ata -A #{ scsi_to_device drv }` unless smart_output =~ needed_smart_section_re
+			smart_output = `smartctl -A #{self.class.scsi_to_device drv}`
+			smart_output = `smartctl -d ata -A #{self.class.scsi_to_device drv}` unless smart_output =~ needed_smart_section_re
 
 			return parse_smart_output( smart_output )
 		end
@@ -436,7 +436,7 @@ module Einarc
 			page = "0x19" # SAS SSP port control mode page
 			subpage = "0x1" # SAS Phy Control and Discover mode subpage
 
-			drv = scsi_to_device drv
+			drv = self.class.scsi_to_device drv
 			wwns = `sginfo -t #{page},#{subpage} #{ sgmaps[ drv ] }`.split("\n").grep(/^SAS address/).map{ |l| l.split(/\s+/).last }
 			return wwns if wwns.size > 0
 			# Otherwise we are dealing with the SATA
@@ -486,21 +486,21 @@ module Einarc
 		# ======================================================================
 
 		def get_physical_writecache( drv )
-			return `sdparm --quiet --get WCE #{ scsi_to_device drv }`.split[1]
+			return `sdparm --quiet --get WCE #{self.class.scsi_to_device drv}`.split[1]
 		end
 
 		def set_physical_writecache_0( drv )
-			`sdparm --set WCE=0 #{ scsi_to_device drv }`
+			`sdparm --set WCE=0 #{self.class.scsi_to_device drv}`
 		end
 
 		def set_physical_writecache_1( drv )
-			`sdparm --set WCE=1 #{ scsi_to_device drv }`
+			`sdparm --set WCE=1 #{self.class.scsi_to_device drv}`
 		end
 
 		# ======================================================================
 
 		def set_physical_powersaving_0( drv )
-			dev = scsi_to_device drv
+			dev = self.class.scsi_to_device drv
 
 			# All commands below may fail, but there is no need to check it
 			# ATA/SATA: Try setting maximum performance mode of power management
@@ -562,7 +562,7 @@ module Einarc
 			return out
 		end
 
-		def parse_physical_string(str)
+		def self.parse_physical_string(str)
 			res = []
 			str.split(/ /).each { |ph|
 				res[$2.to_i] = phys_to_scsi($1) if ph =~ /^(.+)\[(\d+)\].*$/
