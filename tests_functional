@@ -34,6 +34,18 @@ class SoftwareTest < Test::Unit::TestCase
 		['0:703', 'sdaaa'],
 	]
 
+	def test_char_to_number
+		assert_equal(0, Software.char_to_number('a'))
+		assert_equal(1, Software.char_to_number('b'))
+		assert_equal(25, Software.char_to_number('z'))
+	end
+
+	def test_number_to_char
+		assert_equal('a', Software.number_to_char(0))
+		assert_equal('b', Software.number_to_char(1))
+		assert_equal('z', Software.number_to_char(25))
+	end
+
 	def test_phys_to_scsi
 		PHYS_SCSI_TESTS.each { |t|
 			scsi, phys = t
