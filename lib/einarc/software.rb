@@ -678,11 +678,12 @@ module Einarc
 			pre, root, post = $1, $2, $3
 			return name unless pre and root
 
-			dev_num = root.split(//).map { |c|
+			dev_num = 0
+			root.split(//).map { |c|
 				char_to_number(c)
-			}.reverse.each_with_index.collect { |c, index|
-				c * 26 ** index
-			}.inject { |sum, x| sum + x }
+			}.reverse.each_with_index { |c, index|
+				dev_num += c * 26 ** index
+			}
 
 			res = pre == 's' ? "0" : "1"
 			res += ":#{dev_num}"
