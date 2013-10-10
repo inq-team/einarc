@@ -16,6 +16,7 @@ module Einarc
 
 		def initialize(adapter_num = nil)
 			super()
+			check_software_requirements
 			find_all_arrays
 		end
 
@@ -38,7 +39,7 @@ module Einarc
 			res['Controller Name'] = 'Linux software RAID (md)'
 			res['RAID Level Supported'] = '0, 1, 4, 5, 6, 10'
 			res['Kernel Version'] = `uname -r`.chomp
-			res['mdadm Version'] = `mdadm -V 2>&1`.chomp
+			res['mdadm Version'] = @software[:mdadm]
 			return res
 		end
 
@@ -55,7 +56,7 @@ module Einarc
 				run("--assemble --uuid=#{uuid} #{name}") unless active?(name)
 			end
 		end
-		
+
 		def rescan_bus
 			Dir.glob("/sys/class/scsi_host/*").each { |host|
 				File.open("#{host}/scan", 'w') { |f| f.write("- - -") }
@@ -529,6 +530,21 @@ module Einarc
 
 		private
 
+		# Checks what software is present at the system, if it's sufficient for
+		# us to continue at all or would require to use any workarounds.
+		def check_software_requirements
+			@software = {}
+
+			begin
+				@software[:mdadm] = run('--version').join
+			rescue Error => e
+				raise Error.new('mdadm is not available')
+			end
+
+			@software[:udevadm] = `udevadm --version`.chomp
+			@software[:udevadm] = nil if $?.exitstatus != 0
+		end
+
 		def run(command, retry_ = false)
 			tries = retry_ ? RETRIES_NUMBER : 0
 			begin
@@ -729,6 +745,16 @@ module Einarc
 
 		# Determine if device belongs to any known by Einarc controller
 		def phys_belongs_to_adapters(device)
+			if @software[:udevadm]
+				phys_belongs_to_adapters_udevadm(device)
+			else
+				phys_belongs_to_adapters_manual(device)
+			end
+		end
+
+		# Determine if a device belongs to any Einarc-handled adapters.
+		# This version of procedure is a main implementation that uses udevadm.
+		def phys_belongs_to_adapters_udevadm(device)
 			# Try to determine via udev attribute walking
 			def get_id( section, what )
 				return section.collect { |l| l =~ /ATTRS.#{what}.==.*(\w{4})/; $1 if $1 }.compact.last
@@ -747,10 +773,14 @@ module Einarc
 				) ? true : false
 			}
 			return founded if founded
+		end
 
-			# Try to fallback to manual sysfs path walking
-			device.gsub!(/^\/dev\//, '')
-			path = File.readlink( "/sys/block/#{ device.gsub(/^\/dev\//, '') }/device" )
+		# Determine if a device belongs to any Einarc-handled adapters.
+		# This version of procedure is a fallback that uses manual sysfs
+		# walking, when udevadm utility is not available.
+		def phys_belongs_to_adapters_manual(device)
+			bare_dev = device.gsub(/^\/dev\//, '')
+			path = File.readlink("/sys/block/#{bare_dev}/device")
 			path.split("/").reduce("/sys/block/sda"){ |path, value|
 				path += "/#{value}"
 				founded ||= Einarc::find_adapter_by_pciid(
