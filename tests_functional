@@ -59,4 +59,10 @@ class SoftwareTest < Test::Unit::TestCase
 			assert_equal("/dev/#{phys}", Software.scsi_to_device(scsi))
 		}
 	end
+
+	def test_parse_physical_string
+		assert_equal(['0:1'], Software.parse_physical_string('sda[0]'))
+		assert_equal(['0:1:2', '0:2:2'], Software.parse_physical_string('sdb2[1] sda2[0]'))
+		assert_equal(['0:1', '0:2'], Software.parse_physical_string('sda[0] sdb[1]'))
+	end
 end
