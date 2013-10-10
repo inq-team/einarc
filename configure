@@ -49,6 +49,7 @@ begin
 			when 'all' then Einarc::MODULES.keys
 			when 'none' then []
 			when 'auto'
+				Einarc::EINARC_LIB = options['EINARC_LIB_DIR']
 				require 'einarc/autodetect'
 				Einarc::autodetect
 			else d.split(/, */)
