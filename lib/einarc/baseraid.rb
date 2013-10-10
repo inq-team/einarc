@@ -275,7 +275,7 @@ module Einarc
 		def handle_property(obj_name, command, obj_num, prop_name, value = nil)
 #			p obj_name, obj_num, command, prop_name, value
 
-			public_methods_serialized = public_methods.collect{ |m| m.to_s }
+			public_methods_serialized = public_methods.collect { |m| m.to_s }
 			avail_props = public_methods_serialized.grep(/^#{command}_#{obj_name}_/).collect { |x|
 				s = x.gsub(/^#{command}_#{obj_name}_/, '')
 				s = s.gsub(/_.*?$/, '') if s =~ /_/
@@ -366,7 +366,7 @@ module Einarc
 
 		def sysfs_read_file(path)
 			begin
-				return File.open(path, "r").readline.chop.gsub(/[^[:print:]]/,"")
+				return File.open(path, 'r').readline.chop.gsub(/[^[:print:]]/, '')
 			rescue Errno::ENOENT
 				return nil
 			end
@@ -374,10 +374,10 @@ module Einarc
 
 		# Read single line from block device-related files in sysfs
 		def physical_read_file(device, source)
-			return sysfs_read_file( "/sys/block/#{device.gsub(/^\/dev\//, '')}/#{source}" )
+			return sysfs_read_file("/sys/block/#{device.gsub(/^\/dev\//, '')}/#{source}")
 		end
 
-		def parse_smart_output( smart_output )
+		def parse_smart_output(smart_output)
 			res = []
 			got_smart = false
 			needed_smart_section_re = /START OF READ SMART DATA SECTION/ 
