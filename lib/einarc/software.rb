@@ -654,7 +654,7 @@ module Einarc
 		end
 
 		# Converts physical name (hda) to SCSI enumeration (1:0)
-		def phys_to_scsi(name)
+		def self.phys_to_scsi(name)
 			name =~ /^(s|h)d([a-z]+)(\d*)$/
 			pre, root, post = $1, $2, $3
 			return name unless pre and root
@@ -669,7 +669,7 @@ module Einarc
 		end
 
 		# Converts SCSI enumeration (1:0) to physical device name (hda)
-		def scsi_to_device(id)
+		def self.scsi_to_device(id)
 			raise Error.new("Invalid physical disc specification \"#{id}\": \"a:b\" or \"a:b:c\" expected") unless id =~ /^([01]):(\d+):?(\d+)?$/
 			res = ($1 == '1') ? '/dev/hd' : '/dev/sd'
 
