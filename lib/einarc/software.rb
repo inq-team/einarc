@@ -678,10 +678,10 @@ module Einarc
 			pre, root, post = $1, $2, $3
 			return name unless pre and root
 			res = $1 == 's' ? "0" : "1"
-			res += ":" + root.split(//).map {
-				|c| c[0].ord - 'a'[0].ord
+			res += ":" + root.split(//).map { |c|
+				char_to_number(c) + 1
 			}.reverse.each_with_index.collect { |c, index|
-				(c+1) * 26**index
+				c * 26 ** index
 			}.inject { |sum, x| sum + x }.to_s
 			res += ":#{post}" unless post.empty?
 			return res
