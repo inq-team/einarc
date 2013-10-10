@@ -656,20 +656,20 @@ module Einarc
 		# Derive ASCII code for 'a', Ruby 1.8 and Ruby 1.9 compatible way
 		ASCII_A = 'a'.respond_to?(:ord) ? 'a'.ord : 'a'[0]
 
-		# Convert character to number, "a" => 0, "z" => 25
+		# Convert character to number, "a" => 1, "z" => 26
 		def self.char_to_number(ch)
 			if ch.respond_to?(:ord)
 				# Ruby 1.9
-				ch.ord - ASCII_A
+				ch.ord - ASCII_A + 1
 			else
 				# Ruby 1.8
-				ch[0] - ASCII_A
+				ch[0] - ASCII_A + 1
 			end
 		end
 
-		# Convert number to character, 0 => "a", 25 => "z"
+		# Convert number to character, 1 => "a", 26 => "z"
 		def self.number_to_char(num)
-			(num + ASCII_A).chr
+			(num + ASCII_A - 1).chr
 		end
 
 		# Converts physical name (hda) to SCSI enumeration (1:0)
@@ -677,12 +677,15 @@ module Einarc
 			name =~ /^(s|h)d([a-z]+)(\d*)$/
 			pre, root, post = $1, $2, $3
 			return name unless pre and root
-			res = $1 == 's' ? "0" : "1"
-			res += ":" + root.split(//).map { |c|
-				char_to_number(c) + 1
+
+			dev_num = root.split(//).map { |c|
+				char_to_number(c)
 			}.reverse.each_with_index.collect { |c, index|
 				c * 26 ** index
-			}.inject { |sum, x| sum + x }.to_s
+			}.inject { |sum, x| sum + x }
+
+			res = pre == 's' ? "0" : "1"
+			res += ":#{dev_num}"
 			res += ":#{post}" unless post.empty?
 			return res
 		end
