@@ -653,6 +653,25 @@ module Einarc
 			return last_id.nil? ? "/dev/md0" : "/dev/md#{last_id + 1}"
 		end
 
+		# Derive ASCII code for 'a', Ruby 1.8 and Ruby 1.9 compatible way
+		ASCII_A = 'a'.respond_to?(:ord) ? 'a'.ord : 'a'[0]
+
+		# Convert character to number, "a" => 0, "z" => 25
+		def self.char_to_number(ch)
+			if ch.respond_to?(:ord)
+				# Ruby 1.9
+				ch.ord - ASCII_A
+			else
+				# Ruby 1.8
+				ch[0] - ASCII_A
+			end
+		end
+
+		# Convert number to character, 0 => "a", 25 => "z"
+		def self.number_to_char(num)
+			(num + ASCII_A).chr
+		end
+
 		# Converts physical name (hda) to SCSI enumeration (1:0)
 		def self.phys_to_scsi(name)
 			name =~ /^(s|h)d([a-z]+)(\d*)$/
