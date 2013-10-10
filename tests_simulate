@@ -7,6 +7,9 @@ $LOAD_PATH.unshift('lib')
 require 'einarc/baseraid'
 require 'einarc/meta'
 
+# Throw in fake EINARC_LIB, as we'll mock up RAID adapter CLI calls anyway
+Einarc::EINARC_LIB = ''
+
 include Einarc
 
 # Load all available RAID adapters
