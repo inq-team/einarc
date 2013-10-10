@@ -310,9 +310,7 @@ module Einarc
 				d[:revision] = physical_read_file(device, "device/rev") or ""
 				d[:size] = physical_read_file(device, "size") or 0
 				d[:size] = d[:size].to_f * 512 / 1048576
-				d[:serial] = physical_get_serial_via_smart(device)
-				d[:serial] = physical_read_file(device, "device/serial") unless d[:serial]
-				d[:serial] = physical_get_serial_via_udev(device) unless d[:serial]
+				d[:serial] = physical_get_serial(device)
 
 				if raid_member?(device)
 					d[:state] = 'hotspare' if spare?(device)
@@ -727,12 +725,29 @@ module Einarc
 			return res
 		end
 
+		# Get serial of a physical device (i.e. "/dev/sda"). Tries either
+		# udevadm method (faster), reading sysfs file directly, or smartctl
+		# method (slower, if udevadm is not available)
+		def physical_get_serial(device)
+			if @software[:udevadm]
+				physical_get_serial_via_udev(device)
+			else
+				r = physical_get_serial_via_file(device)
+				return r unless r.nil?
+				return physical_get_serial_via_smart(device)
+			end
+		end
+
 		def physical_get_serial_via_udev(device)
 			info = `udevadm info --query=env --name=#{device}`
 			info =~ /ID_SERIAL_SHORT=(.*)\n/
 			return $1 if $1
 			info =~ /ID_SERIAL=(.*)\n/
 			return $1 ? $1 : ""
+		end
+
+		def physical_get_serial_via_file(device)
+			physical_read_file(device, "device/serial")
 		end
 
 		def physical_get_serial_via_smart(device)
