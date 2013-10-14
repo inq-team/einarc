@@ -11,8 +11,6 @@
 ** Enabling/disabling WriteCache support for logical and physical discs ("writecache" attribute for "physical" and "logical" object, software only)
 ** Disabling powersaving support for logical and physical discs ("powersaving" attribute for "physical" and "logical" object, software only)
 ** BBU support (arcconf)
-* Dropped features:
-** Module "aaccli" is no longer supported and included in "all", as its CLI is no longer available for download
 * Support for new adapters / chipsets, improved RAID autodetection:
 ** Adaptec 2405, Adaptec 51645, Adaptec 5405Z, Adaptec 5445Z, Adaptec 5805Z, Adaptec 6405, Adaptec 6805, Adaptec 6805Q
 ** Intel RS2BL040, Intel RS2BL080, Intel RS2WC040
