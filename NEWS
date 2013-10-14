@@ -19,7 +19,7 @@
 * User friendliness:
 ** command line interface now hints what objects are available
 ** most objects and methods can be abbreviated akin to UNIX commands (i.e. "physical list" => "pd ls", "logical hotspare delete" => "ld hs rm", etc)
-** adapter type and number specification can be omitted if there's only one adapater in the system
+** adapter type and number specification can be omitted if there's only one adapter in the system
 ** more user-friendly error messages
 ** output is "humanized" by default if we use real tty for output
 ** added man pages: einarc(8), einarc-install(8), raid-wizard-clear(8), raid-wizard-passthrough(8), raid-wizard-optimal(8)
