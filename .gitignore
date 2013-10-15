@@ -7,3 +7,5 @@ doc/NEWS
 doc/VERSION
 doc/man
 doc/xhtml
+.yardoc
+doc/yard
