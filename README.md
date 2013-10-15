@@ -85,7 +85,7 @@ Standalone installation
 
 Installation of Einarc involves following things:
 
-* `./configure` (generates `Makefile.config` and `src/raid/config.rb`)
+* `./configure` (generates `Makefile.config` and `lib/einarc/config.rb`)
 * `make` to download all the proprietary tools, unpack them and build
 Einarc's files; you'll be asked if you've read and agreed to the
 agreements & licenses listed above.
