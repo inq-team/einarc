@@ -43,6 +43,7 @@ Requirements
 ------------
 
 Build requirements:
+
 * wget
 * gzip / gunzip
 * tar
@@ -51,9 +52,11 @@ Build requirements:
 * make
 
 Runtime requirements:
+
 * ruby
 
 Recommended:
+
 * asciidoc / a2x (to build documentation)
 
 Licensing
