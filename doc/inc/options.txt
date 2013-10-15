@@ -5,14 +5,15 @@
 `-l`, `--list`::
   List all adapters found in system and exit.
 `-h`, `--human`::
-  Output human-readable information. By default, Einarc outputs data in
-  tab-separated format that's easier to parse in scripts. Using this
-  option makes output a bit more comfortable to read by humans: tables
-  would have headers and they will be formatted with spaces to ensure
-  fixed width fields.
+  Force output in human-readable format: tables would have headers and
+  they will be formatted with spaces to ensure fixed width fields. By
+  default, Einarc outputs data in human-readable format if being
+  called standalone from command-line and in tab-separated format when
+  being called from a script. Using this option forces "humanized"
+  format, even in script context.
 `-t`, `--type=TYPE`::
   type (manufacturer) of RAID adapter; use `-l` (`--list`) option to
-  list all types of 
+  list all types of supported adapters.
 `-a`, `--adapter=NUM`::
   select the adapter if multiple adapters of a given type are present.
 
