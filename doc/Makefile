@@ -1,6 +1,6 @@
 include dep.Makefile
 
-.PHONY: all clean
+.PHONY: all clean yard
 
 all: \
 	xhtml/manual.html \
@@ -34,6 +34,9 @@ man/raid-wizard-passthrough.8: raid-wizard-passthrough-man.txt VERSION $(DEPS_ra
 man/raid-wizard-optimal.8: raid-wizard-optimal-man.txt VERSION $(DEPS_raid_wizard_optimal)
 	mkdir -p man
 	a2x -f manpage --destination-dir=man raid-wizard-optimal-man.txt
+
+yard:
+	cd .. && yard
 
 VERSION: ../VERSION
 	sed 's/^Einarc //' <../VERSION >VERSION
