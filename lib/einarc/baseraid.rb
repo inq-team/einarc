@@ -29,6 +29,12 @@ module Einarc
 		end
 	end
 
+	# Base class for all RAID adapter support modules. Includes:
+	#
+	# * Command-line interface input (parsing commands, hinting, etc)
+	# * Command-line interface output (formatting tables)
+	# * Abstract methods that should be implemented in RAID adapter modules
+	# * Misc helper methods useful for all modules
 	class BaseRaid
 		attr_accessor :logical
 		attr_accessor :physical
@@ -260,6 +266,12 @@ module Einarc
 			}
 		end
 
+		# Outputs BBU (battery backup unit) information in tabular form:
+		# * BBU manufacturer (vendor)
+		# * BBU device model
+		# * BBU serial number
+		# * BBU capacity
+		# @return [Hash] output of _bbu_info
 		def bbu_info
 			info = _bbu_info
 			if $humanize then

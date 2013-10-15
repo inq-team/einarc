@@ -1,4 +1,7 @@
+# Einarc module is a namespace for all classes that implement Einarc
+# adapters functionality.
 module Einarc
+	# Current version constant.
 	VERSION = '2.0'
 end
 

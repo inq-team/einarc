@@ -5,6 +5,7 @@ require 'einarc/autodetect'
 require 'einarc/extensions/hotspare'
 
 module Einarc
+	# Software RAID on Linux (md)
 	class Software < BaseRaid
 
 		include Extensions::Hotspare

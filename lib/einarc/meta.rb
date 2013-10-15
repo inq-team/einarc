@@ -3,7 +3,11 @@
 # configuration and installation.
 
 module Einarc
-
+	# A map of modules supported in this version of Einarc. Each
+	# key is a formal name of a module, each value contains:
+	# * `:desc` - [String] a human-readable description of a module and adapters it supports
+	# * `:classname` - [String] class name for this adapter in {Einarc} module
+	# * `:proprietary` - whether this adapter uses proprietary CLI or not
 	MODULES = {
 		'areca' => {
 			:desc => 'Areca adapters',
@@ -47,6 +51,9 @@ module Einarc
 		},
 	}
 
+	# Generates Ruby installation-specific configuration file that
+	# loads designated modules for further usage. No other modules
+	# would be supported in this installation.
 	def self.generate_ruby_config(modules, destination)
 		return if modules.empty?
 		File.open(destination, 'w') { |f|
