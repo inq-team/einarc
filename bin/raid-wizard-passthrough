@@ -12,7 +12,7 @@ exit 1 if Einarc::BaseRaid::query_adapters.length == 0
 succeeded = 0
 
 Einarc::BaseRaid::query_adapters.each { |ad|
-	a = RAID::RAIDS[ad[:driver]].new(ad[:num])
+	a = Einarc::RAIDS[ad[:driver]].new(ad[:num])
 	a.logical_clear
 	pl = a._physical_list.keys.sort
 

@@ -17,7 +17,7 @@ require 'raid/meta'
 #===============================================================================
 
 # Default for --modules
-@modules = RAID::MODULES.keys
+@modules = Einarc::MODULES.keys
 
 begin
 	OptionParser.new { |opts|
@@ -31,19 +31,19 @@ __EOF__
 		padding = "\n" + opts.summary_indent + ' ' * (opts.summary_width + 3)
 		module_help = padding + 'all - SPECIAL: build all available modules (default)'
 		module_help += padding + 'auto - SPECIAL: autodetect which modules are required'
-		RAID::MODULES.each_pair { |k, v| module_help += "#{padding}#{k} - #{v[:desc]}" }
+		Einarc::MODULES.each_pair { |k, v| module_help += "#{padding}#{k} - #{v[:desc]}" }
 
 		opts.on('--modules=LIST', "a comma-separated list of storage support modules to build:#{module_help}") { |d|
 			@modules = case d
 			when 'none' then []
-			when 'all' then RAID::MODULES.keys
+			when 'all' then Einarc::MODULES.keys
 			when 'auto'
 				$LOAD_PATH.unshift('src')
 				require 'raid/autodetect'
-				RAID::autodetect
+				Einarc::autodetect
 			else d.split(/, */)
 			end
-			@modules.each { |m| raise OptionParser::InvalidArgument unless RAID::MODULES[m] }
+			@modules.each { |m| raise OptionParser::InvalidArgument unless Einarc::MODULES[m] }
 		}
 		opts.on_tail('-h', '--help', 'Show this message') { puts opts; exit }
 	}.parse!
@@ -72,13 +72,13 @@ TARGET=#{$TARGET}
 # Modules to build: #{@modules.join(', ')}
 
 tools: \\
-#{@modules.collect { |m| "\ttools/#{m}/cli" if RAID::MODULES[m][:proprietary] }.compact.join(" \\\n")}
+#{@modules.collect { |m| "\ttools/#{m}/cli" if Einarc::MODULES[m][:proprietary] }.compact.join(" \\\n")}
 
 include #{$RUBY_SHARE_DIR}/proprietary.Makefile
 __EOF__
 }
 
-RAID::generate_ruby_config(@modules, "#{$EINARC_VAR}/config.rb")
+Einarc::generate_ruby_config(@modules, "#{$EINARC_VAR}/config.rb")
 
 #===============================================================================
 # Report success
