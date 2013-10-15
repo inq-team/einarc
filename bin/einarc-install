@@ -53,7 +53,7 @@ rescue OptionParser::ParseError => e
 	exit 1
 end
 
-unless FileTest.exists?($EINARC_VAR)
+unless FileTest.exists?(Einarc::EINARC_VAR)
 	$stderr.puts "einarc-install works on installed Einarc copy"
 	$stderr.puts "If you haven't installed Einarc yet, you can use --modules option in ./configure"
 	exit 1
@@ -63,22 +63,22 @@ end
 # Generate configs and makefiles
 #===============================================================================
 
-File.open("#{$EINARC_VAR}/config.Makefile", 'w') { |f|
+File.open("#{Einarc::EINARC_VAR}/config.Makefile", 'w') { |f|
 	f.puts <<__EOF__
 # DO NOT EDIT: IT'S A GENERATED FILE! USE ./einarc-install to REGENERATE!
 
-TARGET=#{$TARGET}
+TARGET=#{Einarc::TARGET}
 
 # Modules to build: #{@modules.join(', ')}
 
 tools: \\
 #{@modules.collect { |m| "\ttools/#{m}/cli" if Einarc::MODULES[m][:proprietary] }.compact.join(" \\\n")}
 
-include #{$RUBY_SHARE_DIR}/proprietary.Makefile
+include #{Einarc::RUBY_SHARE_DIR}/proprietary.Makefile
 __EOF__
 }
 
-Einarc::generate_ruby_config(@modules, "#{$EINARC_VAR}/config.rb")
+Einarc::generate_ruby_config(@modules, "#{Einarc::EINARC_VAR}/config.rb")
 
 #===============================================================================
 # Report success
@@ -95,5 +95,5 @@ Preparing to download and install...
 
 __EOF__
 
-Dir.chdir($EINARC_VAR)
-system("make -f #{$EINARC_VAR}/config.Makefile")
+Dir.chdir(Einarc::EINARC_VAR)
+system("make -f #{Einarc::EINARC_VAR}/config.Makefile")
