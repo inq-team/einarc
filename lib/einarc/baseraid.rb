@@ -8,6 +8,27 @@ module Einarc
 		end
 	end
 
+	def self.query_adapters
+		res = []
+		RAIDS.each_value { |r| r.query(res) }
+		return res
+	end
+
+	def self.list_adapters
+		res = query_adapters
+		if $humanize
+			puts "Type           Adapter #  Model                         Version"
+			res.each { |a|
+				printf(
+					"%-15s%-11d%-30s%s\n",
+					a[:driver], a[:num], a[:model], a[:version]
+				)
+			}
+		else
+			res.each { |a| puts "#{a[:driver]}\t#{a[:num]}\t#{a[:model]}\t#{a[:version]}" }
+		end
+	end
+
 	class BaseRaid
 		attr_accessor :logical
 		attr_accessor :physical
@@ -83,27 +104,6 @@ module Einarc
 				"#{ key } (#{ shortcuts.join(', ') })"
 			else
 				key
-			end
-		end
-
-		def self.query_adapters
-			res = []
-			RAIDS.each_value { |r| r.query(res) }
-			return res
-		end
-
-		def self.list_adapters
-			res = query_adapters
-			if $humanize
-				puts "Type           Adapter #  Model                         Version"
-				res.each { |a|
-					printf(
-						"%-15s%-11d%-30s%s\n",
-						a[:driver], a[:num], a[:model], a[:version]
-					)
-				}
-			else
-				res.each { |a| puts "#{a[:driver]}\t#{a[:num]}\t#{a[:model]}\t#{a[:version]}" }
 			end
 		end
 
