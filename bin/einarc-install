@@ -1,16 +1,16 @@
 #!/usr/bin/env ruby
 
-$LOAD_PATH << 'src'
+$LOAD_PATH << '../lib'
 
 begin
-	require 'raid/build-config'
+	require 'einarc/build-config'
 rescue LoadError
 	$stderr.puts 'Unable to find build config file'
 	exit 1
 end
 
 require 'optparse'
-require 'raid/meta'
+require 'einarc/meta'
 
 #===============================================================================
 # Parse command-line
@@ -39,7 +39,7 @@ __EOF__
 			when 'all' then Einarc::MODULES.keys
 			when 'auto'
 				$LOAD_PATH.unshift('src')
-				require 'raid/autodetect'
+				require 'einarc/autodetect'
 				Einarc::autodetect
 			else d.split(/, */)
 			end

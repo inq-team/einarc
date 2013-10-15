@@ -59,7 +59,7 @@ EOF
 
 begin
 	if need_list
-		Einarc::BaseRaid.list_adapters
+		Einarc::list_adapters
 		exit
 	end
 	if adapter_type
@@ -67,7 +67,7 @@ begin
 		a = Einarc::RAIDS[adapter_type].new(adapter_num)
 	else
 		# No adapter specified, try to guess one if it's obvious
-		ads = Einarc::BaseRaid.query_adapters
+		ads = Einarc::query_adapters
 		if ads.length == 0
 			raise Einarc::Error.new('No supported adapters found')
 		elsif ads.length == 1
