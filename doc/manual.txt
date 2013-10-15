@@ -205,7 +205,7 @@ language. Using Einarc API in your program takes a few simple steps:
 Einarc modules should be loaded before use. Adding the following require
 statement would automatically load all available RAID support modules:
 
- require 'raid/baseraid'
+ require 'einarc'
 
 === Listing available adapters
 
@@ -318,6 +318,30 @@ include::inc/object-interface-generic.txt[]
 == History of releases
 
 include::NEWS[]
+
+== Upgrade from 1.x to 2.0
+
+Einarc v2.0 introduced API renovation, making it incompatible with
+previous versions. Changes include:
+
+* All library files are moved from `raid/` to `einarc/`
+* Namespace for Einarc modules is changed from `RAID` to `Einarc`
+* Adapter discovery methods (`query_adapters` and `list_adapters`) are
+moved to `Einarc` module, instead of being class methods of
+`RAID::BaseRaid` class
+
+If you were using 1.x API, generally you'll have to do the following
+replacements to switch to 2.0:
+
+[grid="all"]
+'--------------------------.--------------------------------.-------------------------
+ Replacement                In 1.x                           In 2.0
+--------------------------------------------------------------------------------------
+ Library loading statement  `require 'raid/baseraid'`        `require 'einarc'`
+ Loading individual modules `require 'raid/areca'`           `require 'einarc/areca'`
+ Querying for adapters      `RAID::BaseRaid::query_adapters` `Einarc::query_adapters`
+ Adapter invocation         `RAID::Areca.new(...)`           `Einarc::Areca.new(...)`
+-------------------------------------------------------------------------------------
 
 == Planned features
 
