@@ -137,18 +137,18 @@ After downloading, extract the contents of tarball (this would yield a
 directory with sources), then run `./configure`. You can use the
 following options:
 
-`\--target=TARGET`::
+`--target=TARGET`::
   target to build for; default is selected by looking up architecture of current host
-`\--bindir=DIR`::
+`--bindir=DIR`::
   where to place user executables
-`\--rubysharedir=DIR`::
+`--rubysharedir=DIR`::
   ruby share directory
-`\--rubylibdir=DIR`::
+`--rubylibdir=DIR`::
   ruby binary extensions directory
-`\--einarclibdir=DIR`::
+`--einarclibdir=DIR`::
   proprietary extensions directory
 include::inc/modules-options.txt[]
-`-h`, `\--help`::
+`-h`, `--help`::
   show help
 
 After running `./configure` with options, file `Makefile.config` would

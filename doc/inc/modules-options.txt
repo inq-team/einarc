@@ -1,4 +1,4 @@
-`\--modules=LIST`::
+`--modules=LIST`::
   a comma-separated list of storage support modules to build:
 * all -- SPECIAL: build all available modules, default
 * auto -- SPECIAL: autodetect which modules are required -- experimental
