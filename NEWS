@@ -29,7 +29,6 @@
 ** LSI MegaRC 1.11
 ** LSI MegaCLI 8.07.07
 ** 3Ware 9.5.0.1
-** Adaptec Storage Manager v2.10.00 (not available for automatic download anymore)
 ** ArcConf 1.1.20324
 * Compatibility issues:
 ** Ruby 1.9 compatibility, 1.8 should be still supported
