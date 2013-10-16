@@ -74,7 +74,7 @@ TARGET=#{Einarc::TARGET}
 tools: \\
 #{@modules.collect { |m| "\ttools/#{m}/cli" if Einarc::MODULES[m][:proprietary] }.compact.join(" \\\n")}
 
-include #{Einarc::RUBY_SHARE_DIR}/proprietary.Makefile
+include #{Einarc::RUBY_SHARE_DIR}/einarc/proprietary.Makefile
 __EOF__
 }
 
