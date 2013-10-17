@@ -4,16 +4,19 @@ users, so it should be excluded from distribution tarball.
 
 == Memo: how to make a release
 
-1. Pump version in:
+* Pump version in:
 	VERSION
 	lib/einarc.rb
-2. Document changes in NEWS
-3. Commit everything
-4. release-tarball
-5. Upload to SF
-6. Announce at:
-	inquisitor.ru
+* Document changes in NEWS
+* Commit everything
+* Set git tag for a release: "git tag vA.B.C"
+* Push everything to github, including tags: "git push --tags"
+* release-tarball
+* Upload to SF
+* Announce at:
+	inquisitor.ru => Atom feed
 	SourceForge.net (news submit)
-	freshmeat.net
+	freecode.com
 	linux.org.ru
 	opennet.ru
+	linux-raid mailing list
