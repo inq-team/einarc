@@ -2,7 +2,7 @@ Source: einarc
 Section: admin
 Priority: extra
 Maintainer: Mikhail Yakshin <greycat@altlinux.ru>
-Build-Depends: debhelper (>= 7), ruby, ruby-dev
+Build-Depends: debhelper (>= 7), ruby | ruby-interpreter, ruby-dev
 Standards-Version: 3.8.1
 Homepage: http://www.inquisitor.ru/doc/einarc/
 

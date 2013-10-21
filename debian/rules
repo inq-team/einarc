@@ -3,16 +3,13 @@
 tmp = debian/einarc
 bindir = /usr/sbin
 
-libdir18 = $(shell ruby1.8 -r rbconfig -e 'print Config::CONFIG["rubylibdir"]')
-archdir18 = $(shell ruby1.8 -r rbconfig -e 'print Config::CONFIG["archdir"]')
-libdir19 = $(shell ruby1.9 -r rbconfig -e 'print Config::CONFIG["rubylibdir"]')
-archdir19 = $(shell ruby1.9 -r rbconfig -e 'print Config::CONFIG["archdir"]')
+libdir = $(shell ruby -r rbconfig -e 'print Config::CONFIG["rubylibdir"]')
+archdir = $(shell ruby -r rbconfig -e 'print Config::CONFIG["archdir"]')
 
-build: build-ruby1.8-stamp build-ruby1.9-stamp
+build: build-ruby-stamp
 
 # Uncomment this to turn on verbose mode.
 export DH_VERBOSE=1
-
 
 # These are used for cross-compiling and for saving the configure script
 # from having to guess our platform (since we know it already)
@@ -24,42 +21,20 @@ else
 CROSS= --build $(DEB_BUILD_GNU_TYPE)
 endif
 
-config-ruby1.8.status: configure
+config-ruby.status: configure
 	dh_testdir
 	# Add here commands to configure the package.
 #	./configure $(CROSS) --prefix=/usr --mandir=\$${prefix}/share/man --infodir=\$${prefix}/share/info CFLAGS="$(CFLAGS)" LDFLAGS="-Wl,-z,defs"
-	ruby1.8 configure \
+	ruby configure \
 		--destdir=$(tmp) \
 		--target=$(DEB_BUILD_GNU_TYPE) \
 		--bindir=$(bindir) \
-		--rubysharedir=$(libdir18)/raid \
-		--rubylibdir=$(archdir18) \
+		--rubysharedir=$(libdir)/raid \
+		--rubylibdir=$(archdir) \
 		--einarcvardir=/var/lib/einarc \
 		--modules=software
 
-config-ruby1.9.status: configure
-	dh_testdir
-	# Add here commands to configure the package.
-#	./configure $(CROSS) --prefix=/usr --mandir=\$${prefix}/share/man --infodir=\$${prefix}/share/info CFLAGS="$(CFLAGS)" LDFLAGS="-Wl,-z,defs"
-	ruby1.9 configure \
-		--destdir=$(tmp) \
-		--target=$(DEB_BUILD_GNU_TYPE) \
-		--bindir=$(bindir) \
-		--rubysharedir=$(libdir18)/raid \
-		--rubylibdir=$(archdir18) \
-		--einarcvardir=/var/lib/einarc \
-		--modules=software
-
-build-ruby1.8-stamp: config-ruby1.8.status
-	dh_testdir
-
-	# Add here commands to compile the package.
-	$(MAKE)
-	#docbook-to-man debian/einarc.sgml > einarc.1
-
-	touch $@
-
-build-ruby1.9-stamp: config-ruby1.9.status
+build-ruby-stamp: config-ruby.status
 	dh_testdir
 
 	# Add here commands to compile the package.
