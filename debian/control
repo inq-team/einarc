@@ -1,0 +1,19 @@
+Source: einarc
+Section: admin
+Priority: extra
+Maintainer: Mikhail Yakshin <greycat@altlinux.ru>
+Build-Depends: debhelper (>= 7), ruby1.8, ruby1.8-dev, ruby1.9, ruby1.9-dev
+Standards-Version: 3.8.1
+Homepage: http://www.inquisitor.ru/doc/einarc/
+
+Package: einarc
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Universal storage RAID command line interface (CLI)
+ Einarc is a part of Inquisitor platform, a universal storage RAID
+ command line interface and an API that provides management for various
+ hardware/software RAID devices, uniting them all in a single paradigm.
+ Einarc works as a translator for proprietary CLIs that makes it
+ possible for a user to control all these devices using simple terms
+ like "physical disc", "logical disc", "adapter", etc, while
+ transparently converting these requests to proprietary RAID paradigms.
