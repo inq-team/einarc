@@ -167,14 +167,16 @@ module Einarc
 			}
 
 			# Try to find corresponding /dev-entries
-			devices = Dir.entries("/sys/block").select { |dev| physical_read_file( dev, "device/model" ) =~ /^(MegaRAID|MR|RS2BL080|RS2BL040|SMC2108|MR9260|SRCSASLS4I|RS2WC040)/ }
+			devices = Dir.entries("#{@@sysfs}/block").select { |dev|
+				physical_read_file(dev, "device/model") =~ /^(MegaRAID|MR|RS2BL080|RS2BL040|SMC2108|MR9260|SRCSASLS4I|RS2WC040)/
+			}
 			devs = {}
 			devices.each { |dev|
-				if File.exist?("/sys/block/#{dev}/device/scsi_disk") then
-					devs[ Dir.entries("/sys/block/#{dev}/device/scsi_disk").collect { |ent| 
+				if File.exist?("#{@@sysfs}/block/#{dev}/device/scsi_disk") then
+					devs[ Dir.entries("#{@@sysfs}/block/#{dev}/device/scsi_disk").collect { |ent| 
 						"#{$1}:#{$2}" if ent =~ /\d+:(\d+):(\d+):\d/}.compact.last ] = dev
 				else
-					devs[ Dir.entries("/sys/block/#{dev}/device").collect { |ent|
+					devs[ Dir.entries("#{@@sysfs}/block/#{dev}/device").collect { |ent|
 						"#{$1}:#{$2}" if ent =~ /scsi_disk:\d+:(\d+):(\d+):\d/}.compact.last ] = dev
 				end
 			}
