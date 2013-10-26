@@ -68,9 +68,13 @@ class TestRunner
 			@adapter_class = MODULES[adapter_name][:class]
 			@adapter = @adapter_class.new(0)
 			@adapter.outstream = StringIO.new
+
+			# Fake sysfs path
+			@@sysfs = "#{@test_dir}/#{adapter_name}/sysfs"
+
 			begin
 				Dir.new("#{@test_dir}/#{adapter_name}").sort.each { |test_name|
-					next if test_name[0..0] == '.'
+					next if test_name[0..0] == '.' or test_name == 'sysfs'
 					@cli_query = 0
 					@count[:test_run] += 1
 					@current_test = "#{@test_dir}/#{adapter_name}/#{test_name}"
