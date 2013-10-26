@@ -1,4 +1,4 @@
-[{:dev=>nil,
+[{:dev=>"/dev/sda",
   :physical_sizes=>[70006, 70006, 70006],
   :state=>"normal",
   :raid_level=>"5",

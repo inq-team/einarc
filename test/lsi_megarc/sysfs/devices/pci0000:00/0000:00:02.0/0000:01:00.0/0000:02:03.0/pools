@@ -1,0 +1,10 @@
+poolinfo - 0.1
+megaraid mm data buffer    1    1 65536  1
+megaraid mm data buffer    1    1 32768  1
+megaraid mm data buffer    1    1 16384  1
+megaraid mm data buffer    1    1 8192  1
+megaraid mm data buffer    1    1 4096  1
+megaraid mm pthru pool   32   64   64  1
+megaraid mbox sg  128  128  512 16
+megaraid mbox pthru  128  128  128  4
+megaraid mbox pool  128  168   96  4
