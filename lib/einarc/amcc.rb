@@ -113,9 +113,9 @@ module Einarc
 		end
 
 		# ======================================================================
-		
+
 		# use SCSI INQUIRY to get the serial number from each disk
-		# returns a hash with {serialnumber,diskname} where diskname is like 'sda' 
+		# returns a hash with {serialnumber,diskname} where diskname is like 'sda'
 		private
 		def __get_disk_serials
 			diskserials={}
@@ -155,9 +155,9 @@ module Einarc
 				case l
 	# Unit  UnitType  Status         %RCmpl  %V/I/M  Stripe  Size(GB)  Cache  AVrfy
 	# ------------------------------------------------------------------------------
-	# u0    RAID-1    OK             -       -       -       465.651   ON     OFF    
-	# u1    RAID-5    OK             -       -       64K     931.303   ON     OFF    
-	# u2    RAID-5    OK             -       -       64K     931.303   ON     OFF    
+	# u0    RAID-1    OK             -       -       -       465.651   ON     OFF
+	# u1    RAID-5    OK             -       -       64K     931.303   ON     OFF
+	# u2    RAID-5    OK             -       -       64K     931.303   ON     OFF
 				when /^u([0-9]+) +(\S+) +(\S+) +(\S+) +(\S+) +(\S+) +([0-9\.]+) +(\S)/
 					m = Regexp.last_match
 					logical << {
@@ -183,10 +183,10 @@ module Einarc
 					# also, unit numbers are NOT contiguous
 	# Port   Status           Unit   Size        Blocks        Serial
 	# ---------------------------------------------------------------
-	# p0     OK               u0     465.76 GB   976773168     WD-WCASU1168570     
-	# p1     OK               u0     465.76 GB   976773168     WD-WCASU1168141     
-	# p2     OK               u1     465.76 GB   976773168     WD-WCASU1168002     
-	# p3     OK               u1     465.76 GB   976773168     WD-WCASU1168560     
+	# p0     OK               u0     465.76 GB   976773168     WD-WCASU1168570
+	# p1     OK               u0     465.76 GB   976773168     WD-WCASU1168141
+	# p2     OK               u1     465.76 GB   976773168     WD-WCASU1168002
+	# p3     OK               u1     465.76 GB   976773168     WD-WCASU1168560
 				when /^p([0-9]+)\s+(\S+)\s+u([0-9]+)/
 					unitno = $3
 					portno = $1
@@ -211,33 +211,33 @@ module Einarc
 		# ======================================================================
 
 		def logical_add(raid_level, discs = nil, sizes = nil, options = nil)
-			case raid_level
-				when "passthrough" then raid_level="single" 
-				when "spare" then raid_level="spare" 
-				when /^[0-9]+$/ then raid_level="raid#{raid_level}"
-				when /^RAID-([0-9])+$/ then raid_level="raid#{$1}"
-				when /^raid-([0-9])+$/ then raid_level="raid#{$1}"
-				when /^raid([0-9])+$/ then raid_level="raid#{$1}"
-				when /^RAID([0-9])+$/ then raid_level="raid#{$1}"
+			raid_level = case raid_level
+				when 'passthrough' then 'single'
+				when 'spare' then 'spare'
+				when /^[0-9]+$/ then "raid#{raid_level}"
+				when /^RAID-([0-9])+$/ then "raid#{$1}"
+				when /^raid-([0-9])+$/ then "raid#{$1}"
+				when /^raid([0-9])+$/ then "raid#{$1}"
+				when /^RAID([0-9])+$/ then "raid#{$1}"
 				else raise Error.new("Unknown RAID level \"#{raid_level}\"")
 			end
 			# no disks specified -> all disks
 			# FIXME this doesn't seem to work
 			#discs = _physical_list.keys unless discs
-			
-			discs=discs.gsub(",",":")
+
+			discs = discs.gsub(",",":")
 
 			# "sizes" is not supported, 3ware creates units on whole disks
 
 			# sensible defaults
 			# note that the current 9650SE has a problem with SMART enabled
 			# and qpolicy=on at the same time, under heavy load (2008-08-19)
-			storsave="balance"
-			qpolicy="on"
-			cache="on"
-			autoverify="off"
-			stripe="64k"
-			name=""
+			storsave = 'balance'
+			qpolicy = 'on'
+			cache = 'on'
+			autoverify = 'off'
+			stripe = '64k'
+			name = ''
 
 			if options
 				options = options.split(/,/)
@@ -258,10 +258,10 @@ module Einarc
 				}
 			end
 
-			cmd=" add type=#{raid_level} disk=#{discs} stripe=#{stripe} storsave=#{storsave}"
-			cmd += " nocache" if cache!="on"
-			cmd += " noqpolicy" if qpolicy!="on"
-			cmd += " name=#{name}" if name!=""
+			cmd = " add type=#{raid_level} disk=#{discs} stripe=#{stripe} storsave=#{storsave}"
+			cmd += " nocache" if cache != "on"
+			cmd += " noqpolicy" if qpolicy != "on"
+			cmd += " name=#{name}" if name != ""
 
 			run(cmd)
 		end
@@ -320,7 +320,7 @@ module Einarc
 		def _bbu_info
 			raise NotImplementedError
 		end
-		
+
 		# ======================================================================
 
 		def get_adapter_raidlevels(x = nil)
@@ -338,7 +338,7 @@ module Einarc
 		def set_physical_hotspare_1(drv)
 			logical_add("spare",drv,"","")
 		end
-		
+
 		def get_logical_stripe(num)
 			raise NotImplementedError
 		end
