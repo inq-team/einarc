@@ -1,0 +1,34 @@
+#!/bin/sh -e
+# Creates a miniature dump of /sys, useful for test purposes. Needs
+# manual cleanup anyway, but it's better than nothing.
+
+DUMP_DIR=sysfs
+
+mkdir -p "$DUMP_DIR"
+#cp -r /sys/* "$DUMP_DIR" || :
+cd "$DUMP_DIR"
+
+rm -rf \
+	module \
+	modules \
+	power \
+	devices/LNXSYSTM:00 \
+	devices/system \
+	devices/virtual \
+	devices/platform \
+	devices/pnp0 \
+	devices/pnp1 \
+	devices/acpi \
+	devices/isa \
+	block/dm* \
+	block/sr* \
+	block/fd* \
+	block/ram* \
+	kernel \
+	fs \
+	firmware \
+	dev \
+	class \
+	bus \
+
+find -L . -type l -delete
