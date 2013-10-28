@@ -9,3 +9,8 @@ doc/man
 doc/xhtml
 .yardoc
 doc/yard
+debian/einarc.debhelper.log
+debian/einarc.substvars
+debian/einarc/
+debian/files
+build-ruby-stamp
