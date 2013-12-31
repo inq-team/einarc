@@ -32,7 +32,7 @@ module Einarc
 			vendor_id = $3
 			product_id = $4
 #			p [vendor_id, product_id]
-			adapter = find_adapter_by_pciid(vendor_id, product_id)
+			adapter = find_adapter_by_pciid(vendor_id, product_id, $6, $7)
 			if adapter
 				puts "Detected device supported by \"#{adapter}\" (#{vendor_id}:#{product_id})"
 				res << adapter
