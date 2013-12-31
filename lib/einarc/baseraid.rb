@@ -42,6 +42,7 @@ module Einarc
 	# * Abstract methods that should be implemented in RAID adapter modules
 	# * Misc helper methods useful for all modules
 	class BaseRaid
+    @@sysfs = '/sys'
 		attr_accessor :logical
 		attr_accessor :physical
 		attr_accessor :outstream
@@ -112,7 +113,7 @@ module Einarc
 
 		def append_shortcuts(key)
 			shortcuts = SHORTCUTS[key]
-			if shortcuts && !shortcuts.empty? 
+			if shortcuts && !shortcuts.empty?
 				"#{ key } (#{ shortcuts.join(', ') })"
 			else
 				key
@@ -240,7 +241,7 @@ module Einarc
 				_physical_list.each_pair { |num, d|
 					@outstream.printf(
 						"%-8s%-25s%-15s%-20s%11.2f MB  %s\n",
-						num, d[:model], d[:revision], d[:serial], d[:size], 
+						num, d[:model], d[:revision], d[:serial], d[:size],
 							d[:state].is_a?(Array) ? d[:state].join(",") : d[:state]
 					)
 				}
@@ -398,7 +399,7 @@ module Einarc
 		def parse_smart_output(smart_output)
 			res = []
 			got_smart = false
-			needed_smart_section_re = /START OF READ SMART DATA SECTION/ 
+			needed_smart_section_re = /START OF READ SMART DATA SECTION/
 
 			smart_output.split(/\n/).each { |line|
 				got_smart = true if line =~ needed_smart_section_re
