@@ -3,8 +3,6 @@ module Einarc
 	# system dependent and 99.9% of Linux distributions won't have to
 	# change it. However, replace this one with fake sysfs comes handy
 	# for testing purposes too.
-  @@sysfs = '/sys'
-
 	class Error < RuntimeError
 		attr_reader :text
 
@@ -45,6 +43,7 @@ module Einarc
 		attr_accessor :logical
 		attr_accessor :physical
 		attr_accessor :outstream
+    attr_accessor :sysfs
 
 		SHORTCUTS = {
 			'adapter' => %w( ad ),
@@ -70,6 +69,7 @@ module Einarc
 
 		def initialize
 			@outstream = $stdout
+      @sysfs = '/sys'
 		end
 
 		def method_names
@@ -370,7 +370,7 @@ module Einarc
 		end
 
 		def find_dev_by_name(name)
-			for dir in Dir["#{@@sysfs}/block/*/device/"]
+			for dir in Dir["#{@sysfs}/block/*/device/"]
 				dev = dir.gsub(/^\/sys\/block/, '/dev').gsub(/\/device\/$/, '')
 				mpath = dir + 'model'
 				next unless File.readable?(mpath)
@@ -392,7 +392,7 @@ module Einarc
 
 		# Read single line from block device-related files in sysfs
 		def physical_read_file(device, source)
-			return sysfs_read_file("#{@@sysfs}/block/#{device.gsub(/^\/dev\//, '')}/#{source}")
+			return sysfs_read_file("#{@sysfs}/block/#{device.gsub(/^\/dev\//, '')}/#{source}")
 		end
 
 		def parse_smart_output(smart_output)
