@@ -3,7 +3,7 @@ module Einarc
 	# system dependent and 99.9% of Linux distributions won't have to
 	# change it. However, replace this one with fake sysfs comes handy
 	# for testing purposes too.
-	@@sysfs = '/sys'
+  @@sysfs = '/sys'
 
 	class Error < RuntimeError
 		attr_reader :text
@@ -42,7 +42,6 @@ module Einarc
 	# * Abstract methods that should be implemented in RAID adapter modules
 	# * Misc helper methods useful for all modules
 	class BaseRaid
-    @@sysfs = '/sys'
 		attr_accessor :logical
 		attr_accessor :physical
 		attr_accessor :outstream
