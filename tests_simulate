@@ -70,7 +70,7 @@ class TestRunner
 			@adapter.outstream = StringIO.new
 
 			# Fake sysfs path
-			@@sysfs = "#{@test_dir}/#{adapter_name}/sysfs"
+			@adapter.sysfs = "#{@test_dir}/#{adapter_name}/sysfs"
 
 			begin
 				Dir.new("#{@test_dir}/#{adapter_name}").sort.each { |test_name|

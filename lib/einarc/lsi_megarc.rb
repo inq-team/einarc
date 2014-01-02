@@ -127,7 +127,7 @@ module Einarc
 			num = nil
 
 			# Find all corresponding devices
-			Dir.entries("#{@@sysfs}/block").select { |dev|
+			Dir.entries("#{@sysfs}/block").select { |dev|
 				physical_read_file(dev, "device/vendor") =~ /^MegaRAID/
 			}.each { |dev|
 				@dev[$1.to_i] = "/dev/#{dev}" if physical_read_file(dev, "device/model") =~ /^LD\s*(\d+) RAID/
@@ -358,7 +358,7 @@ module Einarc
 		def _bbu_info
 			raise NotImplementedError
 		end
-		
+
 		# ======================================================================
 
 		private

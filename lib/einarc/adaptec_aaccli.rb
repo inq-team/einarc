@@ -120,7 +120,7 @@ module Einarc
 		end
 
 		def logical_add(raid_level, discs = nil, sizes = nil, options = nil)
-			if discs 
+			if discs
 				discs = discs.split(/,/) if discs.respond_to?(:split)
 				discs = [discs] unless discs.respond_to?(:each)
 			else
@@ -295,7 +295,7 @@ module Einarc
 		def set_physical_hotspare_1(drv)
 			raise NotImplemented
 		end
-		
+
 		def get_logical_stripe(num)
 			ld = _logical_list[num.to_i]
 			raise Error.new("Unknown logical disc \"#{num}\"") unless ld
@@ -345,7 +345,7 @@ module Einarc
 		def _bbu_info
 			raise NotImplementedError
 		end
-		
+
 		# ======================================================================
 
 		private
@@ -390,7 +390,7 @@ module Einarc
 				"(#{$1.to_i},#{$2.to_i})"
 			else
 				raise Error.new("Unparseable physical disc specification: \"#{phys}\"")
-			end			
+			end
 		end
 
 		# Calculates coerced size: kB measurement, 64kB alignment

@@ -61,7 +61,7 @@ module Einarc
 					when /SubVendorId/ then 'PCI subvendor ID'
 					when /SubDeviceId/ then 'PCI subproduct ID'
 					else key
-					end				
+					end
 					res[key] = val
 				end
 			}
@@ -167,16 +167,16 @@ module Einarc
 			}
 
 			# Try to find corresponding /dev-entries
-			devices = Dir.entries("#{@@sysfs}/block").select { |dev|
+			devices = Dir.entries("#{@sysfs}/block").select { |dev|
 				physical_read_file(dev, "device/model") =~ /^(MegaRAID|MR|RS2BL080|RS2BL040|SMC2108|MR9260|SRCSASLS4I|RS2WC040)/
 			}
 			devs = {}
 			devices.each { |dev|
-				if File.exist?("#{@@sysfs}/block/#{dev}/device/scsi_disk") then
-					devs[ Dir.entries("#{@@sysfs}/block/#{dev}/device/scsi_disk").collect { |ent| 
+				if File.exist?("#{@sysfs}/block/#{dev}/device/scsi_disk") then
+					devs[ Dir.entries("#{@sysfs}/block/#{dev}/device/scsi_disk").collect { |ent|
 						"#{$1}:#{$2}" if ent =~ /\d+:(\d+):(\d+):\d/}.compact.last ] = dev
 				else
-					devs[ Dir.entries("#{@@sysfs}/block/#{dev}/device").collect { |ent|
+					devs[ Dir.entries("#{@sysfs}/block/#{dev}/device").collect { |ent|
 						"#{$1}:#{$2}" if ent =~ /scsi_disk:\d+:(\d+):(\d+):\d/}.compact.last ] = dev
 				end
 			}
@@ -263,15 +263,15 @@ module Einarc
 #Coerced Size: 231.898 GB [0x1cfcc000 Sectors]
 #Firmware state: Online
 #SAS Address(0): 0x7a78a43dc6d5f6ab
-#Connected Port Number: 4(path0) 
+#Connected Port Number: 4(path0)
 #Inquiry Data:       GEK230RBSEVNRAHitachi HDP725025GLA380                 GM2OA52A
 #FDE Capable: Not Capable
 #FDE Enable: Disable
 #Secured: Unsecured
 #Locked: Unlocked
-#Foreign State: None 
-#Device Speed: Unknown 
-#Link Speed: Unknown 
+#Foreign State: None
+#Device Speed: Unknown
+#Link Speed: Unknown
 #Media Type: Hard Disk Device
 
 #Enclosure Device ID: 252
@@ -289,15 +289,15 @@ module Einarc
 #Firmware state: Unconfigured(good), Spun Up
 #SAS Address(0): 0x500000e0147a3462
 #SAS Address(1): 0x0
-#Connected Port Number: 5(path0) 
-#Inquiry Data: FUJITSU MAX3073RC       0104DQA0P7200RAB        
+#Connected Port Number: 5(path0)
+#Inquiry Data: FUJITSU MAX3073RC       0104DQA0P7200RAB
 #FDE Capable: Not Capable
 #FDE Enable: Disable
 #Secured: Unsecured
 #Locked: Unlocked
-#Foreign State: None 
-#Device Speed: Unknown 
-#Link Speed: Unknown 
+#Foreign State: None
+#Device Speed: Unknown
+#Link Speed: Unknown
 #Media Type: Hard Disk Device
 
 #Enclosure Device ID: 252
@@ -314,15 +314,15 @@ module Einarc
 #Coerced Size: 148.080 GB [0x12829000 Sectors]
 #Firmware state: Unconfigured(good), Spun Up
 #SAS Address(0): 0xf2314077a8e7136
-#Connected Port Number: 6(path0) 
-#Inquiry Data:             9RA5RXJDST3160215AS                             3.AAD   
+#Connected Port Number: 6(path0)
+#Inquiry Data:             9RA5RXJDST3160215AS                             3.AAD
 #FDE Capable: Not Capable
 #FDE Enable: Disable
 #Secured: Unsecured
 #Locked: Unlocked
-#Foreign State: None 
-#Device Speed: Unknown 
-#Link Speed: Unknown 
+#Foreign State: None
+#Device Speed: Unknown
+#Link Speed: Unknown
 #Media Type: Hard Disk Device
 
 		def _physical_list
@@ -365,10 +365,10 @@ module Einarc
 						phys[:model] = l[34..73].strip
 						phys[:serial] = l[14..33].strip
 					when "SAS"
-						#Inquiry Data: FUJITSU MAX3073RC       0104DQA0P7200RAB        
+						#Inquiry Data: FUJITSU MAX3073RC       0104DQA0P7200RAB
 						phys[:model] = l[14..21].strip + ' ' + l[22..37].strip
 						phys[:revision] = l[38..41].strip
-						phys[:serial] = l[42..61].strip				
+						phys[:serial] = l[42..61].strip
 					else
 						raise Error.new("Unknown disc type encountered: #{phys[:interface].inspect}")
 					end
@@ -460,7 +460,7 @@ module Einarc
 		def set_physical_hotspare_1(drv)
 			run("-PDHSP -Set -PhysDrv [#{drv}] #{@args}")
 		end
-		
+
 		def get_logical_stripe(num)
 			ld = _logical_list[num.to_i]
 			raise Error.new("Unknown logical disc \"#{num}\"") unless ld
@@ -507,7 +507,7 @@ module Einarc
 		end
 
 		# ======================================================================
-		
+
 		def _bbu_info
 			info = {}
 			run("-AdpBbuCmd -GetBbuDesignInfo #{@args}").each do |l|
@@ -524,11 +524,11 @@ module Einarc
 			end
 			info
 		end
-		
+
 		# ======================================================================
 
 		def _physical_smart(drv)
-			needed_smart_section_re = /START OF READ SMART DATA SECTION/ 
+			needed_smart_section_re = /START OF READ SMART DATA SECTION/
 
 			corresponding_drive = _logical_list.collect{ |ld| ld[:dev] }.last
 			raise Error.new( "You have to create at least one logical disk to get SMART info" ) unless corresponding_drive
