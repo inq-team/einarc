@@ -135,6 +135,42 @@ module Einarc
 			raise NotImplementedError
 		end
 
+    # Public - Parse Adaptec Series 5 logs
+    #
+    # Returns hash
+    def _parse_series5_log(subsys="")
+      data = {}
+      loop = 0
+
+      run("getlogs #{@adapter_num} #{subsys} tabular").each do |l|
+        l.split("\t").each do |t|
+          next  if t.empty?
+          next if t =~ /Controllers found/
+          w =  t.gsub(".", "").split("\s")
+          if w[0] == "driveErrorEntry"
+            loop = loop +1
+          end
+          unless data[loop].kind_of?(Hash)
+            data[loop] = {}
+          end
+
+          if w[0] == 'Controller'
+            data[loop][w[0]] = w[2]
+          else
+            unless w[0] == "driveErrorEntry"
+              data[loop][w[0]] = w[1]
+            end
+          end
+        end
+      end
+      final = { :controller => data[0] }
+      data.delete(0)
+      final[:errors] = data
+
+      # Return Final
+      final
+    end
+
 #Logical device number 0
 #   Logical device name                      : 1
 #   RAID level                               : Simple_volume
@@ -288,7 +324,7 @@ module Einarc
 #         Reported Channel,Device(T:L)       : 0,5(5:0)
 #         Reported Location                  : Enclosure 1, Slot 5
 #         Reported ESD(T:L)                  : 2,1(1:0)
-#         Vendor                             : 
+#         Vendor                             :
 #         Model                              : ST31000528AS
 #         Firmware                           : CC37
 #         Serial number                      : 9VP22859
@@ -412,7 +448,7 @@ module Einarc
 		def set_physical_hotspare_1(drv)
 			run("setstate #{@adapter_num} device #{drv.gsub(":"," ")} hsp noprompt")
 		end
-		
+
 		def get_logical_stripe(num)
 			ld = _logical_list[num.to_i]
 			raise Error.new("Unknown logical disc \"#{num}\"") unless ld
@@ -476,9 +512,9 @@ module Einarc
 			}
 			return info
 		end
-		
+
 		# ======================================================================
-		
+
 		private
 
 		def run(command, check = true)
