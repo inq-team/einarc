@@ -35,7 +35,7 @@ module Einarc
 					num = $1.to_i
 					model = '[unknown]'
 					version = '[unknown]'
-					run("getconfig #{num} ad").each { |cl|
+					run("getconfi #{num} ad").each { |cl|
 						if cl =~ /Controller Model\s*:\s*(.*)$/
 							model = $1
 						end
@@ -513,6 +513,152 @@ module Einarc
 			return info
 		end
 
+    # Public - Gather adapter information, along with the BBU information and
+    # parse into a multi-dimensional hash. It has compatibility for 5XXX and
+    # 7XXX adapters.
+    #
+    # Example
+    #   # Adaptec 5XXX
+    #   {
+    #     "controller" => {
+    #                       "ControllerStatus"=>"Optimal",
+    #                       "Channeldescription"=>"SAS/SATA",
+    #                       "ControllerModel"=>"Adaptec 5805Z",
+    #                       "ControllerSerialNumber"=>"1B3611BD8C5",
+    #                       "PhysicalSlot"=>"6",
+    #                       "Temperature"=>"64 C/ 147 F (Normal)",
+    #                       "Installedmemory"=>"512 MB",
+    #                       "Copyback"=>"Disabled",
+    #                       "Backgroundconsistencycheck"=>"Disabled",
+    #                       "AutomaticFailover"=>"Enabled",
+    #                       "Globaltaskpriority"=>"High",
+    #                       "PerformanceMode"=>"Default/Dynamic",
+    #                       "Stayawakeperiod"=>"Disabled",
+    #                       "Spinuplimitinternaldrives"=>"0",
+    #                       "Spinuplimitexternaldrives"=>"0",
+    #                       "Defunctdiskdrivecount"=>"0",
+    #                       "Logicaldevices/Failed/Degraded"=>"2/0/0",
+    #                       "SSDsassignedtoMaxCachepool"=>"0",
+    #                       "MaximumSSDsallowedinMaxCachepool"=>"8",
+    #                       "MaxCacheReadCachePoolSize"=>"0.000 GB",
+    #                       "MaxCacheflushandfetchrate"=>"0",
+    #                       "MaxCacheReadWriteBalanceFactor"=>"3,1",
+    #                       "NCQstatus"=>"Enabled",
+    #                       "Statisticsdatacollectionmode"=>"Enabled"
+    #                       },
+    #   "version" =>  {
+    #                   "BIOS"=>"5.2-0 (18950)",
+    #                   "Firmware"=>"5.2-0 (18950)",
+    #                   "Driver"=>"1.1-5 (2461)",
+    #                   "BootFlash"=>"5.2-0 (18950)"
+    #                 },
+    #   "bbu"  => {
+    #                 "Status"  =>  "ZMM Optimal"
+    #             }
+    #   }
+    #
+    #   # Adaptec 7XXX series
+    #   {
+    #     "controller"  =>  {
+    #                         "ControllerStatus"=>"Optimal",
+    #                         "ControllerMode"=>"Default/RAID",
+    #                         "Channeldescription"=>"SAS/SATA",
+    #                         "ControllerModel"=>"Adaptec ASR71605",
+    #                         "ControllerSerialNumber"=>"3A281337853",
+    #                         "PhysicalSlot"=>"5",
+    #                         "Temperature"=>"44 C/ 111 F (Normal)",
+    #                         "Installedmemory"=>"1024 MB",
+    #                         "Copyback"=>"Disabled",
+    #                         "Backgroundconsistencycheck"=>"Disabled",
+    #                         "AutomaticFailover"=>"Enabled",
+    #                         "Globaltaskpriority"=>"High",
+    #                         "PerformanceMode"=>"Default/Dynamic",
+    #                         "Stayawakeperiod"=>"Disabled",
+    #                         "Spinuplimitinternaldrives"=>"0",
+    #                         "Spinuplimitexternaldrives"=>"0",
+    #                         "Defunctdiskdrivecount"=>"0",
+    #                         "Logicaldevices/Failed/Degraded"=>"2/0/0",
+    #                         "NCQstatus"=>"Enabled",
+    #                         "Statisticsdatacollectionmode"=>"Disabled"
+    #                         },
+    #   "version" =>  {
+    #                   "BIOS"=>"7.2-0 (30502)",
+    #                   "Firmware"=>"7.2-0 (30502)",
+    #                   "Driver"=>"1.2-1 (30200)",
+    #                   "BootFlash"=>"7.2-0 (30502)"
+    #                   },
+    #   "bbu" =>  {
+    #               "OverallBackupUnitStatus"=>"Ready",
+    #               "BackupUnitType"=>"AFM-700/700 LP",
+    #               "Non-VolatileStorageStatus"=>"Ready",
+    #               "SupercapStatus"=>"Ready",
+    #               "CurrentTemperature"=>"21 deg C",
+    #               "ThresholdTemperature"=>"51 deg C",
+    #               "LifetimeTemperatureRecorded"=>{  "min"=>"20 deg C",
+    #                                                 "max"=>" 29 deg C"
+    #                                                 },
+    #               "Voltage"=>{  "present"=>"4897 mV",
+    #                             "max"=>"5302 mV"
+    #                           },
+    #               "Life-timeMaxVoltageRecorded"=>"5404 mV",
+    #               "CurrentDraw"=>{ "present"=>"0 mA",
+    #                                 "max"=>"560 mA"},
+    #               "Health"=>"100 percent",
+    #               "ChargeLevel"=>"100 percent"
+    #               }
+    #   }
+    #
+    # Returns Hash
+    def _extended_adapter_information
+      data = {}
+      key = ''
+      run("getconfig #{@adapter_num} ad").each do |l|
+        next if l =~ /--/ or l.empty?
+        next if l =~ /Command completed successfully./
+        next if l =~ /Controllers found:/
+        next if l =~ /Supercap Information/
+        next if l =~ /Life-time Temperature Recorded/
+
+        case l
+        when /Controller information/
+          key = "controller"
+        when /Controller Version Information/
+          key = "version"
+        when /Controller ZMM Information/
+          key = "bbu"
+        when /Controller Cache Backup Unit Information/
+          key = 'bbu'
+        else
+          unless key.nil?
+            unless data[key].kind_of?(Hash)
+              data[key] = {}
+            end
+
+            ikey, sec = l.split(":")
+            ikey.gsub!("\s", "")
+            ikey.gsub!(",", "") if ikey =~ /,/
+            sec.lstrip!
+
+            case ikey
+              when /(Min\/Max)/
+                ikey = 'LifetimeTemperatureRecorded'
+                k = sec.split("/")
+                sec = { 'min' => k[0], 'max' => k[1] }
+              when /Voltage\(Present\/Max\)/
+                ikey = 'Voltage'
+                k = sec.split("/")
+                sec = { 'present' => k[0], 'max' => k[1].lstrip!}
+              when /CurrentDrawn\(Present\/Max\)/
+                ikey = "CurrentDraw"
+                k = sec.split("/")
+                sec = { 'present' => k[0], 'max' => k[1].lstrip!}
+              end
+            data[key][ikey] = sec
+          end
+        end
+      end
+      data
+    end
 		# ======================================================================
 
 		private
