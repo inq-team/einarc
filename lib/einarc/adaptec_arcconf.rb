@@ -36,7 +36,7 @@ module Einarc
 					num = $1.to_i
 					model = '[unknown]'
 					version = '[unknown]'
-					run("getconfi #{num} ad").each { |cl|
+					run("getconfig #{num} ad").each { |cl|
 						if cl =~ /Controller Model\s*:\s*(.*)$/
 							model = $1
 						end
