@@ -135,10 +135,10 @@ module Einarc
 			raise NotImplementedError
 		end
 
-    # Public - Parse Adaptec Series 5 logs
+    # Public - Parse Adaptec logs
     #
-    # Returns hash
-    def _parse_series5_log(subsys="")
+    # Returns Hash
+    def _parse_adapter_log(subsys="")
       data = {}
       loop = 0
 
