@@ -149,7 +149,7 @@ module Einarc
           next if t =~ /Controllers found/
           w =  t.gsub(".", "").split("\s")
           if w[0] == "driveErrorEntry"
-            loop = loop +1
+            loop = loop+1
           end
           unless data[loop].kind_of?(Hash)
             data[loop] = {}
@@ -342,7 +342,6 @@ module Einarc
 #         NCQ status                         : Disabled
 		def _physical_list
 			@physical = {}
-			dev = nil
 			phys = nil
 			hdd = nil
 			run("getconfig #{@adapter_num} pd").each { |l|
@@ -496,23 +495,23 @@ module Einarc
 
 		# ======================================================================
 
-#--------------------------------------------------------
-#Controller Battery Information
-#--------------------------------------------------------
-#Status                                   : Optimal
-#Over temperature                         : No
-#Capacity remaining                       : 98 percent
-#Time remaining (at current draw)         : 3 days, 0 hours, 31 minutes
-		def _bbu_info
-			info = {}
-			run("getconfig #{@adapter_num} ad").grep(/^Status\s*:\s*(.*?)$/) {
-				unless $1 =~ /Not Installed/
-					info[:vendor] = 'Adaptec'
-					info[:device] = 'BBU'
-				end
-			}
-			return info
-		end
+    #--------------------------------------------------------
+    #Controller Battery Information
+    #--------------------------------------------------------
+    #Status                                   : Optimal
+    #Over temperature                         : No
+    #Capacity remaining                       : 98 percent
+    #Time remaining (at current draw)         : 3 days, 0 hours, 31 minutes
+    def _bbu_info
+      info = {}
+      run("getconfig #{@adapter_num} ad").grep(/^Status\s*:\s*(.*?)$/) {
+        unless $1 =~ /Not Installed/
+          info[:vendor] = 'Adaptec'
+          info[:device] = 'BBU'
+        end
+      }
+      return info
+    end
 
     # Public - Gather adapter information, along with the BBU information and
     # parse into a multi-dimensional hash. It has compatibility for 5XXX and
@@ -641,19 +640,19 @@ module Einarc
             sec.lstrip!
 
             case ikey
-              when /(Min\/Max)/
-                ikey = 'LifetimeTemperatureRecorded'
-                k = sec.split("/")
-                sec = { 'min' => k[0], 'max' => k[1] }
-              when /Voltage\(Present\/Max\)/
-                ikey = 'Voltage'
-                k = sec.split("/")
-                sec = { 'present' => k[0], 'max' => k[1].lstrip!}
-              when /CurrentDrawn\(Present\/Max\)/
-                ikey = "CurrentDraw"
-                k = sec.split("/")
-                sec = { 'present' => k[0], 'max' => k[1].lstrip!}
-              end
+            when /(Min\/Max)/
+              ikey = 'LifetimeTemperatureRecorded'
+              k = sec.split("/")
+              sec = { 'min' => k[0], 'max' => k[1] }
+            when /Voltage\(Present\/Max\)/
+              ikey = 'Voltage'
+              k = sec.split("/")
+              sec = { 'present' => k[0], 'max' => k[1].lstrip!}
+            when /CurrentDrawn\(Present\/Max\)/
+              ikey = "CurrentDraw"
+              k = sec.split("/")
+              sec = { 'present' => k[0], 'max' => k[1].lstrip!}
+            end
             data[key][ikey] = sec
           end
         end
@@ -674,11 +673,10 @@ module Einarc
 		end
 
 		def self.run(command)
-			res = `#{CLI} #{command}`.split("\n").collect { |l| l.strip }
-			es = $?.exitstatus
-			$stderr.puts "Error: " + res.join("\n") if es != 0
-			res
-		end
-
-	end
+      res = `#{CLI} #{command}`.split("\n").collect { |l| l.strip }
+      es = $?.exitstatus
+      $stderr.puts "Error: " + res.join("\n") if es != 0
+      res
+    end
+  end
 end
