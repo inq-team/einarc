@@ -20,6 +20,7 @@ module Einarc
 			'Adaptec 6405'  => ['9005', '028b', '9005', '0300'],
 			'Adaptec 6805Q' => ['9005', '028b', '9005', '0301'],
 			'Adaptec 6805' => ['9005', '028b', '9005', '0301'],
+      'Adaptec 71605' => ['9005', '028c', '9005', '0501'],
 		}
 
 		def initialize(adapter_num = nil)
@@ -134,6 +135,42 @@ module Einarc
 		def _log_list
 			raise NotImplementedError
 		end
+
+    # Public - Parse Adaptec logs
+    #
+    # Returns Hash
+    def _parse_adapter_log(subsys="")
+      data = {}
+      loop = 0
+
+      run("getlogs #{@adapter_num} #{subsys} tabular").each do |l|
+        l.split("\t").each do |t|
+          next  if t.empty?
+          next if t =~ /Controllers found/
+          w =  t.gsub(".", "").split("\s")
+          if w[0] == "driveErrorEntry"
+            loop = loop+1
+          end
+          unless data[loop].kind_of?(Hash)
+            data[loop] = {}
+          end
+
+          if w[0] == 'Controller'
+            data[loop][w[0]] = w[2]
+          else
+            unless w[0] == "driveErrorEntry"
+              data[loop][w[0]] = w[1]
+            end
+          end
+        end
+      end
+      final = { :controller => data[0] }
+      data.delete(0)
+      final[:errors] = data
+
+      # Return Final
+      final
+    end
 
 #Logical device number 0
 #   Logical device name                      : 1
@@ -288,7 +325,7 @@ module Einarc
 #         Reported Channel,Device(T:L)       : 0,5(5:0)
 #         Reported Location                  : Enclosure 1, Slot 5
 #         Reported ESD(T:L)                  : 2,1(1:0)
-#         Vendor                             : 
+#         Vendor                             :
 #         Model                              : ST31000528AS
 #         Firmware                           : CC37
 #         Serial number                      : 9VP22859
@@ -305,7 +342,6 @@ module Einarc
 #         NCQ status                         : Disabled
 		def _physical_list
 			@physical = {}
-			dev = nil
 			phys = nil
 			hdd = nil
 			run("getconfig #{@adapter_num} pd").each { |l|
@@ -412,7 +448,7 @@ module Einarc
 		def set_physical_hotspare_1(drv)
 			run("setstate #{@adapter_num} device #{drv.gsub(":"," ")} hsp noprompt")
 		end
-		
+
 		def get_logical_stripe(num)
 			ld = _logical_list[num.to_i]
 			raise Error.new("Unknown logical disc \"#{num}\"") unless ld
@@ -459,26 +495,172 @@ module Einarc
 
 		# ======================================================================
 
-#--------------------------------------------------------
-#Controller Battery Information
-#--------------------------------------------------------
-#Status                                   : Optimal
-#Over temperature                         : No
-#Capacity remaining                       : 98 percent
-#Time remaining (at current draw)         : 3 days, 0 hours, 31 minutes
-		def _bbu_info
-			info = {}
-			run("getconfig #{@adapter_num} ad").grep(/^Status\s*:\s*(.*?)$/) {
-				unless $1 =~ /Not Installed/
-					info[:vendor] = 'Adaptec'
-					info[:device] = 'BBU'
-				end
-			}
-			return info
-		end
-		
+    #--------------------------------------------------------
+    #Controller Battery Information
+    #--------------------------------------------------------
+    #Status                                   : Optimal
+    #Over temperature                         : No
+    #Capacity remaining                       : 98 percent
+    #Time remaining (at current draw)         : 3 days, 0 hours, 31 minutes
+    def _bbu_info
+      info = {}
+      run("getconfig #{@adapter_num} ad").grep(/^Status\s*:\s*(.*?)$/) {
+        unless $1 =~ /Not Installed/
+          info[:vendor] = 'Adaptec'
+          info[:device] = 'BBU'
+        end
+      }
+      return info
+    end
+
+    # Public - Gather adapter information, along with the BBU information and
+    # parse into a multi-dimensional hash. It has compatibility for 5XXX and
+    # 7XXX adapters.
+    #
+    # Example
+    #   # Adaptec 5XXX
+    #   {
+    #     "controller" => {
+    #                       "ControllerStatus"=>"Optimal",
+    #                       "Channeldescription"=>"SAS/SATA",
+    #                       "ControllerModel"=>"Adaptec 5805Z",
+    #                       "ControllerSerialNumber"=>"1B3611BD8C5",
+    #                       "PhysicalSlot"=>"6",
+    #                       "Temperature"=>"64 C/ 147 F (Normal)",
+    #                       "Installedmemory"=>"512 MB",
+    #                       "Copyback"=>"Disabled",
+    #                       "Backgroundconsistencycheck"=>"Disabled",
+    #                       "AutomaticFailover"=>"Enabled",
+    #                       "Globaltaskpriority"=>"High",
+    #                       "PerformanceMode"=>"Default/Dynamic",
+    #                       "Stayawakeperiod"=>"Disabled",
+    #                       "Spinuplimitinternaldrives"=>"0",
+    #                       "Spinuplimitexternaldrives"=>"0",
+    #                       "Defunctdiskdrivecount"=>"0",
+    #                       "Logicaldevices/Failed/Degraded"=>"2/0/0",
+    #                       "SSDsassignedtoMaxCachepool"=>"0",
+    #                       "MaximumSSDsallowedinMaxCachepool"=>"8",
+    #                       "MaxCacheReadCachePoolSize"=>"0.000 GB",
+    #                       "MaxCacheflushandfetchrate"=>"0",
+    #                       "MaxCacheReadWriteBalanceFactor"=>"3,1",
+    #                       "NCQstatus"=>"Enabled",
+    #                       "Statisticsdatacollectionmode"=>"Enabled"
+    #                       },
+    #   "version" =>  {
+    #                   "BIOS"=>"5.2-0 (18950)",
+    #                   "Firmware"=>"5.2-0 (18950)",
+    #                   "Driver"=>"1.1-5 (2461)",
+    #                   "BootFlash"=>"5.2-0 (18950)"
+    #                 },
+    #   "bbu"  => {
+    #                 "Status"  =>  "ZMM Optimal"
+    #             }
+    #   }
+    #
+    #   # Adaptec 7XXX series
+    #   {
+    #     "controller"  =>  {
+    #                         "ControllerStatus"=>"Optimal",
+    #                         "ControllerMode"=>"Default/RAID",
+    #                         "Channeldescription"=>"SAS/SATA",
+    #                         "ControllerModel"=>"Adaptec ASR71605",
+    #                         "ControllerSerialNumber"=>"3A281337853",
+    #                         "PhysicalSlot"=>"5",
+    #                         "Temperature"=>"44 C/ 111 F (Normal)",
+    #                         "Installedmemory"=>"1024 MB",
+    #                         "Copyback"=>"Disabled",
+    #                         "Backgroundconsistencycheck"=>"Disabled",
+    #                         "AutomaticFailover"=>"Enabled",
+    #                         "Globaltaskpriority"=>"High",
+    #                         "PerformanceMode"=>"Default/Dynamic",
+    #                         "Stayawakeperiod"=>"Disabled",
+    #                         "Spinuplimitinternaldrives"=>"0",
+    #                         "Spinuplimitexternaldrives"=>"0",
+    #                         "Defunctdiskdrivecount"=>"0",
+    #                         "Logicaldevices/Failed/Degraded"=>"2/0/0",
+    #                         "NCQstatus"=>"Enabled",
+    #                         "Statisticsdatacollectionmode"=>"Disabled"
+    #                         },
+    #   "version" =>  {
+    #                   "BIOS"=>"7.2-0 (30502)",
+    #                   "Firmware"=>"7.2-0 (30502)",
+    #                   "Driver"=>"1.2-1 (30200)",
+    #                   "BootFlash"=>"7.2-0 (30502)"
+    #                   },
+    #   "bbu" =>  {
+    #               "OverallBackupUnitStatus"=>"Ready",
+    #               "BackupUnitType"=>"AFM-700/700 LP",
+    #               "Non-VolatileStorageStatus"=>"Ready",
+    #               "SupercapStatus"=>"Ready",
+    #               "CurrentTemperature"=>"21 deg C",
+    #               "ThresholdTemperature"=>"51 deg C",
+    #               "LifetimeTemperatureRecorded"=>{  "min"=>"20 deg C",
+    #                                                 "max"=>" 29 deg C"
+    #                                                 },
+    #               "Voltage"=>{  "present"=>"4897 mV",
+    #                             "max"=>"5302 mV"
+    #                           },
+    #               "Life-timeMaxVoltageRecorded"=>"5404 mV",
+    #               "CurrentDraw"=>{ "present"=>"0 mA",
+    #                                 "max"=>"560 mA"},
+    #               "Health"=>"100 percent",
+    #               "ChargeLevel"=>"100 percent"
+    #               }
+    #   }
+    #
+    # Returns Hash
+    def _extended_adapter_information
+      data = {}
+      key = ''
+      run("getconfig #{@adapter_num} ad").each do |l|
+        next if l =~ /--/ or l.empty?
+        next if l =~ /Command completed successfully./
+        next if l =~ /Controllers found:/
+        next if l =~ /Supercap Information/
+        next if l =~ /Life-time Temperature Recorded/
+
+        case l
+        when /Controller information/
+          key = "controller"
+        when /Controller Version Information/
+          key = "version"
+        when /Controller ZMM Information/
+          key = "bbu"
+        when /Controller Cache Backup Unit Information/
+          key = 'bbu'
+        else
+          unless key.nil?
+            unless data[key].kind_of?(Hash)
+              data[key] = {}
+            end
+
+            ikey, sec = l.split(":")
+            ikey.gsub!("\s", "")
+            ikey.gsub!(",", "") if ikey =~ /,/
+            sec.lstrip!
+
+            case ikey
+            when /(Min\/Max)/
+              ikey = 'LifetimeTemperatureRecorded'
+              k = sec.split("/")
+              sec = { 'min' => k[0], 'max' => k[1] }
+            when /Voltage\(Present\/Max\)/
+              ikey = 'Voltage'
+              k = sec.split("/")
+              sec = { 'present' => k[0], 'max' => k[1].lstrip!}
+            when /CurrentDrawn\(Present\/Max\)/
+              ikey = "CurrentDraw"
+              k = sec.split("/")
+              sec = { 'present' => k[0], 'max' => k[1].lstrip!}
+            end
+            data[key][ikey] = sec
+          end
+        end
+      end
+      data
+    end
 		# ======================================================================
-		
+
 		private
 
 		def run(command, check = true)
@@ -491,11 +673,10 @@ module Einarc
 		end
 
 		def self.run(command)
-			res = `#{CLI} #{command}`.split("\n").collect { |l| l.strip }
-			es = $?.exitstatus
-			$stderr.puts "Error: " + res.join("\n") if es != 0
-			res
-		end
-
-	end
+      res = `#{CLI} #{command}`.split("\n").collect { |l| l.strip }
+      es = $?.exitstatus
+      $stderr.puts "Error: " + res.join("\n") if es != 0
+      res
+    end
+  end
 end
