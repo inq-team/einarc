@@ -9,6 +9,7 @@ module Einarc
 			'9550SX SATA-RAID' => ["13c1", "1003"],
 			'9650SE SATA-II RAID' => ["13c1", "1004"],
 			'9690SA SAS/SATA-II RAID PCIe' => ["13c1", "1005"],
+			'9750 SAS2/SATA-II RAID PCIe' => ["13c1", "1010", "13c1", "0001"],
 		}
 
 		TWCLI = "#{Einarc::EINARC_LIB}/amcc/cli"
