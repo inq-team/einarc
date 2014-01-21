@@ -113,40 +113,6 @@ module Einarc
 			return res
 		end
 
-		# ======================================================================
-
-		# use SCSI INQUIRY to get the serial number from each disk
-		# returns a hash with {serialnumber,diskname} where diskname is like 'sda'
-		private
-		def __get_disk_serials
-			diskserials={}
-			return diskserials if !File.executable?(SG3INQ)
-			__list_disks.each { |d|
-				devfile=File.join("/dev",d)
-				serial=""
-				`#{SG3INQ} #{devfile}`.each{ |l|
-					serial = l.split(" ")[-1] if l =~ /Unit serial number/
-				}
-				diskserials[serial]=d
-			}
-			return diskserials
-		end
-
-		# list all disks in the system (e.g. ['sda','sdb','sdc'])
-		private
-		def __list_disks
-			disks=[]
-			Dir.glob('/sys/block/*').each() { |x|
-				# not a ramdisk or loop or somesuch
-				if File.exists?(File.join(x,"device")) then
-					# not removable either
-					a=File.new(File.join(x,"removable"))
-					disks << File.basename(x) if a.readline=="0\n"
-				end
-			}
-			return disks
-		end
-
 		def _logical_list
 			# FIXME: show spares?
 			@logical = []
@@ -349,6 +315,14 @@ module Einarc
 			raise NotImplementedError
 		end
 
+		def _extended_adapter_information
+			run
+		end
+
+		def _extended_adapter_information
+			puts "Extending the Einarc::AMCC class"
+		end
+
 		# run one command, instance method
 		private
 		def run(command)
@@ -359,11 +333,42 @@ module Einarc
 		end
 
 		# class method for self.query()
-		private
 		def self.run(command)
 			out = `#{TWCLI} #{command}`.split("\n").collect { |l| l.strip }
 			raise Error.new(out.join("\n")) if $?.exitstatus != 0
 			return out
 		end
+		# ======================================================================
+
+		# use SCSI INQUIRY to get the serial number from each disk
+		# returns a hash with {serialnumber,diskname} where diskname is like 'sda'
+		def __get_disk_serials
+			diskserials={}
+			return diskserials if !File.executable?(SG3INQ)
+			__list_disks.each { |d|
+				devfile=File.join("/dev",d)
+				serial=""
+				`#{SG3INQ} #{devfile}`.each{ |l|
+					serial = l.split(" ")[-1] if l =~ /Unit serial number/
+				}
+				diskserials[serial]=d
+			}
+			return diskserials
+		end
+
+		# list all disks in the system (e.g. ['sda','sdb','sdc'])
+		def __list_disks
+			disks=[]
+			Dir.glob('/sys/block/*').each() { |x|
+				# not a ramdisk or loop or somesuch
+				if File.exists?(File.join(x,"device")) then
+					# not removable either
+					a=File.new(File.join(x,"removable"))
+					disks << File.basename(x) if a.readline=="0\n"
+				end
+			}
+			return disks
+		end
+
 	end
 end
