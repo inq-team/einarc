@@ -262,7 +262,7 @@ module Einarc
 		def _physical_list_show_all(port)
 			dat = {}
 			begin
-				run("/p#{port} show all", '1').each do |l|
+				run("/p#{port} show all", true).each do |l|
 					next if l.empty?
 					case l
 					when /p#{p} Status = (\S+)/
