@@ -245,33 +245,64 @@ module Einarc
 
 		def _physical_list
 			res = {} # overall mapping
-			run(' show').each { |l|
+			run(' show').each do  |l|
 				# don't query ports with no disks on them
-				# that causes tw_cli to throw up :-P
+				# # that causes tw_cli to throw up :-P
 				next if l =~ /NOT-PRESENT/
 				if l =~ /^p([0-9]+) /
 					p = $1
-					pd = res[p] = {}
+					res[p] = {}
 					# query the details.
-					run("/p#{p} show all").each { |l|
-						case l
-						when /p#{p} Status = (\S+)/
-							pd[:state] = $1.downcase
-						when /Model = (.*)$/
-							pd[:model] = $1.strip
-						when /Firmware Version = (.*)$/
-							pd[:revision] = $1.strip
-						when /Capacity = ([0-9\.]+)/
-							pd[:size] = 1024 * ($1.to_f)
-						when /Serial = (.*)/
-							pd[:serial] = $1.strip
-						end # case per_port
-					}
+					res[p] = _physical_list_show_all(p)
 				end # if this_is_a_valid_port
-			}
-			return res
+			end
+			res
 		end
 
+		def _physical_list_show_all(port)
+			dat = {}
+			begin
+				run("/p#{port} show all", '1').each do |l|
+					next if l.empty?
+					case l
+					when /p#{p} Status = (\S+)/
+						dat[:state] = $1.downcase
+					when /Model = (.*)$/
+						dat[:model] = $1.strip
+					when /Firmware Version = (.*)$/
+						dat[:revision] = $1.strip
+					when /Capacity = ([0-9\.]+)/
+						dat[:size] = 1024 * ($1.to_f)
+					when /Serial = (.*)/
+						dat[:serial] = $1.strip
+					end # case per_port
+				end
+			rescue Einarc::Error
+				dat = _physical_list_show(port)
+			end
+			dat
+		end
+
+		def _physical_list_show(port)
+			dat = {}
+
+			run("/p#{port} show").each do |l|
+				next if l.empty?
+				next if l =~ /^Port/
+				next if l =~ /^----/
+
+				pd = l.split("\s")
+				dat = { :port => pd[0],
+						:state => pd[1],
+						:unit => pd[2],
+						:size => pd[3],
+						:blocks => pd[5],
+						:serial => pd[6],
+						:model => ""
+				}
+			end
+			dat
+		end
 		# ======================================================================
 
 		def firmware_read(filename)
