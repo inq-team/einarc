@@ -387,15 +387,17 @@ module Einarc
 
 		# run one command, instance method
 		private
-		def run(command)
+		def run(command, disable_stderr=nil)
 #			@out.puts("DEBUG: #{TWCLI} /c#{@adapter_num}#{command}")
+			$stderr.reopen("/dev/null", "w") if disable_stderr
 			out = `#{TWCLI} /c#{@adapter_num}#{command}`.split("\n").collect { |l| l.strip }
 			raise Error.new(out.join("\n")) if $?.exitstatus != 0
 			return out
 		end
 
 		# class method for self.query()
-		def self.run(command)
+		def self.run(command, disable_stderr=nil)
+			$stderr.reopen("/dev/null", "w") if disable_stderr
 			out = `#{TWCLI} #{command}`.split("\n").collect { |l| l.strip }
 			raise Error.new(out.join("\n")) if $?.exitstatus != 0
 			return out
