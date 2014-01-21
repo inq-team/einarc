@@ -347,11 +347,42 @@ module Einarc
 		end
 
 		def _extended_adapter_information
-			run
-		end
+			dat = { 'controller' => {},
+					 'version' => {},
+					 'bbu' => {}
+			}
 
-		def _extended_adapter_information
-			puts "Extending the Einarc::AMCC class"
+			run(" show all").each do |l|
+				next if l.empty?
+				next if l =~ /-----$/
+
+				case l
+				when /\/c\d/
+					field, value  = l.gsub(/\/c\d /, "").gsub("\s", "").split("=")
+
+					case field
+					when /DriverVersion/, /FirmwareVersion/, /PCBVersion/, /BiosVersion/,
+						/BootLoaderVersion/,  /SerialNumber/
+						dat['version'][field] = value
+					when /Controller/
+						dat['controller']['ControllerModel'] = value
+					else
+						dat['controller'][field] = value
+					end
+				when /bbu/
+					bbu = l.split("\s")
+					puts bbu.inspect
+					dat[:bbu] = { 'OnlineState' => bbu[1],
+									 'BBUReady'      => bbu[2],
+									 'Status'        => bbu[3],
+									 'Volt'  =>      bbu[4],
+									 'Temp'  => bbu[5],
+									 'Hours' => bbu[6],
+									 'LastCapTest' => bbu[7]
+					}
+				end
+			end
+			dat
 		end
 
 		# run one command, instance method
