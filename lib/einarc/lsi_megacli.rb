@@ -525,6 +525,51 @@ module Einarc
 			info
 		end
 
+    def extract_cli(input)
+      input.split(":")[1].lstrip
+    end
+
+    def _extended_adapter_information
+      data = { 'controller' => {},
+               'version' => {},
+               'bbu' => {} }
+
+      # Gather Controller information
+      run('-AdpAllInfo -aall').each do |adapter|
+        case adapter
+        when /Product Name/
+          data['controller']['ControllerName'] = extract_cli(adapter)
+        when /FW Version/
+          data['version']['FWVersion'] = extract_cli(adapter)
+        when /BIOS Version/
+          data['version']['BIOSVersion'] = extract_cli(adapter)
+        when /Preboot CLI Version/
+          data['version']['PrebootCLIVersion'] = extract_cli(adapter)
+        when /WebBIOS Version/
+          data['version']['WebBIOSVersion']
+        end
+      end
+
+      # Gather BBU information
+      run('-AdpBbuCmd -GetBbuStatus -aALL').each do |b|
+        case b
+        when /Battery State/
+          data['bbu']['BatteryStatus'] = extract_cli(b)
+        when /Learn Cycle Active/
+          data['bbu']['LearnCycleActive'] = extract_cli(b)
+        when /Temperature/
+          data['bbu']['Temperature'] = extract_cli(b)
+        when /Remaining Capacity Low/
+          data['bbu']['CapacityLow'] = extract_cli(b)
+        when /Battery Replacement required/
+          data['bbu']['BatteryReplacement'] = extract_cli(b)
+        end
+      end
+      data
+    end
+
+
+
 		# ======================================================================
 
 		def _physical_smart(drv)

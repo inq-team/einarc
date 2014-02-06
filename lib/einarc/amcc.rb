@@ -245,18 +245,31 @@ module Einarc
 
 		def _physical_list
 			res = {} # overall mapping
-			run(' show').each do  |l|
+			run(' show').each { |l|
 				# don't query ports with no disks on them
-				# # that causes tw_cli to throw up :-P
+				# that causes tw_cli to throw up :-P
 				next if l =~ /NOT-PRESENT/
 				if l =~ /^p([0-9]+) /
 					p = $1
-					res[p] = {}
+					pd = res[p] = {}
 					# query the details.
-					res[p] = _physical_list_show_all(p)
+					run("/p#{p} show all").each { |l|
+						case l
+						when /p#{p} Status = (\S+)/
+							pd[:state] = $1.downcase
+						when /Model = (.*)$/
+							pd[:model] = $1.strip
+						when /Firmware Version = (.*)$/
+							pd[:revision] = $1.strip
+						when /Capacity = ([0-9\.]+)/
+							pd[:size] = 1024 * ($1.to_f)
+						when /Serial = (.*)/
+							pd[:serial] = $1.strip
+						end # case per_port
+					}
 				end # if this_is_a_valid_port
-			end
-			res
+			}
+			return res
 		end
 
 		def _physical_list_show_all(port)
@@ -364,15 +377,14 @@ module Einarc
 					when /DriverVersion/, /FirmwareVersion/, /PCBVersion/, /BiosVersion/,
 						/BootLoaderVersion/,  /SerialNumber/
 						dat['version'][field] = value
-					when /Controller/
+					when /Model/
 						dat['controller']['ControllerModel'] = value
 					else
 						dat['controller'][field] = value
 					end
 				when /bbu/
 					bbu = l.split("\s")
-					puts bbu.inspect
-					dat[:bbu] = { 'OnlineState' => bbu[1],
+					dat['bbu'] = { 'OnlineState' => bbu[1],
 									 'BBUReady'      => bbu[2],
 									 'Status'        => bbu[3],
 									 'Volt'  =>      bbu[4],
