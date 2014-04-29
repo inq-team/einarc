@@ -58,20 +58,19 @@ tools/lsi_megarc/cli: proprietary/ut_linux_megarc_1.11.zip
 # fetch the file itself.
 proprietary/ut_linux_megarc_1.11.zip: proprietary/agreed
 	mkdir -p proprietary
-	$(WGET) 'http://www.lsi.com/magic.axd?x=e&file=http%3A//www.lsi.com/downloads/Public/MegaRAID%2520Common%2520Files/ut_linux_megarc_1.11.zip'
-	$(WGET) 'http://www.lsi.com/downloads/Public/MegaRAID%20Common%20Files/ut_linux_megarc_1.11.zip'
+	$(WGET) 'http://www.lsi.com/downloads/Public/Obsolete/Obsolete%20Common%20Files/ut_linux_megarc_1.11.zip'
 	touch proprietary/ut_linux_megarc_1.11.zip
 
 #===============================================================================
 # Module: lsi_megacli
 #===============================================================================
 
-LSI_MEGACLI_VERSION=8.07.07
+LSI_MEGACLI_VERSION=8.07.08
 
-tools/lsi_megacli/cli: proprietary/$(LSI_MEGACLI_VERSION)_MegaCLI.zip
+tools/lsi_megacli/cli: proprietary/MegaCli_Linux.zip
 	rm -rf tools/lsi_megacli
 	mkdir -p tools/lsi_megacli
-	unzip -j proprietary/$(LSI_MEGACLI_VERSION)_MegaCLI.zip -d tools/lsi_megacli linux/MegaCli-$(LSI_MEGACLI_VERSION)-1.noarch.rpm
+	unzip -j proprietary/MegaCli_Linux.zip -d tools/lsi_megacli MegaCli_Linux/MegaCli-$(LSI_MEGACLI_VERSION)-1.noarch.rpm
 	rpm2cpio tools/lsi_megacli/MegaCli-$(LSI_MEGACLI_VERSION)-1.noarch.rpm | cpio -idv
 	if [ "$(TARGET)" = x86_64 ]; then \
 		mv opt/MegaRAID/MegaCli/MegaCli64 tools/lsi_megacli/cli.bin; \
@@ -84,16 +83,10 @@ tools/lsi_megacli/cli: proprietary/$(LSI_MEGACLI_VERSION)_MegaCLI.zip
 	printf '#!/bin/sh\nCLI_DIR=$$(dirname "$$0")\nLD_LIBRARY_PATH="$$CLI_DIR" "$$CLI_DIR/cli.bin" $$@ -NoLog\nexit $$?\n' >tools/lsi_megacli/cli
 	chmod a+x tools/lsi_megacli/cli
 
-# LSI seems to use a fairly complex and intricate scheme on a
-# site. You can be in 2 states: "agreed" or "not (yet) agreed" with
-# licensing info. State is tracked by IP and retained for some time,
-# thus it's usually enough to visit "agreement" URL and then we can
-# fetch the file itself.
-proprietary/$(LSI_MEGACLI_VERSION)_MegaCLI.zip: proprietary/agreed
+proprietary/MegaCli_Linux.zip: proprietary/agreed
 	mkdir -p proprietary
-	$(WGET) 'http://www.lsi.com/magic.axd?x=e&file=http%3A//www.lsi.com/downloads/Public/MegaRAID%2520Common%2520Files/$(LSI_MEGACLI_VERSION)_MegaCLI.zip'
-	$(WGET) 'http://www.lsi.com/downloads/Public/MegaRAID%20Common%20Files/$(LSI_MEGACLI_VERSION)_MegaCLI.zip'
-	touch proprietary/$(LSI_MEGACLI_VERSION)_MegaCLI.zip
+	$(WGET) 'http://www.lsi.com/downloads/Public/Nytro/downloads/Nytro%20XD/MegaCli_Linux.zip'
+	touch proprietary/MegaCli_Linux.zip
 
 #===============================================================================
 # Module: amcc
