@@ -58,6 +58,7 @@ tools/lsi_megarc/cli: proprietary/ut_linux_megarc_1.11.zip
 # fetch the file itself.
 proprietary/ut_linux_megarc_1.11.zip: proprietary/agreed
 	mkdir -p proprietary
+	$(WGET) 'http://www.lsi.com/magic.axd?x=e&file=http%3A//www.lsi.com/downloads/Public/Obsolete/Obsolete%2520Common%2520Files/ut_linux_megarc_1.11.zip'
 	$(WGET) 'http://www.lsi.com/downloads/Public/Obsolete/Obsolete%20Common%20Files/ut_linux_megarc_1.11.zip'
 	touch proprietary/ut_linux_megarc_1.11.zip
 
@@ -83,8 +84,10 @@ tools/lsi_megacli/cli: proprietary/MegaCli_Linux.zip
 	printf '#!/bin/sh\nCLI_DIR=$$(dirname "$$0")\nLD_LIBRARY_PATH="$$CLI_DIR" "$$CLI_DIR/cli.bin" $$@ -NoLog\nexit $$?\n' >tools/lsi_megacli/cli
 	chmod a+x tools/lsi_megacli/cli
 
+# See above for crazy LSI stateful-by-IP site mechanics.
 proprietary/MegaCli_Linux.zip: proprietary/agreed
 	mkdir -p proprietary
+	$(WGET) 'http://www.lsi.com/magic.axd?x=e&file=http%3A//www.lsi.com/downloads/Public/Obsolete/Obsolete%2520Common%2520Files/ut_linux_megarc_1.11.zip'
 	$(WGET) 'http://www.lsi.com/downloads/Public/Nytro/downloads/Nytro%20XD/MegaCli_Linux.zip'
 	touch proprietary/MegaCli_Linux.zip
 
