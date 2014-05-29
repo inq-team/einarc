@@ -173,6 +173,8 @@ module Einarc
 					end
 				when /Segment (\d+)\s*:\s*(.*?) \((\d+),(\d+)\)/
 					ld[:physical] << "#{$3}:#{$4}"
+				when /Segment (\d+)\s*:\s*(.*?) \(Controller:\d+,Enclosure:(\d+),Slot:(\d+)\)/
+					ld[:physical] << "#{$3}:#{$4}"
 				when /Dedicated Hot-Spare\s*:\s*(\d+),(\d+)/
 					ld[:physical] << "#{$1}:#{$2}"
 				when /Status of logical device\s+:\s(.+)$/
