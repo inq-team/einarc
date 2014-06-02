@@ -269,17 +269,13 @@ module Einarc
 			set_physical_hotspare_0(drv)
 		end
 
-		def _logical_physical_list(ld)
-			res = []
-			_logical_list.select { |l| l[:num] == ld.to_i }[0][:physical].each { |d|
-				state = nil
-				_physical_list.each_pair { |num, drv|
-					state = "hotspare" if drv[:dedicated_to] == ld and num == d
-				}
-				res.push( { :num => d, :state => state ? state : ld } )
-			}
-			return res
-		end
+                def _logical_physical_list(ld)
+                        res = []
+                        ld.each { |l|
+                                res.push( { :num => l[:num], :state => l[:state] ? l[:state] : l } )
+                        }
+                        return res
+                end
 
 #      Device #5
 #         Device is a Hard drive

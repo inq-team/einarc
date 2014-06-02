@@ -221,7 +221,8 @@ module Einarc
 			end
 		end
 
-		def logical_physical_list(ld)
+		def logical_physical_list
+                        ld = _logical_list
 			if $humanize then
 				@outstream.puts "ID      State"
 				_logical_physical_list(ld).each{ |d|
