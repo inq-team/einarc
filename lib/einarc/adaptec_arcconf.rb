@@ -162,6 +162,7 @@ module Einarc
 					ld = @logical[num] = {
 						:num => num,
 						:physical => [],
+						:serial_list => [],
 					}
 				when /Size\s*:\s*(\d+) MB/
 					ld[:capacity] = $1.to_i
@@ -171,8 +172,8 @@ module Einarc
 					when 'Simple_volume', 'Spanned_volume' then 'linear'
 					else ld[:raid_level]
 					end
-				when /Segment (\d+)\s*:\s*(.*?) \((\d+),(\d+)\)/
-					ld[:physical] << "#{$3}:#{$4}"
+				when /Segment (\d+)\s*:\s*(.*?) \((.+)\)\s*(.+)/
+					ld[:serial_list] << $4
 				when /Dedicated Hot-Spare\s*:\s*(\d+),(\d+)/
 					ld[:physical] << "#{$1}:#{$2}"
 				when /Status of logical device\s+:\s(.+)$/
@@ -189,8 +190,40 @@ module Einarc
 					ld[:dev] = find_dev_by_name($1.strip)
 				end
 			}
+			# Get serial_to_physical mapping and update ld[:physical] list accordingly
+			@serial_to_physical = _serial_to_physical
+			@logical.each { |ld|
+			        ld[:serial_list].each { |sn|
+                                        ld[:physical] << @serial_to_physical[sn]
+                                }
+                        }
 			return @logical
 		end
+
+                def _serial_to_physical
+                        @serial_to_physical = {}
+                        hdd = nil
+                        serial = nil
+                        physical = nil
+                        run("getconfig #{@adapter_num} pd").each { |l|
+                                case l
+                                when /Device #(\d+)/
+                                        hdd = false
+                                        serial = false
+                                        physical = false
+                                when /Device is a Hard drive/
+                                        hdd = true
+                                when /Reported Channel,Device\(T:L\)\s*:\s*(\d+),(\d+).*/
+                                        physical = "#{$1}:#{$2}" if hdd
+                                        @serial_to_physical[serial] = physical if serial
+                                when /Serial number\s*:\s*(.*)$/
+                                        serial = $1
+                                        @serial_to_physical[serial] = physical if physical
+                                end
+                        }
+                        return @serial_to_physical 
+                end
+
 
 		def logical_add(raid_level, discs = nil, sizes = nil, options = nil)
 			# Normalize arguments: make "discs" and "sizes" an array, "raid_level" a string
@@ -341,6 +374,7 @@ module Einarc
 			_logical_list.each_with_index { |l, i|
 				next unless l
 				l[:physical].each { |pd|
+					next unless @physical.has_key?(pd)
 					next if %w{ failed }.include?(@physical[pd][:state])
 					next if @physical[pd][:state] == "hotspare"
 					if @physical[pd][:state].is_a?(Array)
