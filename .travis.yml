@@ -7,12 +7,14 @@ env:
   - MODULES=software
   - MODULES=all
 # Testing with all modules is a heavy test, so we'll do it only once,
-# with most modern version of Ruby
+# with default version of Ruby
 matrix:
   exclude:
     - rvm: "1.8.7"
       env: MODULES=all
-    - rvm: "1.9.3"
+    - rvm: "2.1.1"
       env: MODULES=all
 before_script: "mkdir -p proprietary && touch proprietary/agreed"
-script: "./configure --modules=$MODULES && make && ./tests_functional; ./tests_simulate"
+before_install:
+  - sudo apt-get install -qq rpm2cpio
+script: "./configure --modules=$MODULES && make && ./tests_functional && ./tests_simulate"
