@@ -66,13 +66,15 @@ proprietary/ut_linux_megarc_1.11.zip: proprietary/agreed
 # Module: lsi_megacli
 #===============================================================================
 
-LSI_MEGACLI_VERSION=8.07.08
+LSI_MEGACLI_VERSION=8.07.14
+LSI_MEGACLI_ZIP=$(LSI_MEGACLI_VERSION)_MegaCLI.zip
+LSI_MEGACLI_RPM=MegaCli-$(LSI_MEGACLI_VERSION)-1.noarch.rpm
 
-tools/lsi_megacli/cli: proprietary/MegaCli_Linux.zip
+tools/lsi_megacli/cli: proprietary/$(LSI_MEGACLI_ZIP)
 	rm -rf tools/lsi_megacli
 	mkdir -p tools/lsi_megacli
-	unzip -j proprietary/MegaCli_Linux.zip -d tools/lsi_megacli MegaCli_Linux/MegaCli-$(LSI_MEGACLI_VERSION)-1.noarch.rpm
-	rpm2cpio tools/lsi_megacli/MegaCli-$(LSI_MEGACLI_VERSION)-1.noarch.rpm | cpio -idv
+	unzip -j proprietary/$(LSI_MEGACLI_ZIP) -d tools/lsi_megacli Linux/$(LSI_MEGACLI_RPM)
+	rpm2cpio tools/lsi_megacli/$(LSI_MEGACLI_RPM) | cpio -idv
 	if [ "$(TARGET)" = x86_64 ]; then \
 		mv opt/MegaRAID/MegaCli/MegaCli64 tools/lsi_megacli/cli.bin; \
 	else \
@@ -85,11 +87,11 @@ tools/lsi_megacli/cli: proprietary/MegaCli_Linux.zip
 	chmod a+x tools/lsi_megacli/cli
 
 # See above for crazy LSI stateful-by-IP site mechanics.
-proprietary/MegaCli_Linux.zip: proprietary/agreed
+proprietary/$(LSI_MEGACLI_ZIP): proprietary/agreed
 	mkdir -p proprietary
 	$(WGET) 'http://www.lsi.com/magic.axd?x=e&file=http%3A//www.lsi.com/downloads/Public/Obsolete/Obsolete%2520Common%2520Files/ut_linux_megarc_1.11.zip'
-	$(WGET) 'http://www.lsi.com/downloads/Public/Nytro/downloads/Nytro%20XD/MegaCli_Linux.zip'
-	touch proprietary/MegaCli_Linux.zip
+	$(WGET) "http://www.lsi.com/downloads/Public/RAID%20Controllers/RAID%20Controllers%20Common%20Files/$(LSI_MEGACLI_ZIP)"
+	touch proprietary/$(LSI_MEGACLI_ZIP)
 
 #===============================================================================
 # Module: amcc
