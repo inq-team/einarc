@@ -1,5 +1,6 @@
 Einarc: Einarc is not a RAID CLI
 ================================
+[![Build Status](https://travis-ci.org/inq-team/einarc.svg?branch=master)](https://travis-ci.org/inq-team/einarc)
 
 Einarc is a part of Inquisitor platform, a universal storage RAID
 command line interface and an API that provides management for various
