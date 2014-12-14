@@ -2,4 +2,16 @@ language: ruby
 rvm:
   - "1.8.7"
   - "1.9.3"
-script: "./configure --modules=software && make && ./tests_functional; ./tests_simulate"
+  - "2.1.1"
+env:
+  - MODULES=software
+  - MODULES=all
+# Testing with all modules is a heavy test, so we'll do it only once,
+# with most modern version of Ruby
+matrix:
+  exclude:
+    - rvm: "1.8.7"
+      env: MODULES=all
+    - rvm: "1.9.3"
+      env: MODULES=all
+script: "./configure --modules=$MODULES && make && ./tests_functional; ./tests_simulate"
