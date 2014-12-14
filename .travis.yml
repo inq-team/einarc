@@ -14,5 +14,5 @@ matrix:
       env: MODULES=all
     - rvm: "1.9.3"
       env: MODULES=all
-before_script: "touch proprietary/agreed"
+before_script: "mkdir -p proprietary && touch proprietary/agreed"
 script: "./configure --modules=$MODULES && make && ./tests_functional; ./tests_simulate"
