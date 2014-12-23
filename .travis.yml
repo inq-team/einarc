@@ -1,0 +1,20 @@
+language: ruby
+rvm:
+  - "1.8.7"
+  - "1.9.3"
+  - "2.1.1"
+env:
+  - MODULES=software
+  - MODULES=all
+# Testing with all modules is a heavy test, so we'll do it only once,
+# with default version of Ruby
+matrix:
+  exclude:
+    - rvm: "1.8.7"
+      env: MODULES=all
+    - rvm: "2.1.1"
+      env: MODULES=all
+before_script: "mkdir -p proprietary && touch proprietary/agreed"
+before_install:
+  - sudo apt-get install -qq rpm2cpio
+script: "./configure --modules=$MODULES && make && ./tests_functional && ./tests_simulate"

@@ -19,7 +19,8 @@ module Einarc
 			'Adaptec 2405'  => ['9005', '0285', '9005', '02d5'],
 			'Adaptec 6405'  => ['9005', '028b', '9005', '0300'],
 			'Adaptec 6805Q' => ['9005', '028b', '9005', '0301'],
-			'Adaptec 6805' => ['9005', '028b', '9005', '0301'],
+			'Adaptec 6805'  => ['9005', '028b', '9005', '0301'],
+			'Adaptec 71605' => ['9005', '028c', '9005', '0501'],
 		}
 
 		def initialize(adapter_num = nil)
@@ -171,6 +172,8 @@ module Einarc
 					else ld[:raid_level]
 					end
 				when /Segment (\d+)\s*:\s*(.*?) \((\d+),(\d+)\)/
+					ld[:physical] << "#{$3}:#{$4}"
+				when /Segment (\d+)\s*:\s*(.*?) \(Controller:\d+,Enclosure:(\d+),Slot:(\d+)\)/
 					ld[:physical] << "#{$3}:#{$4}"
 				when /Dedicated Hot-Spare\s*:\s*(\d+),(\d+)/
 					ld[:physical] << "#{$1}:#{$2}"

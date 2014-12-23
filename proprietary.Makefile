@@ -58,21 +58,23 @@ tools/lsi_megarc/cli: proprietary/ut_linux_megarc_1.11.zip
 # fetch the file itself.
 proprietary/ut_linux_megarc_1.11.zip: proprietary/agreed
 	mkdir -p proprietary
-	$(WGET) 'http://www.lsi.com/magic.axd?x=e&file=http%3A//www.lsi.com/downloads/Public/MegaRAID%2520Common%2520Files/ut_linux_megarc_1.11.zip'
-	$(WGET) 'http://www.lsi.com/downloads/Public/MegaRAID%20Common%20Files/ut_linux_megarc_1.11.zip'
+	$(WGET) 'http://www.lsi.com/magic.axd?x=e&file=http%3A//www.lsi.com/downloads/Public/Obsolete/Obsolete%2520Common%2520Files/ut_linux_megarc_1.11.zip'
+	$(WGET) 'http://www.lsi.com/downloads/Public/Obsolete/Obsolete%20Common%20Files/ut_linux_megarc_1.11.zip'
 	touch proprietary/ut_linux_megarc_1.11.zip
 
 #===============================================================================
 # Module: lsi_megacli
 #===============================================================================
 
-LSI_MEGACLI_VERSION=8.07.07
+LSI_MEGACLI_VERSION=8.07.14
+LSI_MEGACLI_ZIP=$(LSI_MEGACLI_VERSION)_MegaCLI.zip
+LSI_MEGACLI_RPM=MegaCli-$(LSI_MEGACLI_VERSION)-1.noarch.rpm
 
-tools/lsi_megacli/cli: proprietary/$(LSI_MEGACLI_VERSION)_MegaCLI.zip
+tools/lsi_megacli/cli: proprietary/$(LSI_MEGACLI_ZIP)
 	rm -rf tools/lsi_megacli
 	mkdir -p tools/lsi_megacli
-	unzip -j proprietary/$(LSI_MEGACLI_VERSION)_MegaCLI.zip -d tools/lsi_megacli linux/MegaCli-$(LSI_MEGACLI_VERSION)-1.noarch.rpm
-	rpm2cpio tools/lsi_megacli/MegaCli-$(LSI_MEGACLI_VERSION)-1.noarch.rpm | cpio -idv
+	unzip -j proprietary/$(LSI_MEGACLI_ZIP) -d tools/lsi_megacli Linux/$(LSI_MEGACLI_RPM)
+	rpm2cpio tools/lsi_megacli/$(LSI_MEGACLI_RPM) | cpio -idv
 	if [ "$(TARGET)" = x86_64 ]; then \
 		mv opt/MegaRAID/MegaCli/MegaCli64 tools/lsi_megacli/cli.bin; \
 	else \
@@ -84,44 +86,28 @@ tools/lsi_megacli/cli: proprietary/$(LSI_MEGACLI_VERSION)_MegaCLI.zip
 	printf '#!/bin/sh\nCLI_DIR=$$(dirname "$$0")\nLD_LIBRARY_PATH="$$CLI_DIR" "$$CLI_DIR/cli.bin" $$@ -NoLog\nexit $$?\n' >tools/lsi_megacli/cli
 	chmod a+x tools/lsi_megacli/cli
 
-# LSI seems to use a fairly complex and intricate scheme on a
-# site. You can be in 2 states: "agreed" or "not (yet) agreed" with
-# licensing info. State is tracked by IP and retained for some time,
-# thus it's usually enough to visit "agreement" URL and then we can
-# fetch the file itself.
-proprietary/$(LSI_MEGACLI_VERSION)_MegaCLI.zip: proprietary/agreed
+# See above for crazy LSI stateful-by-IP site mechanics.
+proprietary/$(LSI_MEGACLI_ZIP): proprietary/agreed
 	mkdir -p proprietary
-	$(WGET) 'http://www.lsi.com/magic.axd?x=e&file=http%3A//www.lsi.com/downloads/Public/MegaRAID%2520Common%2520Files/$(LSI_MEGACLI_VERSION)_MegaCLI.zip'
-	$(WGET) 'http://www.lsi.com/downloads/Public/MegaRAID%20Common%20Files/$(LSI_MEGACLI_VERSION)_MegaCLI.zip'
-	touch proprietary/$(LSI_MEGACLI_VERSION)_MegaCLI.zip
+	$(WGET) 'http://www.lsi.com/magic.axd?x=e&file=http%3A//www.lsi.com/downloads/Public/Obsolete/Obsolete%2520Common%2520Files/ut_linux_megarc_1.11.zip'
+	$(WGET) "http://www.lsi.com/downloads/Public/RAID%20Controllers/RAID%20Controllers%20Common%20Files/$(LSI_MEGACLI_ZIP)"
+	touch proprietary/$(LSI_MEGACLI_ZIP)
 
 #===============================================================================
 # Module: amcc
 #===============================================================================
 
-proprietary/tw_cli-linux-x86_64-9.5.0.1.tgz: proprietary/agreed
+proprietary/cli_linux_10.2.1_9.5.4.zip: proprietary/agreed
 	mkdir -p proprietary
-	$(WGET) http://3ware.com/download/Escalade9690SA-Series/9.5.0.1/tw_cli-linux-x86_64-9.5.0.1.tgz
+	$(WGET) ftp://tsupport:tsupport@ftp0.lsil.com/private/3Ware/downloads/cli_linux_10.2.1_9.5.4.zip
 
-proprietary/tw_cli-linux-x86-9.5.0.1.tgz: proprietary/agreed
-	mkdir -p proprietary
-	$(WGET) http://3ware.com/download/Escalade9690SA-Series/9.5.0.1/tw_cli-linux-x86-9.5.0.1.tgz
-
-ifeq ($(TARGET), x86_64)
-tools/amcc/cli: proprietary/tw_cli-linux-x86_64-9.5.0.1.tgz
+tools/amcc/cli: proprietary/cli_linux_10.2.1_9.5.4.zip
 	mkdir -p tools/amcc
-	tar xzf proprietary/tw_cli-linux-x86_64-9.5.0.1.tgz -C tools/amcc --exclude 'tw_cli.8*'
+	unzip -j proprietary/cli_linux_10.2.1_9.5.4.zip -d tools/amcc $(TARGET)/tw_cli
 	mv tools/amcc/tw_cli tools/amcc/cli
+	chmod a+x tools/amcc/cli
 	# prevent repeated download/extraction
-	touch tools/amcc/cli proprietary/tw_cli-linux-x86_64-9.5.0.1.tgz
-else
-tools/amcc/cli: proprietary/tw_cli-linux-x86-9.5.0.1.tgz
-	mkdir -p tools/amcc
-	tar xzf proprietary/tw_cli-linux-x86-9.5.0.1.tgz -C tools/amcc --exclude 'tw_cli.8*'
-	mv tools/amcc/tw_cli tools/amcc/cli
-	# prevent repeated download/extraction
-	touch tools/amcc/cli proprietary/tw_cli-linux-x86_64-9.5.0.1.tgz
-endif
+	touch tools/amcc/cli proprietary/cli_linux_10.2.1_9.5.4.zip
 
 #===============================================================================
 # Module: lsi_mpt

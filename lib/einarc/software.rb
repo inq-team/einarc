@@ -104,7 +104,7 @@ module Einarc
 		end
 
 		# ======================================================================
-		
+
 		def check_detached_hotspares
 			File.open(MDSTAT_LOCATION, 'r') { |f| f.each_line { |l|
 				if l =~ MDSTAT_PATTERN
@@ -196,10 +196,10 @@ module Einarc
 				options.each { |o|
 					if o =~ /^(.*?)=(.*?)$/
 						case $1
-						when 'stripe' 
+						when 'stripe'
 							opt_cmd += "--chunk #{$2} "
 							chunk_size = $2.to_i
-						else 
+						else
 							raise Error.new("Unknown option \"#{o}\"")
 						end
 					else
@@ -217,7 +217,7 @@ module Einarc
 				raise Error.new('RAID 5 requires 3 or more discs') unless discs.size >= 3
 			when '6'
 				raise Error.new('RAID 6 requires 4 or more discs') unless discs.size >= 4
-			when '10' 
+			when '10'
 				raise Error.new('RAID 10 requires an even number of discs, but at least 4') if discs.size % 2 != 0 or discs.size < 4
 			end
 
@@ -340,7 +340,7 @@ module Einarc
 		end
 
 		def _physical_smart(drv)
-			needed_smart_section_re = /START OF READ SMART DATA SECTION/ 
+			needed_smart_section_re = /START OF READ SMART DATA SECTION/
 
 			# Determine do we need to use "-d ata" option
 			smart_output = `smartctl -A #{self.class.scsi_to_device drv}`
@@ -430,7 +430,7 @@ module Einarc
 
 		def list_sgmaps()
 			Hash[ `sg_map`.split("\n").map{ |m| m.split(/\s+/).reverse }.select{ |p| p.size > 1 } ]
-		end 
+		end
 
 		def get_physical_wwn( drv )
 			page = "0x19" # SAS SSP port control mode page
@@ -597,7 +597,7 @@ module Einarc
 
 		def raid_member?(device)
 			name = device.gsub(/^\/dev\//, '')
-			
+
 			# Check name existence in mdstat file
 			return (not File.readlines(MDSTAT_LOCATION).grep(Regexp.new(name)).empty?)
 		end
@@ -624,7 +624,7 @@ module Einarc
 
 		def active?(device)
 			name = device.gsub(/^\/dev\//, '')
-			
+
 			# Check RAID existence in mdstat file
 			return (not File.readlines(MDSTAT_LOCATION).grep(Regexp.new(name)).empty?)
 		end
@@ -659,7 +659,7 @@ module Einarc
 		def level_of(device)
 			File.readlines(MDSTAT_LOCATION).grep(%r[^#{device.gsub(/\/dev\//, '') }]).grep(MDSTAT_PATTERN) do
 				return $2.split.last.gsub('raid','')
-			end			
+			end
 		end
 
 		# Returns next free name for md device
