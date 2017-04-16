@@ -345,7 +345,7 @@ module Einarc
 				l[:physical].each { |pd|
 					next if %w{ failed }.include?(@physical[pd][:state])
 					next if @physical[pd][:state] == "hotspare"
-					if @physical[pd][:state].is_a?(Array)
+					if @physical[pd][:state].is_a?(String)
 						@physical[pd][:state] << i
 					else
 						@physical[pd][:state] = [ i ]
