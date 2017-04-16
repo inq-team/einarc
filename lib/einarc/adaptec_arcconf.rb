@@ -318,7 +318,7 @@ module Einarc
 					hdd = false
 				when /Device is a Hard drive/
 					hdd = true
-				when /Reported Channel,Device\(T:L\)\s*:\s*(\d+),(\d+).*/
+				when /Reported Location\s*:\s*Enclosure\s*(\d+),\s*Slot\s*(\d+)/
 					@physical["#{$1}:#{$2}"] = phys if hdd
 				when /Vendor\s*:\s*(.*)$/
 					phys[:vendor] = $1
@@ -343,6 +343,7 @@ module Einarc
 			_logical_list.each_with_index { |l, i|
 				next unless l
 				l[:physical].each { |pd|
+					next if not @physical.has_key?(pd)
 					next if %w{ failed }.include?(@physical[pd][:state])
 					next if @physical[pd][:state] == "hotspare"
 					if @physical[pd][:state].is_a?(Array)
